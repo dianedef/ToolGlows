@@ -122,7 +122,7 @@ const executeAction = async (actionId: string) => {
   try {
     await quickActionsStore.executeAction(actionId)
   } catch (error) {
-    console.error('❌ Erreur lors de l\'exécution de l\'action:', error)
+    console.error('[ERROR] Action execution failed:', error)
   }
 }
 </script>

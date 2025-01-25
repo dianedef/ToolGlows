@@ -52,9 +52,9 @@ export const useDarkModeStore = defineStore('darkMode', {
 
       try {
         await chrome.storage.sync.set({ darkModeOptions: this.options })
-        console.log('✅ Options du mode sombre sauvegardées')
+        console.log('[SUCCESS] Dark mode options saved')
       } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des options du mode sombre:', error)
+        console.error('[ERROR] Failed to save dark mode options:', error)
       }
     },
 

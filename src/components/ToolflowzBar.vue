@@ -307,16 +307,16 @@ onMounted(async () => {
     }
     
     // Initialisation des outils
-    console.log('🛠️ Initialisation des outils')
+    console.log('[INFO] Initializing tools')
     await toolflowzStore.initTools(initialTools)
     
     // Ajout de l'écouteur de clic
     document.addEventListener('click', handleClickOutside)
     
     isLoading.value = false
-    console.log('✅ Initialisation terminée')
+    console.log('[SUCCESS] Initialization complete')
   } catch (error) {
-    console.error('❌ Erreur lors de l\'initialisation:', error)
+    console.error('[ERROR] Initialization error:', error)
     isLoading.value = false
   }
 })
@@ -327,7 +327,7 @@ onUnmounted(() => {
 })
 
 const handleToolClick = async (tool: Tool) => {
-  console.log('🔧 Clic sur l\'outil:', tool.id)
+  console.log('[INFO] Tool clicked:', tool.id)
   
   // Si on clique sur l'outil déjà actif, on le ferme
   if (currentToolId.value === tool.id) {

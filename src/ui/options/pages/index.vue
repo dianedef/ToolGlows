@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { FormKit } from '@formkit/vue'
 import { storeToRefs } from 'pinia'
-import { useSettingsStore } from '@/stores/settings.store'
+import { useSettingsStore } from '@/stores/settings'
 
 const settingsStore = useSettingsStore()
 const { settings } = storeToRefs(settingsStore)

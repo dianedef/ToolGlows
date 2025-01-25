@@ -134,26 +134,26 @@ const {
 const wordCounterStore = useWordCounterStore()
 const isLoading = ref(true)
 
-console.log('🔄 WordCounterPopup - Création du composant')
-console.log('📦 WordCounterStore état initial:', {
+console.log('[INFO] WordCounterPopup - Component creation')
+console.log('[INFO] WordCounterPopup - Initial state:', {
   isInitialized: wordCounterStore.isInitialized,
   options: wordCounterStore.options
 })
 
 onMounted(async () => {
-  console.log('🔄 WordCounterPopup - onMounted')
+  console.log('[INFO] WordCounterPopup - onMounted')
   try {
     if (!wordCounterStore.isInitialized) {
       await wordCounterStore.loadOptions()
-      console.log('✅ WordCounterPopup - Options chargées')
+      console.log('[SUCCESS] WordCounterPopup - Options loaded')
     } else {
-      console.log('ℹ️ WordCounterPopup - Store déjà initialisé')
+      console.log('[INFO] WordCounterPopup - Store already initialized')
     }
   } catch (error) {
-    console.error('❌ WordCounterPopup - Erreur:', error)
+    console.error('[ERROR] WordCounterPopup - Error:', error)
   } finally {
     isLoading.value = false
-    console.log('🏁 WordCounterPopup - État final:', {
+    console.log('[INFO] WordCounterPopup - Final state:', {
       isLoading: isLoading.value,
       storeInitialized: wordCounterStore.isInitialized
     })

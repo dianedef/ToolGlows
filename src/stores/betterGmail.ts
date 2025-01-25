@@ -85,16 +85,16 @@ export const useBetterGmailStore = defineStore('betterGmail', {
           this.options = { ...this.options, ...result.betterGmailOptions }
         }
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des options de Better Gmail:', error)
+        console.error('[ERROR] Failed to load Better Gmail options:', error)
       }
     },
 
     async saveOptions() {
       try {
         await chrome.storage.sync.set({ betterGmailOptions: this.options })
-        console.log('✅ Options de Better Gmail sauvegardées')
+        console.log('[SUCCESS] Better Gmail options saved')
       } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des options de Better Gmail:', error)
+        console.error('[ERROR] Failed to save Better Gmail options:', error)
       }
     },
 

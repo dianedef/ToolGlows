@@ -112,7 +112,7 @@ onMounted(async () => {
   try {
     await darkModeStore.loadOptions()
   } catch (error) {
-    console.error('Erreur lors du chargement des options du mode sombre:', error)
+    console.error('[ERROR] Failed to load dark mode options:', error)
   } finally {
     isLoading.value = false
   }

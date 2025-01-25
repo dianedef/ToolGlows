@@ -42,7 +42,7 @@ export function useDarkMode(options: DarkModeOptions = {}) {
       // Vérifier si c'est la nuit
       isDarkMode.value = now < sunTimes.sunrise || now > sunTimes.sunset
     } catch (error) {
-      console.error('Erreur lors de la récupération de la position:', error)
+      console.error('ERROR: Failed to get position:', error)
       // Fallback sur les heures définies manuellement
       const now = new Date()
       const currentTime = now.getHours() * 100 + now.getMinutes()

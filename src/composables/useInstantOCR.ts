@@ -54,7 +54,7 @@ export function useInstantOCR() {
       
       worker.value = newWorker
     } catch (e) {
-      console.error('❌ Erreur lors de l\'initialisation du worker OCR:', e)
+      console.error('ERROR: Erreur lors de l\'initialisation du worker OCR:', e)
       error.value = e instanceof Error ? e.message : 'Échec de l\'initialisation OCR'
     }
   }
@@ -78,7 +78,7 @@ export function useInstantOCR() {
   // Précharger l'OCR d'une image
   const preloadImageOCR = async (img: HTMLImageElement) => {
     if (!options.value.enabled || !worker.value) {
-      console.log('⏭️ OCR désactivé ou worker non initialisé')
+      console.log('INFO: OCR disabled or worker not initialized')
       return
     }
     if (cache.value.has(img.src)) {
@@ -116,14 +116,14 @@ export function useInstantOCR() {
         confidence
       })
 
-      console.log('✅ OCR terminé:', { text, confidence })
+      console.log('INFO: OCR finished:', { text, confidence })
 
       if (options.value.showOverlay) {
         createTextOverlay(img, boxes)
       }
 
     } catch (err) {
-      console.error('❌ Erreur OCR:', err)
+      console.error('ERROR: Erreur OCR:', err)
       error.value = err instanceof Error ? err.message : 'Échec du traitement OCR'
     } finally {
       isProcessing.value = false

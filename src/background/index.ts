@@ -36,18 +36,18 @@ let globalState = {
   activeTools: [] as string[]
 }
 
-console.log('🚀 Background script démarré', { globalState })
+console.log('[INFO] Background script started', { globalState })
 
 // Keep alive pour Chrome
 if (typeof chrome !== 'undefined' && chrome.runtime?.onConnect) {
   chrome.runtime.onConnect.addListener(port => {
-    console.log('🔌 Nouvelle connexion établie:', port.name)
+    console.log('[INFO] New connection established:', port.name)
   })
 }
 
 // Installation listener
 chrome.runtime.onInstalled.addListener(async (opt) => {
-  console.log('📦 Extension installée/mise à jour:', opt.reason)
+  console.log('[INFO] Extension installed/updated:', opt.reason)
   try {
     if (opt.reason === "install") {
       await chrome.storage.local.clear()
@@ -65,7 +65,7 @@ chrome.runtime.onInstalled.addListener(async (opt) => {
       })
     }
   } catch (error) {
-    console.error('❌ Erreur lors de l\'installation/mise à jour:', error)
+    console.error('[ERROR] Installation/update error:', error)
   }
 })
 
@@ -78,12 +78,12 @@ const broadcastToOtherTabs = async (type: string, data: MessageData, sourceTabId
         try {
           await sendMessage(type, data, { context: 'content-script', tabId: tab.id })
         } catch (error) {
-          console.warn(`⚠️ Impossible d'envoyer le message à l'onglet ${tab.id}:`, error)
+          console.warn(`[WARNING] Could not send message to tab ${tab.id}:`, error)
         }
       }
     }
   } catch (error) {
-    console.error('❌ Erreur lors du broadcast:', error)
+    console.error('[ERROR] Broadcast error:', error)
   }
 }
 
@@ -103,7 +103,7 @@ onMessage('SETTINGS_UPDATED', async ({ data, sender }) => {
     // Broadcast aux autres onglets
     await broadcastToOtherTabs('SETTINGS_SYNC', { settings: messageData.settings }, sourceTabId)
   } catch (error) {
-    console.error('❌ Erreur lors de la mise à jour des paramètres:', error)
+    console.error('[ERROR] Settings update error:', error)
   }
 })
 
@@ -122,7 +122,7 @@ onMessage('TOOLS_UPDATED', async ({ data, sender }) => {
     // Broadcast aux autres onglets
     await broadcastToOtherTabs('TOOLS_SYNC', { tools: messageData.tools }, sourceTabId)
   } catch (error) {
-    console.error('❌ Erreur lors de la mise à jour des outils:', error)
+    console.error('[ERROR] Tools update error:', error)
   }
 })
 
@@ -133,7 +133,7 @@ onMessage('GET_INITIAL_STATE', async () => {
       activeTools: globalState.activeTools
     }
   } catch (error) {
-    console.error('❌ Erreur lors de la récupération de l\'état initial:', error)
+    console.error('[ERROR] Failed to get initial state:', error)
     return {
       settings: null,
       activeTools: []
@@ -150,12 +150,12 @@ self.onerror = function (message: string | Event, source?: string, lineno?: numb
     colno,
     error
   }
-  console.error('❌ Erreur globale:', errorDetails)
+  console.error('[ERROR] Global error:', errorDetails)
 }
 
 // Gestion des rejets de promesses non gérés
 self.onunhandledrejection = function(event: PromiseRejectionEvent) {
-  console.error('❌ Promesse rejetée non gérée:', {
+  console.error('[ERROR] Unhandled promise rejection:', {
     reason: event.reason,
     promise: event.promise
   })

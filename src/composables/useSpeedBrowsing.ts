@@ -128,7 +128,7 @@ export function useSpeedBrowsing() {
       failedUrls.value.add(url)
       // Ne pas logger les erreurs CORS ou timeout
       if (!error.name.includes('AbortError') && !error.name.includes('CORS')) {
-        console.warn(`Échec du préchargement pour ${url}`)
+        console.warn(`ERROR: Failed to preload ${url}`)
       }
     } finally {
       isPreloading.value = false

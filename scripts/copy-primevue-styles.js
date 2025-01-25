@@ -64,16 +64,16 @@ async function copyFiles() {
         fs.mkdirSync(themesDestPath, { recursive: true })
       }
       fs.cpSync(themePath, themesDestPath, { recursive: true })
-      console.log('✓ Thème copié')
+      console.log('✓ Theme copied')
     } else {
-      console.log('❌ Dossier du thème non trouvé')
+      console.log('ERROR: Theme folder not found')
     }
 
     // Copier primevue.css
     const primevueCssPath = path.join(PRIMEVUE_PATH, 'resources/primevue.min.css')
     if (fs.existsSync(primevueCssPath)) {
       fs.copyFileSync(primevueCssPath, path.join(DEST_PATH, 'primevue.css'))
-      console.log('✓ CSS PrimeVue copié')
+      console.log('✓ PrimeVue CSS copied')
     }
 
     // Créer le dossier components s'il n'existe pas
@@ -93,7 +93,7 @@ async function copyFiles() {
         }
         
         fs.cpSync(componentPath, destComponentPath, { recursive: true })
-        console.log(`✓ Styles du composant ${component} copiés`)
+        console.log(`✓ Styles of ${component} component copied`)
       }
     })
 
@@ -103,7 +103,7 @@ async function copyFiles() {
     if (fs.existsSync(primeIconsCssPath)) {
       // Copier le CSS
       fs.copyFileSync(primeIconsCssPath, path.join(DEST_PATH, 'icons.css'))
-      console.log('✓ CSS PrimeIcons copié')
+      console.log('✓ PrimeIcons CSS copied')
 
       // Copier les polices
       const destFontsPath = path.join(DEST_PATH, 'fonts')
@@ -111,7 +111,7 @@ async function copyFiles() {
         fs.mkdirSync(destFontsPath, { recursive: true })
       }
       fs.cpSync(primeIconsFontsPath, destFontsPath, { recursive: true })
-      console.log('✓ Polices PrimeIcons copiées')
+      console.log('✓ PrimeIcons fonts copied')
     }
 
     console.log('✓ Tous les fichiers ont été copiés avec succès !')

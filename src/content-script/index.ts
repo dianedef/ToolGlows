@@ -28,9 +28,9 @@ async function initializeTabId() {
   try {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
     currentTabId = tabs[0]?.id
-    console.log('✅ ID de l\'onglet initialisé:', currentTabId)
+    console.log('[SUCCESS] Tab ID initialized:', currentTabId)
   } catch (error) {
-    console.error('❌ Erreur lors de l\'initialisation de l\'ID de l\'onglet:', error)
+    console.error('[ERROR] Failed to initialize tab ID:', error)
   }
 }
 
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Gestion des messages entre l'iframe et le content script
 onMessage('IFRAME_READY', async ({ data }) => {
-  console.log('🔄 Iframe prête à recevoir des messages')
+  console.log('[INFO] Iframe ready to receive messages')
   isIframeReady = true
 
   // Récupérer l'état initial depuis le storage
@@ -55,7 +55,7 @@ onMessage('IFRAME_READY', async ({ data }) => {
       }, { context: 'content-script', tabId: currentTabId })
     }
   } catch (error) {
-    console.error('❌ Erreur lors de la récupération de l\'état initial:', error)
+    console.error('[ERROR] Failed to get initial state:', error)
   }
 })
 
@@ -72,13 +72,13 @@ chrome.storage.onChanged.addListener(async (changes, namespace) => {
     // Envoyer les changements à l'iframe
     await sendMessage('STORAGE_UPDATED', relevantChanges, { context: 'content-script', tabId: currentTabId })
   } catch (error) {
-    console.error('❌ Erreur lors de la synchronisation des changements:', error)
+    console.error('[ERROR] Failed to sync changes:', error)
   }
 })
 
 // Gestion des erreurs globale
 self.onerror = function (message: string | Event, source?: string, lineno?: number, colno?: number, error?: Error) {
-  console.error('❌ Erreur dans le content script:', {
+  console.error('[ERROR] Content script error:', {
     message: message instanceof Event ? message.type : message,
     source,
     lineno,
@@ -89,13 +89,13 @@ self.onerror = function (message: string | Event, source?: string, lineno?: numb
 
 // Gestion des rejets de promesses non gérés
 self.onunhandledrejection = function(event: PromiseRejectionEvent) {
-  console.error('❌ Promesse rejetée non gérée dans le content script:', {
+  console.error('[ERROR] Unhandled promise rejection in content script:', {
     reason: event.reason,
     promise: event.promise
   })
 }
 
-console.log('✅ Content script chargé')
+console.log('[SUCCESS] Content script loaded')
 
 export {}
 

@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 
-console.log('🚀 Démarrage de l\'application')
+console.log('INFO: Démarrage de l\'application')
 
 // Composants PrimeVue
 import Button from 'primevue/button'
@@ -47,11 +47,11 @@ app.component('Panel', Panel)
 // S'assurer que le DOM est prêt avant le montage
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    console.log('✅ DOM chargé, montage de l\'application')
+    console.log('INFO: DOM loaded, mounting application')
     app.mount('#app')
   })
 } else {
-  console.log('✅ DOM déjà chargé, montage de l\'application')
+  console.log('INFO: DOM ALREADY LOADED, mounting application')
   app.mount('#app')
 }
 
