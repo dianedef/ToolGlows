@@ -47,16 +47,16 @@ export const useInstagramSavedStore = defineStore('instagramSaved', {
           this.options = { ...this.options, ...result.instagramSavedOptions }
         }
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des options de Instagram Saved:', error)
+        console.error('[ERROR] Failed to load Instagram Saved options:', error)
       }
     },
 
     async saveOptions() {
       try {
         await chrome.storage.sync.set({ instagramSavedOptions: this.options })
-        console.log('✅ Options de Instagram Saved sauvegardées')
+        console.log('[SUCCESS] Instagram Saved options saved')
       } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des options de Instagram Saved:', error)
+        console.error('[ERROR] Failed to save Instagram Saved options:', error)
       }
     },
 

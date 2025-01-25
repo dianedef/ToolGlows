@@ -1,10 +1,10 @@
 /**
- * Injecte une feuille de style externe via une URL
+ * Injects an external stylesheet via URL
  */
 export function injectStylesheet(url: string, id: string): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
-      // Vérifie si le style existe déjà
+      // Check if style already exists
       if (document.getElementById(id)) {
         resolve()
         return
@@ -16,7 +16,7 @@ export function injectStylesheet(url: string, id: string): Promise<void> {
       link.href = url
 
       link.onload = () => resolve()
-      link.onerror = (error) => reject(new Error(`Erreur lors du chargement du style ${url}: ${error}`))
+      link.onerror = (error) => reject(new Error(`Error loading style ${url}: ${error}`))
 
       document.head.appendChild(link)
     } catch (error) {
@@ -26,11 +26,11 @@ export function injectStylesheet(url: string, id: string): Promise<void> {
 }
 
 /**
- * Injecte des styles CSS inline
+ * Injects inline CSS styles
  */
 export function injectStyles(styles: string, id: string): void {
   try {
-    // Vérifie si le style existe déjà
+    // Check if style already exists
     if (document.getElementById(id)) {
       return
     }
@@ -40,7 +40,7 @@ export function injectStyles(styles: string, id: string): void {
     styleElement.textContent = styles
     document.head.appendChild(styleElement)
   } catch (error) {
-    console.error(`❌ Erreur lors de l'injection des styles ${id}:`, error)
+    console.error(`[ERROR] Failed to inject styles ${id}:`, error)
     throw error
   }
-} 
+}

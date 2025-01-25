@@ -37,7 +37,7 @@ export const useReaderModeStore = defineStore('readerMode', {
           this.options = { ...this.options, ...result.readerModeOptions }
         }
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des options du mode lecture:', error)
+        console.error('[ERROR] Failed to load reader mode options:', error)
       } finally {
         this.isInitialized = true
       }
@@ -50,9 +50,9 @@ export const useReaderModeStore = defineStore('readerMode', {
 
       try {
         await chrome.storage.sync.set({ readerModeOptions: this.options })
-        console.log('✅ Options du mode lecture sauvegardées')
+        console.log('[SUCCESS] Reader mode options saved')
       } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des options du mode lecture:', error)
+        console.error('[ERROR] Failed to save reader mode options:', error)
       }
     },
 

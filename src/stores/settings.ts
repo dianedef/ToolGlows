@@ -13,11 +13,11 @@ export interface ToolflowzSettings {
 }
 
 export const useSettingsStore = defineStore('settings', () => {
-  console.log('📦 Création du store settings')
+  console.log('[INFO] Creating settings store')
 
   if (!chrome?.storage?.sync) {
-    console.error('❌ L\'API chrome.storage.sync n\'est pas disponible dans le store settings')
-    throw new Error('L\'API chrome.storage.sync n\'est pas disponible')
+    console.error('[ERROR] chrome.storage.sync API not available in settings store')
+    throw new Error('chrome.storage.sync API is not available')
   }
 
   const settings = ref<ToolflowzSettings>({
@@ -28,71 +28,64 @@ export const useSettingsStore = defineStore('settings', () => {
   })
 
   const loadSettings = async () => {
-    console.log('📥 Chargement des paramètres')
+    console.log('[INFO] Loading settings')
     try {
-      // Charger d'abord depuis le stockage local
       const result = await chrome.storage.sync.get('toolflowzSettings')
       if (result.toolflowzSettings) {
         settings.value = result.toolflowzSettings
-        console.log('✅ Paramètres chargés:', settings.value)
+        console.log('[SUCCESS] Settings loaded:', settings.value)
       } else {
-        console.log('ℹ️ Aucun paramètre trouvé, utilisation des valeurs par défaut')
+        console.log('[INFO] No settings found, using defaults')
       }
 
-      // Puis synchroniser avec le background de manière non bloquante
       bridgeApi.getInitialState().then((state: any) => {
         if (state?.settings) {
           settings.value = state.settings
-          console.log('✅ Paramètres synchronisés avec le background')
+          console.log('[SUCCESS] Settings synced with background')
         }
       }).catch(error => {
-        console.warn('⚠️ Erreur de synchronisation avec le background:', error)
+        console.warn('[WARNING] Background sync error:', error)
       })
     } catch (error) {
-      console.error('❌ Erreur lors du chargement des paramètres:', error)
+      console.error('[ERROR] Failed to load settings:', error)
     }
   }
 
   const updateSettings = async (newSettings: Partial<ToolflowzSettings>) => {
-    console.log('💾 Mise à jour des paramètres:', newSettings)
+    console.log('[INFO] Updating settings:', newSettings)
     settings.value = { ...settings.value, ...newSettings }
     try {
-      // Sauvegarder localement
       await chrome.storage.sync.set({ toolflowzSettings: settings.value })
-      console.log('✅ Paramètres sauvegardés localement')
+      console.log('[SUCCESS] Settings saved locally')
 
-      // Notifier le background de manière non bloquante
       bridgeApi.updateSettings(settings.value).catch(error => {
-        console.warn('⚠️ Erreur de synchronisation avec le background:', error)
+        console.warn('[WARNING] Background sync error:', error)
       })
     } catch (error) {
-      console.error('❌ Erreur lors de la mise à jour des paramètres:', error)
+      console.error('[ERROR] Failed to update settings:', error)
     }
   }
 
   const updatePosition = async (x: number, y: number) => {
-    console.log('📍 Mise à jour de la position:', { x, y })
+    console.log('[INFO] Updating position:', { x, y })
     settings.value.position = { x, y }
     try {
-      // Sauvegarder localement
       await chrome.storage.sync.set({ toolflowzSettings: settings.value })
-      console.log('✅ Position sauvegardée localement')
+      console.log('[SUCCESS] Position saved locally')
 
-      // Notifier le background de manière non bloquante
       bridgeApi.updateSettings(settings.value).catch(error => {
-        console.warn('⚠️ Erreur de synchronisation avec le background:', error)
+        console.warn('[WARNING] Background sync error:', error)
       })
     } catch (error) {
-      console.error('❌ Erreur lors de la mise à jour de la position:', error)
+      console.error('[ERROR] Failed to update position:', error)
     }
   }
 
-  // Écouter les mises à jour des autres instances
   initBridgeListeners({
     onSettingsUpdate: (newSettings) => {
       if (newSettings) {
         settings.value = newSettings
-        console.log('✅ Paramètres mis à jour depuis une autre instance')
+        console.log('[SUCCESS] Settings updated from another instance')
       }
     }
   })

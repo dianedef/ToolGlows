@@ -41,7 +41,7 @@ const stores = {
 // Écouter les messages du content script
 onMessage('INITIAL_STATE', async ({ data }) => {
   const messageData = data as MessageData
-  console.log('📥 État initial reçu:', messageData)
+  console.log('[RECEIVED] Initial state:', messageData)
   if (messageData.settings) {
     stores.settings.$patch(messageData.settings)
   }
@@ -52,7 +52,7 @@ onMessage('INITIAL_STATE', async ({ data }) => {
 
 onMessage('STORAGE_UPDATED', async ({ data }) => {
   const messageData = data as MessageData
-  console.log('📥 Mise à jour du storage reçue:', messageData)
+  console.log('[RECEIVED] Storage update:', messageData)
   if (messageData.settings) {
     stores.settings.$patch(messageData.settings)
   }
@@ -73,7 +73,7 @@ const RootComponent = defineComponent({
 
       return {}
     } catch (error) {
-      console.error('❌ Erreur dans le setup du composant racine:', error)
+      console.error('[ERROR] Root component setup error:', error)
       throw error
     }
   },
@@ -106,7 +106,7 @@ setupPrimeVue(app)
 // Initialisation de l'extension
 async function initializeExtension() {
   try {
-    console.log('🚀 Initialisation de l\'iframe')
+    console.log('[INFO] Initializing iframe')
 
     // Injection des styles externes via CDN avec gestion des erreurs
     await Promise.all([
@@ -114,7 +114,7 @@ async function initializeExtension() {
       injectStylesheet('https://cdn.jsdelivr.net/npm/primevue@3.49.1/resources/primevue.min.css', 'toolflowz-primevue-core'),
       injectStylesheet('https://cdn.jsdelivr.net/npm/primeicons@7.0.0/primeicons.css', 'toolflowz-prime-icons')
     ]).catch(error => {
-      console.error('❌ Erreur lors du chargement des styles externes:', error)
+      console.error('[ERROR] External styles loading error:', error)
     })
 
     // Injection des styles locaux
@@ -125,17 +125,17 @@ async function initializeExtension() {
     if (document.readyState === 'loading') {
       await new Promise<void>((resolve) => {
         document.addEventListener('DOMContentLoaded', () => {
-          console.log('✅ DOM chargé, montage de l\'application')
+          console.log('[INFO] DOM loaded, mounting application')
           resolve()
         })
       })
     } else {
-      console.log('✅ DOM déjà chargé')
+      console.log('[INFO] DOM already loaded')
     }
 
     // Montage de l'application
     app.mount('#app')
-    console.log('✅ Application montée avec succès')
+    console.log('[SUCCESS] Application mounted successfully')
 
     // Obtenir l'ID de l'onglet actuel
     const tab = await chrome.tabs.getCurrent()
@@ -147,18 +147,18 @@ async function initializeExtension() {
 
     // Informer le content script que l'iframe est prête
     await sendMessage('IFRAME_READY', {}, { context: 'content-script', tabId })
-    console.log('✅ Message IFRAME_READY envoyé')
+    console.log('[SUCCESS] IFRAME_READY message sent')
 
     return app
   } catch (error) {
-    console.error('❌ Erreur lors de l\'initialisation de l\'iframe:', error)
+    console.error('[ERROR] Iframe initialization error:', error)
     throw error
   }
 }
 
 // Gestion des erreurs globales
 self.onerror = function (message: string | Event, source?: string, lineno?: number, colno?: number, error?: Error) {
-  console.error('❌ Erreur dans l\'iframe:', {
+  console.error('[ERROR] Error in iframe:', {
     message: message instanceof Event ? message.type : message,
     source,
     lineno,
@@ -169,7 +169,7 @@ self.onerror = function (message: string | Event, source?: string, lineno?: numb
 
 // Gestion des rejets de promesses non gérés
 self.onunhandledrejection = function(event: PromiseRejectionEvent) {
-  console.error('❌ Promesse rejetée non gérée dans l\'iframe:', {
+  console.error('[ERROR] Unhandled promise rejection in iframe:', {
     reason: event.reason,
     promise: event.promise
   })
@@ -177,7 +177,7 @@ self.onunhandledrejection = function(event: PromiseRejectionEvent) {
 
 // Initialisation de l'extension
 initializeExtension().catch(error => {
-  console.error('❌ Erreur fatale lors de l\'initialisation de l\'iframe:', error)
+  console.error('[ERROR] Fatal error during iframe initialization:', error)
 })
 
 // Exporter pinia pour une utilisation dans d'autres parties de l'extension

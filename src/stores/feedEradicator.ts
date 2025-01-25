@@ -32,16 +32,16 @@ export const useFeedEradicatorStore = defineStore('feedEradicator', {
           this.options = { ...this.options, ...result.feedEradicatorOptions }
         }
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des options du Feed Eradicator:', error)
+        console.error('[ERROR] Failed to load Feed Eradicator options:', error)
       }
     },
 
     async saveOptions() {
       try {
         await chrome.storage.sync.set({ feedEradicatorOptions: this.options })
-        console.log('✅ Options du Feed Eradicator sauvegardées')
+        console.log('[SUCCESS] Feed Eradicator options saved')
       } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des options du Feed Eradicator:', error)
+        console.error('[ERROR] Failed to save Feed Eradicator options:', error)
       }
     },
 

@@ -26,16 +26,16 @@ export const useToolflowzInfiniteScrollStore = defineStore('infiniteScroll', {
           this.options = { ...this.options, ...result.infiniteScrollOptions }
         }
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des options du défilement infini:', error)
+        console.error('[ERROR] Failed to load infinite scroll options:', error)
       }
     },
 
     async saveOptions() {
       try {
         await chrome.storage.sync.set({ infiniteScrollOptions: this.options })
-        console.log('✅ Options du défilement infini sauvegardées')
+        console.log('[SUCCESS] Infinite scroll options saved')
       } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des options du défilement infini:', error)
+        console.error('[ERROR] Failed to save infinite scroll options:', error)
       }
     },
 

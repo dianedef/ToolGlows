@@ -46,16 +46,16 @@ export const useDragOpenStore = defineStore('dragOpen', {
           this.options = { ...this.options, ...result.dragOpenOptions }
         }
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des options de Drag Open:', error)
+        console.error('[ERROR] Failed to load Drag Open options:', error)
       }
     },
 
     async saveOptions() {
       try {
         await chrome.storage.sync.set({ dragOpenOptions: this.options })
-        console.log('✅ Options de Drag Open sauvegardées')
+        console.log('[SUCCESS] Drag Open options saved')
       } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des options de Drag Open:', error)
+        console.error('[ERROR] Failed to save Drag Open options:', error)
       }
     },
 

@@ -22,16 +22,16 @@ export const useSpeedBrowsingStore = defineStore('speedBrowsing', {
           this.options = { ...this.options, ...result.speedBrowsingOptions }
         }
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des options de navigation rapide:', error)
+        console.error('[ERROR] Failed to load speed browsing options:', error)
       }
     },
 
     async saveOptions() {
       try {
         await chrome.storage.sync.set({ speedBrowsingOptions: this.options })
-        console.log('✅ Options de navigation rapide sauvegardées')
+        console.log('[SUCCESS] Speed browsing options saved')
       } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des options de navigation rapide:', error)
+        console.error('[ERROR] Failed to save speed browsing options:', error)
       }
     },
 

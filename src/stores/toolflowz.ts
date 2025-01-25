@@ -18,101 +18,100 @@ export const useToolflowzStore = defineStore('toolflowz', () => {
   const expanded = ref(true)
   const isPinned = ref(false)
 
-  // Sauvegarder les outils dans le stockage avec debounce
+  // Save tools to storage with debounce
   const debouncedSaveToStorage = useDebounceFn(async () => {
     try {
       await chrome.storage.sync.set({ toolflowzActiveTools: activeTools.value })
-      console.log('✅ Outils actifs sauvegardés dans le stockage:', activeTools.value)
+      console.log('[SUCCESS] Active tools saved to storage:', activeTools.value)
     } catch (error) {
-      console.error('❌ Erreur lors de la sauvegarde des outils actifs:', error)
+      console.error('[ERROR] Failed to save active tools:', error)
     }
   }, 1000)
 
   // Getters
   const isToolActive = computed(() => (toolId: string) => activeTools.value.includes(toolId))
 
-  // Ajouter un outil
+  // Add a tool
   const addTool = async (tool: Tool) => {
     tools.value.push(tool)
-    console.log('➕ Outil ajouté:', tool)
+    console.log('[INFO] Tool added:', tool)
     if (!isInitialized.value) {
       activeTools.value.push(tool.id)
     }
   }
 
-  // Initialiser les outils
+  // Initialize tools
   const initTools = async (initialTools: Tool[]) => {
     if (isInitialized.value) {
-      console.log('⚠️ Les outils sont déjà initialisés')
+      console.log('[WARNING] Tools are already initialized')
       return
     }
 
     tools.value = initialTools
 
-    // Charger les outils actifs depuis le stockage
+    // Load active tools from storage
     try {
       const result = await chrome.storage.sync.get('toolflowzActiveTools')
 
-      // Convertir en tableau si c'est un objet
+      // Convert to array if it's an object
       let storedTools = result.toolflowzActiveTools
       if (storedTools && !Array.isArray(storedTools)) {
         storedTools = Object.values(storedTools)
       }
 
-      // Filtrer les outils valides
+      // Filter valid tools
       const validTools = storedTools?.filter((id: string) => 
         tools.value.some(tool => tool.id === id)
       ) || []
 
-      // Définir les outils actifs
+      // Set active tools
       activeTools.value = validTools.length > 0 ? validTools : tools.value.map(t => t.id)
-      console.log('✅ Outils actifs initialisés:', activeTools.value)
+      console.log('[SUCCESS] Active tools initialized:', activeTools.value)
     } catch (error) {
-      console.error('❌ Erreur lors du chargement des outils actifs:', error)
+      console.error('[ERROR] Failed to load active tools:', error)
       activeTools.value = tools.value.map(t => t.id)
     }
 
     isInitialized.value = true
-    console.log('✅ Store initialisé avec les outils:', {
+    console.log('[SUCCESS] Store initialized with tools:', {
       tools: tools.value,
       activeTools: activeTools.value,
       isInitialized: isInitialized.value
     })
   }
 
-  // Toggle un outil individuel
+  // Toggle individual tool
   const toggleTool = async (toolId: string) => {
-    console.log('🔄 Toggle de l\'outil:', toolId)
+    console.log('[INFO] Toggling tool:', toolId)
     const index = activeTools.value.indexOf(toolId)
     
     if (index === -1) {
-      console.log('➕ Activation de l\'outil')
+      console.log('[INFO] Activating tool')
       activeTools.value.push(toolId)
     } else {
-      console.log('➖ Désactivation de l\'outil')
+      console.log('[INFO] Deactivating tool')
       activeTools.value.splice(index, 1)
     }
 
-    console.log('📦 État des outils actifs après toggle:', activeTools.value)
+    console.log('[INFO] Active tools state after toggle:', activeTools.value)
     await debouncedSaveToStorage()
 
-    // Synchroniser avec le background
+    // Synchronize with background
     sendMessage('TOOLS_UPDATED', { tools: activeTools.value }, 'background')
   }
 
-  // Définir les outils actifs
+  // Set active tools
   const setActiveTools = async (toolIds: string[]) => {
-    console.log('🔄 Définition des outils actifs:', toolIds)
+    console.log('[INFO] Setting active tools:', toolIds)
     
-    // Filtrer pour ne garder que les IDs valides
     const validIds = toolIds.filter(id => tools.value.some(t => t.id === id))
-    console.log('✅ IDs valides:', validIds)
+    console.log('[SUCCESS] Valid IDs:', validIds)
     
     activeTools.value = validIds
-    console.log('📦 Nouveaux outils actifs définis:', activeTools.value)
+    console.log('[SUCCESS] New active tools set:', activeTools.value)
     await debouncedSaveToStorage()
 
-    // Synchroniser avec le background
+    // Synchronize with background
     sendMessage('TOOLS_UPDATED', { tools: activeTools.value }, 'background')
   }
 

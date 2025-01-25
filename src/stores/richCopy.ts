@@ -69,16 +69,16 @@ export const useRichCopyStore = defineStore('richCopy', {
           this.options = { ...this.options, ...result.richCopyOptions }
         }
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des options de Rich Copy:', error)
+        console.error('[ERROR] Failed to load Rich Copy options:', error)
       }
     },
 
     async saveOptions() {
       try {
         await chrome.storage.sync.set({ richCopyOptions: this.options })
-        console.log('✅ Options de Rich Copy sauvegardées')
+        console.log('[SUCCESS] Rich Copy options saved')
       } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des options de Rich Copy:', error)
+        console.error('[ERROR] Failed to save Rich Copy options:', error)
       }
     },
 

@@ -38,7 +38,7 @@ export const useWordCounterStore = defineStore('wordCounter', {
           this.options = { ...this.options, ...result.wordCounterOptions }
         }
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des options du compteur:', error)
+        console.error('[ERROR] Failed to load word counter options:', error)
       } finally {
         this.isInitialized = true
       }
@@ -52,7 +52,7 @@ export const useWordCounterStore = defineStore('wordCounter', {
       try {
         await chrome.storage.sync.set({ wordCounterOptions: this.options })
       } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des options du compteur:', error)
+        console.error('[ERROR] Failed to save word counter options:', error)
       }
     },
 

@@ -24,11 +24,11 @@ export const useSearchJumperStore = defineStore('searchJumper', {
   state: () => ({
     options: {
       engines: [
-        { id: 'google', name: 'Google', url: 'https://google.com/search?q={query}', icon: '🔍' },
-        { id: 'ddg', name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q={query}', icon: '🦆' },
-        { id: 'bing', name: 'Bing', url: 'https://www.bing.com/search?q={query}', icon: '🔎' },
-        { id: 'youtube', name: 'YouTube', url: 'https://www.youtube.com/results?search_query={query}', icon: '📺' },
-        { id: 'maps', name: 'Google Maps', url: 'https://www.google.com/maps/search/{query}', icon: '🗺️' }
+        { id: 'google', name: 'Google', url: 'https://google.com/search?q={query}', icon: 'search' },
+        { id: 'ddg', name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q={query}', icon: 'duck' },
+        { id: 'bing', name: 'Bing', url: 'https://www.bing.com/search?q={query}', icon: 'search' },
+        { id: 'youtube', name: 'YouTube', url: 'https://www.youtube.com/results?search_query={query}', icon: 'video' },
+        { id: 'maps', name: 'Google Maps', url: 'https://www.google.com/maps/search/{query}', icon: 'map' }
       ],
       shortcutKey: 'Alt+S',
       showIcons: true,
@@ -51,16 +51,16 @@ export const useSearchJumperStore = defineStore('searchJumper', {
           this.options = { ...this.options, ...result.searchJumperOptions }
         }
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des options de Search Jumper:', error)
+        console.error('[ERROR] Failed to load Search Jumper options:', error)
       }
     },
 
     async saveOptions() {
       try {
         await chrome.storage.sync.set({ searchJumperOptions: this.options })
-        console.log('✅ Options de Search Jumper sauvegardées')
+        console.log('[SUCCESS] Search Jumper options saved')
       } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des options de Search Jumper:', error)
+        console.error('[ERROR] Failed to save Search Jumper options:', error)
       }
     },
 

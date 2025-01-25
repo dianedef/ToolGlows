@@ -39,7 +39,7 @@ export const useDarkModeStore = defineStore('darkMode', {
           this.options = { ...this.options, ...result.darkModeOptions }
         }
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des options du mode sombre:', error)
+        console.error('[ERROR] Failed to load dark mode options:', error)
       } finally {
         this.isInitialized = true
       }

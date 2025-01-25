@@ -31,16 +31,16 @@ export const useInstantOCRStore = defineStore('instantOCR', {
           this.options = { ...this.options, ...result.instantOCROptions }
         }
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des options de l\'OCR:', error)
+        console.error('[ERROR] Failed to load OCR options:', error)
       }
     },
 
     async saveOptions() {
       try {
         await chrome.storage.sync.set({ instantOCROptions: this.options })
-        console.log('✅ Options de l\'OCR instantané sauvegardées')
+        console.log('[SUCCESS] Instant OCR options saved')
       } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des options de l\'OCR:', error)
+        console.error('[ERROR] Failed to save OCR options:', error)
       }
     },
 
