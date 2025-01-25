@@ -1,0 +1,332 @@
+.crx-iframe {
+  border: none;
+  border-radius: 8px;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 -1px 0px rgba(0, 0, 0, 0.02);
+  background-color: #fff;
+  margin: 2em;
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 420px;
+  min-height: 340px;
+  z-index: 99999;
+  transition: all 0.3s ease;
+  
+  &.minimized {
+    width: 48px;
+    min-height: 48px;
+    margin: 1em;
+  }
+  
+  &.dragging {
+    opacity: 0.8;
+    transform: scale(1.02);
+    transition: none;
+  }
+}
+
+#toolflowz-extension {
+  all: initial;
+  font-family: system-ui, -apple-system, sans-serif;
+  
+  /* Variables PrimeVue */
+  --primary-color: #2196f3;
+  --primary-color-text: #ffffff;
+  --surface-ground: #ffffff;
+  --surface-section: #ffffff;
+  --surface-card: #ffffff;
+  --surface-overlay: #ffffff;
+  --surface-border: #dfe7ef;
+  --text-color: #495057;
+  --text-color-secondary: #6c757d;
+  --card-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  --border-radius: 8px;
+  
+  /* Position de base */
+  position: fixed;
+  z-index: 99999;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  margin: 10px;
+  
+  /* Les éléments à l'intérieur peuvent recevoir des événements */
+  > * {
+    pointer-events: auto;
+  }
+
+  /* Styles des boutons */
+  .p-button {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    background: white !important;
+    border: none !important;
+    box-shadow: var(--card-shadow) !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 10px !important;
+    
+    &:hover {
+      transform: scale(1.1) !important;
+    }
+    
+    &.active {
+      background: var(--primary-color) !important;
+      color: white !important;
+    }
+    
+    &.dragging {
+      cursor: grabbing !important;
+      transform: scale(1.1) !important;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+    }
+    
+    .p-button-icon {
+      font-size: 1.5rem !important;
+    }
+
+    /* Style global des checkboxes */
+    .p-checkbox {
+      width: 20px !important;
+      height: 20px !important;
+      margin-right: 8px !important;
+
+      .p-checkbox-box {
+        width: 20px !important;
+        height: 20px !important;
+        border: 2px solid var(--surface-border) !important;
+        background: var(--surface-card) !important;
+        border-radius: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s !important;
+        
+        &.p-highlight {
+          border-color: var(--primary-color) !important;
+          background: var(--primary-color) !important;
+
+          .p-checkbox-icon {
+            color: white !important;
+            font-size: 12px !important;
+            font-weight: bold !important;
+            visibility: visible !important;
+          }
+        }
+
+        .p-checkbox-icon {
+          visibility: hidden !important;
+          
+          &.pi-check:before {
+            content: "✓" !important;
+          }
+        }
+      }
+    }
+
+    /* Style des boutons avec checkbox */
+    .p-checkbox {
+      margin: 0 8px 0 0 !important;
+      
+      .p-checkbox-box {
+        width: 18px !important;
+        height: 18px !important;
+        
+        .p-checkbox-icon {
+          font-size: 11px !important;
+        }
+      }
+    }
+  }
+  
+  /* Conteneur des outils */
+  .tools-container {
+    background: white !important;
+    padding: 10px !important;
+    border-radius: 12px !important;
+    box-shadow: var(--card-shadow) !important;
+    margin: 10px !important;
+    display: flex !important;
+    gap: 10px !important;
+  }
+  
+  /* Panneau de paramètres */
+  .p-sidebar {
+    box-shadow: var(--card-shadow) !important;
+    border-radius: var(--border-radius) !important;
+    padding: 1.5rem !important;
+    
+    .p-sidebar-header {
+      padding: 0 !important;
+      margin-bottom: 1rem !important;
+    }
+  }
+  
+  /* Panels dans les paramètres */
+  .p-panel {
+    margin-bottom: 1rem !important;
+    border: 1px solid var(--surface-border) !important;
+    border-radius: var(--border-radius) !important;
+    
+    .p-panel-header {
+      padding: 1rem !important;
+      background: var(--surface-section) !important;
+    }
+    
+    .p-panel-content {
+      padding: 1rem !important;
+    }
+  }
+  
+  /* Style des checkboxes */
+  .p-checkbox {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    margin-right: 0.5rem !important;
+  }
+  
+  /* Dropdown */
+  .p-dropdown {
+    width: 100% !important;
+  }
+
+  /* Dialog des paramètres */
+  .p-dialog {
+    box-shadow: var(--card-shadow) !important;
+    border-radius: var(--border-radius) !important;
+    
+    .p-dialog-header {
+      padding: 1.5rem !important;
+      background: var(--surface-section) !important;
+      border-bottom: 1px solid var(--surface-border) !important;
+      border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+    }
+    
+    .p-dialog-content {
+      padding: 1.5rem !important;
+      background: var(--surface-card) !important;
+      border-radius: 0 0 var(--border-radius) var(--border-radius) !important;
+    }
+  }
+
+  /* Style des composants dans le dialog */
+  .p-inputtext,
+  .p-inputnumber-input {
+    width: 100% !important;
+    padding: 0.5rem !important;
+    border: 1px solid var(--surface-border) !important;
+    border-radius: var(--border-radius) !important;
+    background: var(--surface-card) !important;
+    
+    &:focus {
+      border-color: var(--primary-color) !important;
+      box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1) !important;
+    }
+  }
+
+  /* Style des sliders */
+  .p-slider {
+    margin: 1rem 0 !important;
+    
+    .p-slider-handle {
+      background: var(--primary-color) !important;
+      border: 2px solid white !important;
+      box-shadow: var(--card-shadow) !important;
+    }
+    
+    .p-slider-range {
+      background: var(--primary-color) !important;
+    }
+  }
+
+  /* Style des checkboxes dans le dialog */
+  .field-checkbox {
+    display: flex !important;
+    align-items: center !important;
+    margin-bottom: 0.5rem !important;
+    
+    .p-checkbox {
+      margin-right: 0.5rem !important;
+      
+      .p-checkbox-box {
+        border: 2px solid var(--surface-border) !important;
+        background: var(--surface-card) !important;
+        
+        &.p-highlight {
+          border-color: var(--primary-color) !important;
+          background: var(--primary-color) !important;
+        }
+      }
+    }
+    
+    label {
+      color: var(--text-color) !important;
+      font-size: 0.9rem !important;
+    }
+  }
+
+  /* Style des sections */
+  .field {
+    margin-bottom: 1.5rem !important;
+    
+    h4 {
+      color: var(--text-color) !important;
+      margin-bottom: 0.5rem !important;
+      font-size: 0.9rem !important;
+      font-weight: 600 !important;
+    }
+    
+    small {
+      color: var(--text-color-secondary) !important;
+      font-size: 0.8rem !important;
+      display: block !important;
+      margin-top: 0.25rem !important;
+    }
+  }
+
+  /* Style de la liste des outils actifs */
+  .active-tools-list {
+    .tool-item {
+      display: flex !important;
+      align-items: center !important;
+      padding: 8px !important;
+      border-radius: var(--border-radius) !important;
+      transition: background-color 0.2s !important;
+      
+      &:hover {
+        background-color: var(--surface-ground) !important;
+      }
+
+      .p-checkbox {
+        margin-right: 12px !important;
+      }
+
+      .tool-name {
+        color: var(--text-color) !important;
+        font-size: 14px !important;
+      }
+    }
+  }
+}
+
+/* Animation du dialog */
+.p-dialog-enter-active,
+.p-dialog-leave-active {
+  transition: all 0.3s ease !important;
+}
+
+.p-dialog-enter-from,
+.p-dialog-leave-to {
+  opacity: 0 !important;
+  transform: scale(0.9) !important;
+}
+
+.p-dialog-mask {
+  backdrop-filter: blur(4px) !important;
+  background-color: rgba(0, 0, 0, 0.4) !important;
+}

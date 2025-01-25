@@ -1,0 +1,202 @@
+@import 'primeicons/primeicons.css';
+
+/* Reset pour nos composants */
+#toolflowz-app * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Styles pour la barre de défilement */
+::-webkit-scrollbar {
+  width: 8px;
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--primary-color) 35%, transparent);
+  border: 2px solid transparent;
+  border-radius: 20px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--primary-color) 50%, transparent);
+  background-clip: padding-box;
+  border-radius: 20px;
+}
+
+/* Pour Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--primary-color) 35%, transparent) transparent;
+}
+
+/* Styles communs */
+.control-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-panel {
+  position: absolute;
+  right: 100%;
+  top: 0;
+  margin-right: 10px;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  width: 300px;
+}
+
+/* Animation pour les panneaux */
+.settings-panel-enter-active,
+.settings-panel-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.settings-panel-enter-from,
+.settings-panel-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+:root {
+  /* Couleurs personnalisées */
+  --primary-color: #2196f3;
+  --primary-color-text: #ffffff;
+  
+  /* Variables PrimeVue */
+  --surface-ground: #ffffff;
+  --surface-section: #ffffff;
+  --surface-card: #ffffff;
+  --surface-overlay: #ffffff;
+  --surface-border: #dfe7ef;
+  --text-color: #495057;
+  --text-color-secondary: #6c757d;
+  
+  /* Ombres */
+  --card-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  --border-radius: 8px;
+}
+
+/* Style global pour les boutons */
+.p-button {
+  transition: all 0.3s ease;
+}
+
+.p-button:hover {
+  transform: scale(1.05);
+}
+
+/* Style pour le panneau de paramètres */
+.p-sidebar {
+  box-shadow: var(--card-shadow);
+}
+
+.p-panel {
+  border: 1px solid var(--surface-border);
+  border-radius: var(--border-radius);
+}
+
+/* Style pour les checkboxes */
+.p-checkbox {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Style pour le dropdown */
+.p-dropdown {
+  width: 100%;
+}
+
+/* Animations */
+.p-sidebar-enter-active,
+.p-sidebar-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.p-sidebar-enter-from,
+.p-sidebar-leave-to {
+  transform: translateX(100%);
+}
+
+/* Style spécifique pour le bouton principal */
+.main-button.p-button {
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 1.5rem !important;
+  background-color: white !important;
+  color: var(--text-color) !important;
+  border: none !important;
+  box-shadow: var(--card-shadow) !important;
+  margin: 10px !important;
+  transition: transform 0.3s ease !important;
+}
+
+.main-button.p-button:hover,
+.main-button.p-button:active,
+.main-button.p-button:focus {
+  background-color: white !important;
+  transform: scale(1.1);
+  color: var(--text-color) !important;
+}
+
+.main-button.p-button.dragging {
+  cursor: grabbing !important;
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+}
+
+/* Style pour les boutons d'outils */
+.tools-container .p-button {
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 1.2rem !important;
+  background-color: white !important;
+  color: var(--text-color) !important;
+  border: none !important;
+  box-shadow: var(--card-shadow) !important;
+}
+
+.tools-container .p-button:hover {
+  background-color: white !important;
+  transform: scale(1.1);
+}
+
+.tools-container .p-button.active {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+/* Style pour le conteneur d'outils */
+.tools-container {
+  background: white !important;
+  padding: 10px !important;
+  border-radius: 12px !important;
+  box-shadow: var(--card-shadow) !important;
+  margin: 10px !important;
+}
+
+#toolflowz-extension * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+} 
