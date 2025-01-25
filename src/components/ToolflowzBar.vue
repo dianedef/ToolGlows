@@ -138,7 +138,7 @@ import QuickActionsControl from './QuickActionsControl.vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
-import { useDraggable } from '@vueuse/core'
+import { useDraggable, onClickOutside } from '@vueuse/core'
 
 // États locaux
 const isExpanded = ref(false)
@@ -280,38 +280,24 @@ const { style, isDragging, position: dragPosition } = useDraggable(toolbarRef, {
   }
 })
 
-// Gestionnaire de clic externe
-const handleClickOutside = (event: MouseEvent) => {
-  // Si la barre est épinglée, on ne fait rien
-  if (settingsStore.settings.isPinned) return
-
-  const target = event.target as HTMLElement
-  
-  // Vérifie si le clic est sur un élément de notre extension
-  const isToolflowzElement = target.closest('.toolflowz-bar, .p-dialog, [data-toolflowz-component]')
-  
-  if (!isToolflowzElement) {
+// Ajout du composable onClickOutside
+onClickOutside(toolbarRef, () => {
+  if (!settingsStore.settings.isPinned) {
     settingsStore.updateSettings({ expanded: false })
   }
-}
+})
 
 onMounted(async () => {
   try {
-    // Chargement des paramètres
     await settingsStore.loadSettings()
     
-    // Mise à jour de la position après le chargement
     dragPosition.value = {
       x: settingsStore.settings.position.x,
       y: settingsStore.settings.position.y
     }
     
-    // Initialisation des outils
     console.log('[INFO] Initializing tools')
     await toolflowzStore.initTools(initialTools)
-    
-    // Ajout de l'écouteur de clic
-    document.addEventListener('click', handleClickOutside)
     
     isLoading.value = false
     console.log('[SUCCESS] Initialization complete')
@@ -319,11 +305,6 @@ onMounted(async () => {
     console.error('[ERROR] Initialization error:', error)
     isLoading.value = false
   }
-})
-
-// Nettoyage de l'écouteur à la destruction du composant
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
 })
 
 const handleToolClick = async (tool: Tool) => {
