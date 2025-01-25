@@ -100,16 +100,23 @@ onMessage('SETTINGS_UPDATED', async ({ data, sender }) => {
     if (!messageData?.settings) return
 
     const sourceTabId = sender.tabId
-    globalState.settings = messageData.settings
+    
+    // Validation des données
+    const settings = messageData.settings
+    if (!Array.isArray(settings.activeTools)) {
+      settings.activeTools = Object.values(settings.activeTools || {})
+    }
+    
+    globalState.settings = settings
 
     // Sauvegarder dans le storage
     await chrome.storage.sync.set({ 
-      toolflowzSettings: messageData.settings 
+      toolflowzSettings: settings 
     })
 
     // Broadcast aux autres onglets
     await broadcastToOtherTabs('SETTINGS_SYNC', { 
-      settings: messageData.settings 
+      settings: settings 
     }, sourceTabId)
   } catch (error) {
     console.error('[ERROR] Settings update error:', error)
@@ -127,10 +134,15 @@ onMessage('TOOLS_UPDATED', async ({ data, sender }) => {
     const result = await chrome.storage.sync.get('toolflowzSettings')
     const currentSettings = result.toolflowzSettings || {}
     
+    // S'assurer que tools est un tableau
+    const tools = Array.isArray(messageData.tools) ? 
+      messageData.tools : 
+      Object.values(messageData.tools)
+    
     // Mettre à jour uniquement activeTools
     const updatedSettings = {
       ...currentSettings,
-      activeTools: messageData.tools
+      activeTools: tools
     }
     
     // Sauvegarder les settings complets

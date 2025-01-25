@@ -11,7 +11,7 @@ function mergeDeep(defaults: any, source: any): any {
 			// Recursively merge nested objects
 			output[key] = mergeDeep(defaultValue, sourceValue)
 		} else if (checkType(defaultValue, sourceValue)) {
-			output[key] = sourceValue
+			output[key] = convertValue(defaultValue, sourceValue)
 		} else {
 			// If the type is different, use the default value
 			output[key] = defaultValue
@@ -23,10 +23,24 @@ function mergeDeep(defaults: any, source: any): any {
 }
 
 function checkType(defaultValue: any, value: any): boolean {
-	// Check if the value type is the same type as the default value or null
-	// there are only strings, booleans, nulls and arrays as types left
-	return (typeof value === typeof defaultValue && Array.isArray(value) == Array.isArray(defaultValue)) || value === null
+	// Si c'est un tableau par défaut, convertir l'objet en tableau si nécessaire
+	if (Array.isArray(defaultValue)) {
+		if (typeof value === 'object' && !Array.isArray(value)) {
+			return true // On autorise la conversion
+		}
+		return Array.isArray(value)
+	}
+	return (typeof value === typeof defaultValue) || value === null
 }
+
+function convertValue(defaultValue: any, value: any): any {
+	// Si c'est un tableau par défaut et qu'on reçoit un objet
+	if (Array.isArray(defaultValue) && typeof value === 'object' && !Array.isArray(value)) {
+		return Object.values(value)
+	}
+	return value
+}
+
 function isObject(value: any): boolean {
 	return value !== null && value instanceof Object && !Array.isArray(value)
 }
