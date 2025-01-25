@@ -1,4 +1,4 @@
-import { createApp, h, defineComponent, provide, Suspense } from 'vue'
+import { createApp, h, defineComponent, provide } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import { onMessage, sendMessage } from 'webext-bridge/content-script'
@@ -61,7 +61,7 @@ onMessage('STORAGE_UPDATED', async ({ data }) => {
   }
 })
 
-// Composant racine avec Suspense et gestion d'erreurs
+// Composant racine
 const RootComponent = defineComponent({
   name: 'RootComponent',
   setup() {
@@ -78,10 +78,7 @@ const RootComponent = defineComponent({
     }
   },
   render() {
-    return h(Suspense, null, {
-      default: () => h(ToolflowzBar),
-      fallback: () => h('div', { class: 'loading' }, 'Chargement...')
-    })
+    return h(ToolflowzBar)
   }
 })
 
