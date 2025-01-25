@@ -38,7 +38,7 @@
         <Button 
           v-if="toolflowzStore.activeTools.includes(tool.id)"
           class="p-button-rounded p-button-text"
-          @click="handleToolClick(tool)"
+          @click="currentToolId = currentToolId === tool.id ? null : tool.id"
           :aria-label="tool.name"
         >
           <span class="tool-emoji">{{ tool.emoji }}</span>
@@ -51,10 +51,9 @@
       <component
         v-if="toolflowzStore.activeTools.includes(tool.id)"
         :is="tool.component"
+        v-model="currentToolId"
         :visible="currentToolId === tool.id"
-        :modelValue="currentToolId === tool.id"
         @update:visible="(val: boolean) => currentToolId = val ? tool.id : null"
-        @update:modelValue="(val: boolean) => currentToolId = val ? tool.id : null"
         data-toolflowz-component
       />
     </template>
@@ -313,18 +312,6 @@ onMounted(async () => {
   }
 })
 
-const handleToolClick = async (tool: Tool) => {
-  console.log('[INFO] Tool clicked:', tool.id)
-  
-  // Si on clique sur l'outil déjà actif, on le ferme
-  if (currentToolId.value === tool.id) {
-    currentToolId.value = null
-  } else {
-    // Sinon, on l'active
-    currentToolId.value = tool.id
-  }
-}
-
 const closeSettings = () => {
   showSettings.value = false
 }
@@ -359,7 +346,6 @@ const handleMainButtonClick = () => {
   cursor: move;
 
   &.dragging {
-    opacity: 0.8;
     cursor: grabbing;
   }
 }
