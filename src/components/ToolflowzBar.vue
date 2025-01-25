@@ -82,9 +82,8 @@
         </div>
         <div class="setting-item">
           <Checkbox 
-            v-model="settingsStore.settings.isPinned" 
+            v-model="settingsStore.settings.isPinned"
             :binary="true"
-            @change="handlePinChange"
             inputId="pinBar"
           />
           <label for="pinBar">Épingler la barre d'outils</label>
@@ -116,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, markRaw, onUnmounted } from 'vue'
+import { ref, onMounted, inject, markRaw, onUnmounted, computed, watch } from 'vue'
 import type { Tool } from '@/types/tools'
 import { useSettingsStore } from '@/stores/settings'
 import { useToolflowzStore } from '@/stores/toolflowz'
@@ -287,6 +286,13 @@ onClickOutside(toolbarRef, () => {
   }
 })
 
+// Ajouter un watcher pour gérer l'expanded quand isPinned change
+watch(() => settingsStore.settings.isPinned, (isPinned) => {
+  if (isPinned) {
+    settingsStore.updateSettings({ expanded: true })
+  }
+})
+
 onMounted(async () => {
   try {
     await settingsStore.loadSettings()
@@ -325,14 +331,6 @@ const closeSettings = () => {
 
 const handleMainButtonClick = () => {
   settingsStore.updateSettings({ expanded: !settingsStore.settings.expanded })
-}
-
-const handlePinChange = (event: Event) => {
-  const value = (event.target as HTMLInputElement).checked
-  settingsStore.updateSettings({ 
-    isPinned: value,
-    expanded: value ? true : false 
-  })
 }
 </script>
 
