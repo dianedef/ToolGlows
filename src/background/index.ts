@@ -36,12 +36,12 @@ let globalState = {
   activeTools: [] as string[]
 }
 
-console.log('[INFO] Background script started', { globalState })
+console.log('[BACKGROUND] 🚀 Background script started', { globalState })
 
 // Keep alive pour Chrome
 if (typeof chrome !== 'undefined' && chrome.runtime?.onConnect) {
   chrome.runtime.onConnect.addListener(port => {
-    console.log('[INFO] New connection established:', port.name)
+    console.log('[BACKGROUND] 🔌 New connection established:', port.name)
   })
 }
 
@@ -71,39 +71,65 @@ chrome.runtime.onInstalled.addListener(async (opt) => {
 
 // Fonction utilitaire pour broadcaster aux autres onglets
 const broadcastToOtherTabs = async (type: string, data: MessageData, sourceTabId?: number) => {
+  console.log(`[BACKGROUND] 📢 Broadcasting ${type} to other tabs, source:`, sourceTabId)
   try {
-    const tabs = await chrome.tabs.query({})
-    for (const tab of tabs) {
-      if (tab.id && tab.id !== sourceTabId) {
+    // Récupère tous les onglets actifs
+    const tabs = await chrome.tabs.query({ status: 'complete' })
+    console.log('[BACKGROUND] 📋 Found active tabs:', tabs.length)
+
+    // Broadcast en parallèle à tous les onglets
+    const promises = tabs
+      .filter(tab => tab.id && tab.id !== sourceTabId)
+      .map(async tab => {
+        if (!tab.id) return
+
         try {
+          console.log(`[BACKGROUND] 📤 Sending to tab ${tab.id}`)
           await sendMessage(type, data, { context: 'content-script', tabId: tab.id })
+          console.log(`[BACKGROUND] ✅ Sent to tab ${tab.id}`)
         } catch (error) {
-          console.warn(`[WARNING] Could not send message to tab ${tab.id}:`, error)
+          console.warn(`[BACKGROUND] ⚠️ Could not send to tab ${tab.id}:`, error)
         }
-      }
-    }
+      })
+
+    await Promise.allSettled(promises)
+    console.log('[BACKGROUND] ✅ Broadcast complete')
   } catch (error) {
-    console.error('[ERROR] Broadcast error:', error)
+    console.error('[BACKGROUND] ❌ Broadcast error:', error)
+    throw error
   }
 }
 
 // Gestionnaire de messages
 onMessage('SETTINGS_UPDATED', async ({ data, sender }) => {
+  console.log('[BACKGROUND] 📥 Received SETTINGS_UPDATED', { data, sender })
   try {
     const messageData = data as MessageData
-    if (!messageData?.settings) return
+    if (!messageData?.settings) {
+      console.warn('[BACKGROUND] ⚠️ No settings in message data')
+      return { success: false, error: 'No settings in message data' }
+    }
     
     const sourceTabId = sender.tabId
-    globalState.settings = messageData.settings
     
-    // Sauvegarder dans le storage
+    // 1. Met à jour l'état global
+    globalState.settings = messageData.settings
+    console.log('[BACKGROUND] 💾 Updated global state:', globalState)
+    
+    // 2. Sauvegarde dans le storage
     const storageData: StorageData = { toolflowzSettings: messageData.settings }
     await chrome.storage.sync.set(storageData)
+    console.log('[BACKGROUND] 💾 Saved to storage:', storageData)
     
-    // Broadcast aux autres onglets
+    // 3. Broadcast aux autres onglets
     await broadcastToOtherTabs('SETTINGS_SYNC', { settings: messageData.settings }, sourceTabId)
+    console.log('[BACKGROUND] ✅ Settings update complete')
+    
+    // 4. Retourne une confirmation au sender
+    return { success: true }
   } catch (error) {
-    console.error('[ERROR] Settings update error:', error)
+    console.error('[BACKGROUND] ❌ Settings update error:', error)
+    return { success: false, error: error.message }
   }
 })
 
@@ -127,13 +153,16 @@ onMessage('TOOLS_UPDATED', async ({ data, sender }) => {
 })
 
 onMessage('GET_INITIAL_STATE', async () => {
+  console.log('[BACKGROUND] 📥 Received GET_INITIAL_STATE request')
   try {
-    return {
+    const response = {
       settings: globalState.settings,
       activeTools: globalState.activeTools
     }
+    console.log('[BACKGROUND] 📤 Sending initial state:', response)
+    return response
   } catch (error) {
-    console.error('[ERROR] Failed to get initial state:', error)
+    console.error('[BACKGROUND] ❌ Failed to get initial state:', error)
     return {
       settings: null,
       activeTools: []
@@ -150,12 +179,12 @@ self.onerror = function (message: string | Event, source?: string, lineno?: numb
     colno,
     error
   }
-  console.error('[ERROR] Global error:', errorDetails)
+  console.error('[BACKGROUND] ❌ Global error:', errorDetails)
 }
 
 // Gestion des rejets de promesses non gérés
 self.onunhandledrejection = function(event: PromiseRejectionEvent) {
-  console.error('[ERROR] Unhandled promise rejection:', {
+  console.error('[BACKGROUND] ❌ Unhandled promise rejection:', {
     reason: event.reason,
     promise: event.promise
   })

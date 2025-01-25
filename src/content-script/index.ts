@@ -8,6 +8,7 @@ import { setupPrimeVue } from '../utils/setupPrimeVue'
 import { injectStyles, injectStylesheet } from '../utils/styleInjection'
 import mainStyles from '@/assets/main.css?inline'
 import contentStyles from '@/content-script/index.scss?inline'
+import { setupSecureBridge } from '@/bridge'
 
 // Import des stores
 import { useSettingsStore } from '../stores/settings'
@@ -23,6 +24,7 @@ interface StorageData {
 }
 
 let app: ReturnType<typeof createApp> | null = null
+let bridgeInitialized = false
 
 // Création de l'élément racine pour l'app Vue
 function createRootElement() {
@@ -123,18 +125,31 @@ function cleanup() {
 }
 
 // Initialisation sécurisée
-function init() {
+async function init() {
+  console.log('[CONTENT] 🚀 Starting content script initialization')
   try {
-    initVueApp()
+    // 1. Setup du bridge en premier
+    if (!bridgeInitialized) {
+      console.log('[CONTENT] 🔒 Setting up secure bridge')
+      setupSecureBridge()
+      bridgeInitialized = true
+      console.log('[CONTENT] ✅ Bridge initialized')
+    }
+    
+    // 2. Initialisation de Vue après le bridge
+    console.log('[CONTENT] 🎯 Initializing Vue app')
+    await initVueApp()
+    
+    console.log('[CONTENT] ✅ Content script initialization complete')
   } catch (error) {
-    console.error("[ERROR] Failed to initialize content script:", error)
+    console.error("[CONTENT] ❌ Failed to initialize content script:", error)
     cleanup()
   }
 }
 
 // Gestion des erreurs
 self.onerror = function (message, source, lineno, colno, error) {
-  console.error("[ERROR] Content script error:", {
+  console.error("[CONTENT] ❌ Content script error:", {
     message: message instanceof Event ? message.type : message,
     source,
     lineno,
@@ -144,13 +159,14 @@ self.onerror = function (message, source, lineno, colno, error) {
   
   // Si l'erreur est liée à l'extension invalidée, on nettoie
   if (error && error.message.includes("Extension context invalidated")) {
+    console.log('[CONTENT] 🧹 Cleaning up due to invalidated context')
     cleanup()
   }
 }
 
 // Gestion des rejets de promesses non gérés
 self.onunhandledrejection = function(event: PromiseRejectionEvent) {
-  console.error("[ERROR] Unhandled promise rejection in content script:", {
+  console.error("[CONTENT] ❌ Unhandled promise rejection:", {
     reason: event.reason,
     promise: event.promise
   })
@@ -158,15 +174,20 @@ self.onunhandledrejection = function(event: PromiseRejectionEvent) {
 
 // Initialisation quand le DOM est prêt
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init)
+  console.log('[CONTENT] ⏳ DOM still loading, waiting for DOMContentLoaded')
+  document.addEventListener("DOMContentLoaded", () => init())
 } else {
+  console.log('[CONTENT] 🎯 DOM already loaded, initializing now')
   init()
 }
 
 // Nettoyage lors du déchargement de la page
-window.addEventListener("unload", cleanup)
+window.addEventListener("unload", () => {
+  console.log('[CONTENT] 🧹 Page unloading, cleaning up')
+  cleanup()
+})
 
-console.info("[INFO] Content script loaded successfully")
+console.log("[CONTENT] ✨ Content script loaded successfully")
 
 export {}
 

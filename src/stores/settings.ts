@@ -54,13 +54,10 @@ export const useSettingsStore = defineStore('settings', () => {
   const updateSettings = async (newSettings: Partial<ToolflowzSettings>) => {
     console.log('[INFO] Updating settings:', newSettings)
     settings.value = { ...settings.value, ...newSettings }
+    
     try {
-      await chrome.storage.sync.set({ toolflowzSettings: settings.value })
-      console.log('[SUCCESS] Settings saved locally')
-
-      bridgeApi.updateSettings(settings.value).catch(error => {
-        console.warn('[WARNING] Background sync error:', error)
-      })
+      await bridgeApi.updateSettings(settings.value)
+      console.log('[SUCCESS] Settings update sent to background')
     } catch (error) {
       console.error('[ERROR] Failed to update settings:', error)
     }
@@ -69,13 +66,10 @@ export const useSettingsStore = defineStore('settings', () => {
   const updatePosition = async (x: number, y: number) => {
     console.log('[INFO] Updating position:', { x, y })
     settings.value.position = { x, y }
+    
     try {
-      await chrome.storage.sync.set({ toolflowzSettings: settings.value })
-      console.log('[SUCCESS] Position saved locally')
-
-      bridgeApi.updateSettings(settings.value).catch(error => {
-        console.warn('[WARNING] Background sync error:', error)
-      })
+      await bridgeApi.updateSettings(settings.value)
+      console.log('[SUCCESS] Position update sent to background')
     } catch (error) {
       console.error('[ERROR] Failed to update position:', error)
     }
