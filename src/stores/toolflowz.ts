@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, markRaw } from 'vue'
 import { useSettingsStore } from './settings'
-import { useDebounceFn } from '@vueuse/core'
 import type { Tool } from '@/types/tools'
 import { computed } from 'vue'
 import { sendMessage } from 'webext-bridge/content-script'
@@ -10,33 +9,28 @@ import { i18n } from '@/utils/i18n'
 export const useToolflowzStore = defineStore('toolflowz', () => {
   const t = i18n.global.t
   
+  const settingsStore = useSettingsStore()
   const tools = ref<Tool[]>([])
-  const activeTools = ref<string[]>([])
+  const activeTools = computed(() => settingsStore.settings.activeTools)
   const enabled = ref(true)
   const isInitialized = ref(false)
   const position = ref({ x: 0, y: 0 })
   const expanded = ref(true)
   const isPinned = ref(false)
 
-  // Save tools to storage with debounce
-  const debouncedSaveToStorage = useDebounceFn(async () => {
-    try {
-      await chrome.storage.sync.set({ toolflowzActiveTools: activeTools.value })
-      console.log('[SUCCESS] Active tools saved to storage:', activeTools.value)
-    } catch (error) {
-      console.error('[ERROR] Failed to save active tools:', error)
-    }
-  }, 1000)
-
   // Getters
-  const isToolActive = computed(() => (toolId: string) => activeTools.value.includes(toolId))
+  const isToolActive = computed(() => 
+    (toolId: string) => settingsStore.settings.activeTools.includes(toolId)
+  )
 
   // Add a tool
   const addTool = async (tool: Tool) => {
     tools.value.push(tool)
     console.log('[INFO] Tool added:', tool)
     if (!isInitialized.value) {
-      activeTools.value.push(tool.id)
+      await settingsStore.updateSettings({
+        activeTools: [...settingsStore.settings.activeTools, tool.id]
+      })
     }
   }
 
@@ -50,19 +44,12 @@ export const useToolflowzStore = defineStore('toolflowz', () => {
     console.log('[INFO] Initializing tools:', initialTools)
     tools.value = initialTools
 
-    // Charge les outils actifs depuis le storage
-    try {
-      const result = await chrome.storage.sync.get('toolflowzActiveTools')
-      if (result.toolflowzActiveTools) {
-        await setActiveTools(result.toolflowzActiveTools)
-        console.log('[SUCCESS] Active tools loaded from storage')
-      } else {
-        // Active tous les outils par défaut
-        await setActiveTools(tools.value.map(t => t.id))
-        console.log('[INFO] No active tools found, activating all by default')
-      }
-    } catch (error) {
-      console.error('[ERROR] Failed to load active tools:', error)
+    // Si pas d'outils actifs, activer tous par défaut
+    if (settingsStore.settings.activeTools.length === 0) {
+      await settingsStore.updateSettings({
+        activeTools: tools.value.map(t => t.id)
+      })
+      console.log('[INFO] No active tools found, activating all by default')
     }
 
     isInitialized.value = true
@@ -71,50 +58,22 @@ export const useToolflowzStore = defineStore('toolflowz', () => {
 
   // Toggle individual tool
   const toggleTool = async (toolId: string) => {
-    console.log('[INFO] Toggling tool:', toolId)
-    const index = activeTools.value.indexOf(toolId)
-    
-    if (index === -1) {
-      console.log('[INFO] Activating tool')
-      activeTools.value.push(toolId)
-    } else {
-      console.log('[INFO] Deactivating tool')
-      activeTools.value.splice(index, 1)
-    }
-
-    console.log('[INFO] Active tools state after toggle:', activeTools.value)
-    await debouncedSaveToStorage()
-
-    // Synchronize with background
-    sendMessage('TOOLS_UPDATED', { tools: activeTools.value }, 'background')
+    await settingsStore.toggleTool(toolId)
+    // Notification au background
+    sendMessage('TOOLS_UPDATED', { 
+      tools: settingsStore.settings.activeTools 
+    }, 'background')
   }
 
   // Set active tools
   const setActiveTools = async (toolIds: string[] | any) => {
-    console.log('[INFO] Setting active tools:', toolIds)
-    
-    // Assure que toolIds est un tableau
     const toolIdsArray = Array.isArray(toolIds) ? toolIds : 
                         typeof toolIds === 'object' ? Object.values(toolIds) : 
                         [toolIds].filter(Boolean)
     
-    console.log('[INFO] Normalized tool IDs:', toolIdsArray)
-    
-    // Filtre les IDs valides
     const validIds = toolIdsArray.filter(id => tools.value.some(t => t.id === id))
-    console.log('[INFO] Valid tool IDs:', validIds)
     
-    // Met à jour les outils actifs
-    activeTools.value = validIds
-    console.log('[SUCCESS] Active tools updated:', activeTools.value)
-
-    // Sauvegarde dans le storage
-    try {
-      await chrome.storage.sync.set({ toolflowzActiveTools: activeTools.value })
-      console.log('[SUCCESS] Active tools saved to storage')
-    } catch (error) {
-      console.error('[ERROR] Failed to save active tools to storage:', error)
-    }
+    await settingsStore.updateSettings({ activeTools: validIds })
   }
 
   function updatePosition(newPosition: { x: number; y: number }) {

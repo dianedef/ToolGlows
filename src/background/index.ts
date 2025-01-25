@@ -24,16 +24,9 @@ interface MessageData {
   tools?: string[]
 }
 
-interface StorageData {
-  [key: string]: any
-  toolflowzSettings?: Settings
-  toolflowzActiveTools?: string[]
-}
-
 // État global géré par le background script
 let globalState = {
-  settings: null as Settings | null,
-  activeTools: [] as string[]
+  settings: null as Settings | null
 }
 
 console.log('[BACKGROUND] 🚀 Background script started', { globalState })
@@ -102,34 +95,24 @@ const broadcastToOtherTabs = async (type: string, data: MessageData, sourceTabId
 
 // Gestionnaire de messages
 onMessage('SETTINGS_UPDATED', async ({ data, sender }) => {
-  console.log('[BACKGROUND] 📥 Received SETTINGS_UPDATED', { data, sender })
   try {
     const messageData = data as MessageData
-    if (!messageData?.settings) {
-      console.warn('[BACKGROUND] ⚠️ No settings in message data')
-      return { success: false, error: 'No settings in message data' }
-    }
-    
+    if (!messageData?.settings) return
+
     const sourceTabId = sender.tabId
-    
-    // 1. Met à jour l'état global
     globalState.settings = messageData.settings
-    console.log('[BACKGROUND] 💾 Updated global state:', globalState)
-    
-    // 2. Sauvegarde dans le storage
-    const storageData: StorageData = { toolflowzSettings: messageData.settings }
-    await chrome.storage.sync.set(storageData)
-    console.log('[BACKGROUND] 💾 Saved to storage:', storageData)
-    
-    // 3. Broadcast aux autres onglets
-    await broadcastToOtherTabs('SETTINGS_SYNC', { settings: messageData.settings }, sourceTabId)
-    console.log('[BACKGROUND] ✅ Settings update complete')
-    
-    // 4. Retourne une confirmation au sender
-    return { success: true }
+
+    // Sauvegarder dans le storage
+    await chrome.storage.sync.set({ 
+      toolflowzSettings: messageData.settings 
+    })
+
+    // Broadcast aux autres onglets
+    await broadcastToOtherTabs('SETTINGS_SYNC', { 
+      settings: messageData.settings 
+    }, sourceTabId)
   } catch (error) {
-    console.error('[BACKGROUND] ❌ Settings update error:', error)
-    return { success: false, error: error.message }
+    console.error('[ERROR] Settings update error:', error)
   }
 })
 
@@ -139,34 +122,39 @@ onMessage('TOOLS_UPDATED', async ({ data, sender }) => {
     if (!messageData?.tools) return
     
     const sourceTabId = sender.tabId
-    globalState.activeTools = messageData.tools
     
-    // Sauvegarder dans le storage
-    const storageData: StorageData = { toolflowzActiveTools: messageData.tools }
-    await chrome.storage.sync.set(storageData)
+    // Récupérer les settings actuels
+    const result = await chrome.storage.sync.get('toolflowzSettings')
+    const currentSettings = result.toolflowzSettings || {}
+    
+    // Mettre à jour uniquement activeTools
+    const updatedSettings = {
+      ...currentSettings,
+      activeTools: messageData.tools
+    }
+    
+    // Sauvegarder les settings complets
+    await chrome.storage.sync.set({ 
+      toolflowzSettings: updatedSettings 
+    })
     
     // Broadcast aux autres onglets
-    await broadcastToOtherTabs('TOOLS_SYNC', { tools: messageData.tools }, sourceTabId)
+    await broadcastToOtherTabs('SETTINGS_SYNC', { 
+      settings: updatedSettings 
+    }, sourceTabId)
   } catch (error) {
     console.error('[ERROR] Tools update error:', error)
   }
 })
 
 onMessage('GET_INITIAL_STATE', async () => {
-  console.log('[BACKGROUND] 📥 Received GET_INITIAL_STATE request')
   try {
-    const response = {
-      settings: globalState.settings,
-      activeTools: globalState.activeTools
-    }
-    console.log('[BACKGROUND] 📤 Sending initial state:', response)
-    return response
+    // Récupérer l'état depuis le storage
+    const result = await chrome.storage.sync.get('toolflowzSettings')
+    return { settings: result.toolflowzSettings }
   } catch (error) {
-    console.error('[BACKGROUND] ❌ Failed to get initial state:', error)
-    return {
-      settings: null,
-      activeTools: []
-    }
+    console.error('[ERROR] Failed to get initial state:', error)
+    return { settings: null }
   }
 })
 

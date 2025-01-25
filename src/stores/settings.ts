@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { bridgeApi, initBridgeListeners } from '@/bridge'
 import { useToolflowzStore } from '@/stores/toolflowz'
+import { useBrowserSyncStorage } from '@/composables/useBrowserStorage'
 
 export interface ToolflowzSettings {
   expanded: boolean
@@ -21,7 +22,7 @@ export const useSettingsStore = defineStore('settings', () => {
     throw new Error('chrome.storage.sync API is not available')
   }
 
-  const settings = ref<ToolflowzSettings>({
+  const { data: settings, promise: settingsLoaded } = useBrowserSyncStorage<ToolflowzSettings>('toolflowzSettings', {
     expanded: false,
     position: { x: 20, y: 20 },
     activeTools: [],
@@ -107,6 +108,24 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
+  const toggleTool = async (toolId: string) => {
+    console.log('[INFO] Toggling tool:', toolId)
+    const index = settings.value.activeTools.indexOf(toolId)
+    if (index === -1) {
+      settings.value.activeTools.push(toolId)
+    } else {
+      settings.value.activeTools.splice(index, 1)
+    }
+    
+    try {
+      // Forcer la sauvegarde et la synchronisation
+      await bridgeApi.updateSettings(settings.value)
+      console.log('[SUCCESS] Tool toggle synced with background')
+    } catch (error) {
+      console.error('[ERROR] Failed to sync tool toggle:', error)
+    }
+  }
+
   // Initialise les listeners pour les mises à jour depuis d'autres onglets
   initBridgeListeners({
     onSettingsUpdate: (newSettings) => {
@@ -123,6 +142,7 @@ export const useSettingsStore = defineStore('settings', () => {
     settings,
     loadSettings,
     updateSettings,
-    updatePosition
+    updatePosition,
+    toggleTool
   }
 }) 

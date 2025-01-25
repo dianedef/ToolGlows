@@ -12,6 +12,11 @@ interface Settings {
   isPinned: boolean
 }
 
+// Type pour assurer la compatibilité JSON
+type JsonCompatible<T> = {
+  [P in keyof T]: T[P] extends object ? JsonCompatible<T[P]> : T[P]
+} & { [key: string]: any }
+
 interface MessageData {
   settings?: Settings
   tools?: SerializableTool[]
@@ -29,46 +34,63 @@ export const setupSecureBridge = () => {
   }
 }
 
-// Type pour les données sérialisables d'un outil
-type SerializableTool = Omit<Tool, 'component'>
+// Pour les tools, même approche
+interface SerializableTool extends JsonCompatible<Omit<Tool, 'component'>> {}
+
+// Pour la conversion Tool -> SerializableTool
+const toolToSerializable = (tool: Tool): SerializableTool => {
+  const { component, ...serializablePart } = tool
+  return serializablePart
+}
+
+// Définir un type pour les données JSON-safe
+interface SerializableSettings {
+  expanded: boolean
+  position: { x: number; y: number }
+  activeTools: string[]
+  isPinned: boolean
+}
 
 // Fonctions pour envoyer des messages au background script
 export const bridgeApi = {
-  async updateSettings(settings: Settings) {
-    console.log('[BRIDGE] 📤 Sending settings update:', settings)
-    try {
-      const response = await sendMessage('SETTINGS_UPDATED', { settings } as MessageData, 'background')
-      console.log('[BRIDGE] ✅ Settings update sent successfully, response:', response)
-      return response
-    } catch (error) {
-      console.error('[BRIDGE] ❌ Failed to send settings update:', error)
-      throw error
+  updateSettings: async (settings: Settings) => {
+    // Conversion en type compatible JSON
+    const jsonSettings: JsonCompatible<Settings> = {
+      expanded: settings.expanded,
+      position: {
+        x: settings.position.x,
+        y: settings.position.y
+      },
+      activeTools: [...settings.activeTools],
+      isPinned: settings.isPinned
     }
+    await sendMessage('SETTINGS_UPDATED', { settings: jsonSettings }, 'background')
   },
-
-  async updateTools(tools: Tool[]) {
-    console.log('[BRIDGE] 📤 Sending tools update')
-    const serializedTools: SerializableTool[] = tools.map(({ component, ...rest }) => rest)
-    try {
-      const response = await sendMessage('TOOLS_UPDATED', { tools: serializedTools } as MessageData, 'background')
-      console.log('[BRIDGE] ✅ Tools update sent successfully')
-      return response
-    } catch (error) {
-      console.error('[BRIDGE] ❌ Failed to send tools update:', error)
-      throw error
+  getInitialState: async () => {
+    const response = await sendMessage('GET_INITIAL_STATE', {}, 'background')
+    // Vérification et conversion sûre
+    if (typeof response === 'object' && response !== null) {
+      const settings = (response as any).settings
+      if (settings && 
+          typeof settings.expanded === 'boolean' &&
+          typeof settings.position?.x === 'number' &&
+          typeof settings.position?.y === 'number' &&
+          Array.isArray(settings.activeTools) &&
+          typeof settings.isPinned === 'boolean') {
+        return { 
+          settings: {
+            expanded: settings.expanded,
+            position: {
+              x: settings.position.x,
+              y: settings.position.y
+            },
+            activeTools: settings.activeTools,
+            isPinned: settings.isPinned
+          } as Settings 
+        }
+      }
     }
-  },
-
-  async getInitialState() {
-    console.log('[BRIDGE] 📥 Requesting initial state')
-    try {
-      const response = await sendMessage('GET_INITIAL_STATE', {} as MessageData, 'background')
-      console.log('[BRIDGE] ✅ Got initial state:', response)
-      return response
-    } catch (error) {
-      console.error('[BRIDGE] ❌ Failed to get initial state:', error)
-      throw error
-    }
+    throw new Error('Invalid response format')
   }
 }
 
@@ -96,10 +118,11 @@ export const initBridgeListeners = (callbacks: {
       const messageData = data as MessageData
       if (messageData?.tools) {
         console.log('[BRIDGE] ✨ Triggering tools update callback')
-        const tools = messageData.tools.map(tool => ({
-          ...tool,
-          component: undefined
-        })) as Tool[]
+        // Conversion sûre
+        const tools = messageData.tools.map(toolData => ({
+          ...toolData,
+          component: null // ou une valeur par défaut appropriée
+        })) as unknown as Tool[]
         callbacks.onToolsUpdate?.(tools)
       }
     })
