@@ -8,94 +8,82 @@ interface StorageData {
   toolflowzActiveTools?: string[]
 }
 
-// Création et injection de l'iframe
-const src = chrome.runtime.getURL("src/ui/content-script-iframe/index.html")
-const iframe = new DOMParser().parseFromString(
-  `<iframe class="crx-iframe" src="${src}"></iframe>`,
-  "text/html",
-).body.firstElementChild
-
-if (iframe) {
-  document.body?.append(iframe)
-}
-
-// État local du content script
+let iframe: Element | null = null
 let isIframeReady = false
-let currentTabId: number | undefined
 
-// Initialisation sécurisée de l'ID de l'onglet
-async function initializeTabId() {
-  try {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
-    currentTabId = tabs[0]?.id
-    console.log('[SUCCESS] Tab ID initialized:', currentTabId)
-  } catch (error) {
-    console.error('[ERROR] Failed to initialize tab ID:', error)
+function createIframe() {
+  if (iframe) return
+  
+  const src = chrome.runtime.getURL("src/ui/content-script-iframe/index.html")
+  iframe = new DOMParser().parseFromString(
+    `<iframe class="crx-iframe" src="${src}"></iframe>`,
+    "text/html"
+  ).body.firstElementChild
+
+  if (iframe) {
+    document.body?.append(iframe)
   }
 }
 
-// Attendre que l'extension soit complètement chargée
-document.addEventListener('DOMContentLoaded', () => {
-  initializeTabId()
-})
+function cleanup() {
+  if (iframe && iframe.parentNode) {
+    iframe.parentNode.removeChild(iframe)
+    iframe = null
+  }
+  isIframeReady = false
+}
 
-// Gestion des messages entre l'iframe et le content script
-onMessage('IFRAME_READY', async ({ data }) => {
-  console.log('[INFO] Iframe ready to receive messages')
-  isIframeReady = true
-
-  // Récupérer l'état initial depuis le storage
+// Initialisation sécurisée
+function init() {
   try {
-    const storage = await chrome.storage.sync.get(['toolflowzSettings', 'toolflowzActiveTools']) as StorageData
-    if (storage && currentTabId) {
-      // Envoyer l'état initial à l'iframe
-      await sendMessage('INITIAL_STATE', { 
-        settings: storage.toolflowzSettings,
-        activeTools: storage.toolflowzActiveTools
-      }, { context: 'content-script', tabId: currentTabId })
-    }
+    createIframe()
   } catch (error) {
-    console.error('[ERROR] Failed to get initial state:', error)
+    console.error("[ERROR] Failed to initialize content script:", error)
+    cleanup()
   }
-})
+}
 
-// Écouter les changements de storage pour les synchroniser avec l'iframe
-chrome.storage.onChanged.addListener(async (changes, namespace) => {
-  if (!isIframeReady || !currentTabId) return
-
-  const relevantChanges = {
-    settings: changes.toolflowzSettings?.newValue as Record<string, any> | undefined,
-    activeTools: changes.toolflowzActiveTools?.newValue as string[] | undefined
-  }
-
-  try {
-    // Envoyer les changements à l'iframe
-    await sendMessage('STORAGE_UPDATED', relevantChanges, { context: 'content-script', tabId: currentTabId })
-  } catch (error) {
-    console.error('[ERROR] Failed to sync changes:', error)
-  }
-})
-
-// Gestion des erreurs globale
-self.onerror = function (message: string | Event, source?: string, lineno?: number, colno?: number, error?: Error) {
-  console.error('[ERROR] Content script error:', {
+// Gestion des erreurs
+self.onerror = function (message, source, lineno, colno, error) {
+  console.error("[ERROR] Content script error:", {
     message: message instanceof Event ? message.type : message,
     source,
     lineno,
     colno,
     error
   })
+  
+  // Si l'erreur est liée à l'extension invalidée, on nettoie
+  if (error && error.message.includes("Extension context invalidated")) {
+    cleanup()
+  }
 }
 
 // Gestion des rejets de promesses non gérés
 self.onunhandledrejection = function(event: PromiseRejectionEvent) {
-  console.error('[ERROR] Unhandled promise rejection in content script:', {
+  console.error("[ERROR] Unhandled promise rejection in content script:", {
     reason: event.reason,
     promise: event.promise
   })
 }
 
-console.log('[SUCCESS] Content script loaded')
+// Écoute des messages de l'iframe
+onMessage("IFRAME_READY", async () => {
+  console.info("[INFO] Iframe ready to receive messages")
+  isIframeReady = true
+})
+
+// Initialisation quand le DOM est prêt
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init)
+} else {
+  init()
+}
+
+// Nettoyage lors du déchargement de la page
+window.addEventListener("unload", cleanup)
+
+console.info("[INFO] Content script loaded successfully")
 
 export {}
 
