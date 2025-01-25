@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { bridgeApi, initBridgeListeners } from '@/bridge'
+import { useToolflowzStore } from '@/stores/toolflowz'
 
 export interface ToolflowzSettings {
   expanded: boolean
@@ -36,11 +37,20 @@ export const useSettingsStore = defineStore('settings', () => {
   // Applique les settings à l'UI
   const applySettings = (newSettings: ToolflowzSettings) => {
     console.log('[INFO] Applying settings:', newSettings)
+    
     // Position
     const toolbar = document.querySelector('.toolflowz-bar') as HTMLElement
     if (toolbar && newSettings.position) {
       toolbar.style.left = `${newSettings.position.x}px`
       toolbar.style.top = `${newSettings.position.y}px`
+    }
+
+    // Outils actifs - seulement si différents des outils actuels
+    const toolflowzStore = useToolflowzStore()
+    if (newSettings.activeTools && 
+        JSON.stringify(toolflowzStore.activeTools) !== JSON.stringify(newSettings.activeTools)) {
+      toolflowzStore.setActiveTools(newSettings.activeTools)
+      console.log('[INFO] Active tools updated:', newSettings.activeTools)
     }
   }
 
