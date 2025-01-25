@@ -48,7 +48,6 @@ export default {
   web_accessible_resources: [
     {
       resources: [
-        "src/ui/content-script-iframe/index.html",
         "src/assets/logo.png",
         "src/ui/devtools-panel/index.html",
         "src/ui/setup/index.html"

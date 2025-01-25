@@ -1,6 +1,20 @@
-// Import des styles pour l'iframe
+// Import des styles
 import "./index.scss"
-import { onMessage, sendMessage } from 'webext-bridge/content-script'
+import { createApp, h, defineComponent, provide } from 'vue'
+import { createPinia, setActivePinia } from 'pinia'
+import PrimeVue from 'primevue/config'
+import ToolflowzBar from '../components/ToolflowzBar.vue'
+import { setupPrimeVue } from '../utils/setupPrimeVue'
+import { injectStyles, injectStylesheet } from '../utils/styleInjection'
+import mainStyles from '@/assets/main.css?inline'
+import contentStyles from '@/content-script/index.scss?inline'
+
+// Import des stores
+import { useSettingsStore } from '../stores/settings'
+import { useToolflowzStore } from '../stores/toolflowz'
+import { useInstantOCRStore } from '../stores/instantOCR'
+import { useWordCounterStore } from '../stores/wordCounter'
+import { useQuickActionsStore } from '../stores/quickActions'
 
 // Types
 interface StorageData {
@@ -8,35 +22,110 @@ interface StorageData {
   toolflowzActiveTools?: string[]
 }
 
-let iframe: Element | null = null
-let isIframeReady = false
+let app: ReturnType<typeof createApp> | null = null
 
-function createIframe() {
-  if (iframe) return
+// Création de l'élément racine pour l'app Vue
+function createRootElement() {
+  const rootId = 'toolflowz-root'
+  let rootElement = document.getElementById(rootId)
   
-  const src = chrome.runtime.getURL("src/ui/content-script-iframe/index.html")
-  iframe = new DOMParser().parseFromString(
-    `<iframe class="crx-iframe" src="${src}"></iframe>`,
-    "text/html"
-  ).body.firstElementChild
+  if (!rootElement) {
+    rootElement = document.createElement('div')
+    rootElement.id = rootId
+    document.body.appendChild(rootElement)
+  }
+  
+  return rootElement
+}
 
-  if (iframe) {
-    document.body?.append(iframe)
+// Initialisation de Vue
+async function initVueApp() {
+  try {
+    // Création de Pinia
+    const pinia = createPinia()
+    setActivePinia(pinia)
+
+    // Création des stores
+    const stores = {
+      settings: useSettingsStore(),
+      toolflowz: useToolflowzStore(),
+      ocr: useInstantOCRStore(),
+      wordCounter: useWordCounterStore(),
+      quickActions: useQuickActionsStore()
+    }
+
+    // Composant racine
+    const RootComponent = defineComponent({
+      name: 'RootComponent',
+      setup() {
+        // Injection des stores
+        Object.entries(stores).forEach(([key, store]) => {
+          provide(key + 'Store', store)
+        })
+        return {}
+      },
+      render() {
+        return h(ToolflowzBar)
+      }
+    })
+
+    // Création de l'application
+    app = createApp(RootComponent)
+
+    // Configuration de l'application
+    app.use(pinia)
+    app.use(PrimeVue, {
+      ripple: true,
+      inputStyle: 'filled',
+      pt: {
+        button: {
+          root: { class: 'shadow-none' }
+        }
+      }
+    })
+
+    // Configuration des composants PrimeVue
+    setupPrimeVue(app)
+
+    // Injection des styles
+    await Promise.all([
+      injectStylesheet('https://cdn.jsdelivr.net/npm/primevue@3.49.1/resources/themes/lara-light-blue/theme.min.css', 'toolflowz-primevue-theme'),
+      injectStylesheet('https://cdn.jsdelivr.net/npm/primevue@3.49.1/resources/primevue.min.css', 'toolflowz-primevue-core'),
+      injectStylesheet('https://cdn.jsdelivr.net/npm/primeicons@7.0.0/primeicons.css', 'toolflowz-prime-icons')
+    ]).catch(error => {
+      console.error('[ERROR] External styles loading error:', error)
+    })
+
+    // Injection des styles locaux
+    injectStyles(mainStyles, 'toolflowz-main-styles')
+    injectStyles(contentStyles, 'toolflowz-content-styles')
+
+    // Montage de l'application
+    const rootElement = createRootElement()
+    app.mount(rootElement)
+    
+    console.log('[SUCCESS] Vue application mounted in page')
+  } catch (error) {
+    console.error('[ERROR] Failed to initialize Vue app:', error)
+    cleanup()
   }
 }
 
 function cleanup() {
-  if (iframe && iframe.parentNode) {
-    iframe.parentNode.removeChild(iframe)
-    iframe = null
+  if (app) {
+    app.unmount()
+    app = null
   }
-  isIframeReady = false
+  const rootElement = document.getElementById('toolflowz-root')
+  if (rootElement) {
+    rootElement.remove()
+  }
 }
 
 // Initialisation sécurisée
 function init() {
   try {
-    createIframe()
+    initVueApp()
   } catch (error) {
     console.error("[ERROR] Failed to initialize content script:", error)
     cleanup()
@@ -66,12 +155,6 @@ self.onunhandledrejection = function(event: PromiseRejectionEvent) {
     promise: event.promise
   })
 }
-
-// Écoute des messages de l'iframe
-onMessage("IFRAME_READY", async () => {
-  console.info("[INFO] Iframe ready to receive messages")
-  isIframeReady = true
-})
 
 // Initialisation quand le DOM est prêt
 if (document.readyState === "loading") {
