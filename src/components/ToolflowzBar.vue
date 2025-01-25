@@ -51,8 +51,9 @@
       <component
         v-if="toolflowzStore.activeTools.includes(tool.id)"
         :is="tool.component"
-        v-model="currentToolId"
+        :modelValue="currentToolId === tool.id"
         :visible="currentToolId === tool.id"
+        @update:modelValue="(val: boolean) => currentToolId = val ? tool.id : null"
         @update:visible="(val: boolean) => currentToolId = val ? tool.id : null"
         data-toolflowz-component
       />
