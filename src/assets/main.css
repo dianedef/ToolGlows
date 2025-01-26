@@ -1,7 +1,7 @@
 @import 'primeicons/primeicons.css';
 
 /* Reset pour nos composants */
-#toolflowz-app * {
+#toolflowz-app *, #toolflowz-extension * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -9,31 +9,41 @@
 }
 
 /* Styles pour la barre de défilement */
-#toolflowz-app ::-webkit-scrollbar {
+#toolflowz-app ::-webkit-scrollbar,
+#toolflowz-extension ::-webkit-scrollbar,
+.p-dialog ::-webkit-scrollbar {
   width: 8px;
-  border-radius: 20px;
+  height: 8px;
+  margin: 4px;
 }
 
-#toolflowz-app ::-webkit-scrollbar-track {
+#toolflowz-app ::-webkit-scrollbar-track,
+#toolflowz-extension ::-webkit-scrollbar-track,
+.p-dialog ::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 20px;
+  margin: 4px;
 }
 
-#toolflowz-app ::-webkit-scrollbar-thumb {
+#toolflowz-app ::-webkit-scrollbar-thumb,
+#toolflowz-extension ::-webkit-scrollbar-thumb,
+.p-dialog ::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--primary-color) 35%, transparent);
   border: 2px solid transparent;
-  border-radius: 20px;
+  border-radius: 100px;
   background-clip: padding-box;
+  margin: 2px;
 }
 
-#toolflowz-app ::-webkit-scrollbar-thumb:hover {
+#toolflowz-app ::-webkit-scrollbar-thumb:hover,
+#toolflowz-extension ::-webkit-scrollbar-thumb:hover,
+.p-dialog ::-webkit-scrollbar-thumb:hover {
   background: color-mix(in srgb, var(--primary-color) 50%, transparent);
   background-clip: padding-box;
-  border-radius: 20px;
+  border-radius: 100px;
 }
 
 /* Pour Firefox */
-#toolflowz-app * {
+#toolflowz-app *, #toolflowz-extension *, .p-dialog * {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--primary-color) 35%, transparent) transparent;
 }
@@ -192,11 +202,4 @@
   border-radius: 12px !important;
   box-shadow: var(--card-shadow) !important;
   margin: 10px !important;
-}
-
-#toolflowz-extension * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: system-ui, -apple-system, sans-serif;
 } 

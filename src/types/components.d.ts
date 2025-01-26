@@ -34,6 +34,7 @@ declare module 'vue' {
     IPhQuestion: typeof import('~icons/ph/question')['default']
     IPhRocketLaunch: typeof import('~icons/ph/rocket-launch')['default']
     IPhSun: typeof import('~icons/ph/sun')['default']
+    LinksExplorerControl: typeof import('./../components/LinksExplorerControl.vue')['default']
     LoadingSpinner: typeof import('./../components/state/LoadingSpinner.vue')['default']
     LocaleSwitch: typeof import('./../components/LocaleSwitch.vue')['default']
     MinimalTwitterControl: typeof import('./../components/MinimalTwitterControl.vue')['default']

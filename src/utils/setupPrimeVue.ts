@@ -16,6 +16,9 @@ import Card from 'primevue/card'
 import Textarea from 'primevue/textarea'
 import ToastService from 'primevue/toastservice'
 import Toast from 'primevue/toast'
+import InputNumber from 'primevue/inputnumber'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 
 export function setupPrimeVue(app: App) {
   // Enregistrement du service Toast
@@ -38,7 +41,10 @@ export function setupPrimeVue(app: App) {
     InputText,
     Card,
     Textarea,
-    Toast
+    Toast,
+    InputNumber,
+    DataTable,
+    Column
   }
 
   Object.entries(components).forEach(([name, component]) => {

@@ -369,6 +369,8 @@
     "setupPrimeVue": true,
     "locale": true,
     "useAutoCopyStore": true,
-    "useAutoCopy": true
+    "useAutoCopy": true,
+    "useLinksExplorer": true,
+    "useLinksExplorerStore": true
   }
 }

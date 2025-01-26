@@ -6,6 +6,7 @@
     :header="'Gmail amélioré'"
     position="right"
     :style="{ width: '350px' }"
+    :maximizable="true"
     @hide="closeDialog"
     appendTo="self"
   >
@@ -241,6 +242,7 @@
       :header="editingLabel ? 'Modifier le label' : 'Ajouter un label'"
       :modal="true"
       :dismissableMask="true"
+      :maximizable="true"
       class="p-fluid"
       @hide="showAddLabelDialog = false"
     >
@@ -276,6 +278,7 @@
       :header="editingShortcut ? 'Modifier le raccourci' : 'Ajouter un raccourci'"
       :modal="true"
       :dismissableMask="true"
+      :maximizable="true"
       class="p-fluid"
       @hide="showAddShortcutDialog = false"
     >
@@ -311,6 +314,7 @@
       :header="editingFilter ? 'Modifier le filtre' : 'Ajouter un filtre'"
       :modal="true"
       :dismissableMask="true"
+      :maximizable="true"
       class="p-fluid"
       @hide="showAddFilterDialog = false"
     >

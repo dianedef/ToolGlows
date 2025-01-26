@@ -137,6 +137,7 @@ import RichCopyControl from './RichCopyControl.vue'
 import BetterGmailControl from './BetterGmailControl.vue'
 import QuickActionsControl from './QuickActionsControl.vue'
 import AutoCopyControl from './AutoCopyControl.vue'
+import LinksExplorerControl from './LinksExplorerControl.vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
@@ -275,6 +276,14 @@ const initialTools: Tool[] = [
     icon: 'pi pi-copy',
     emoji: '✂️',
     category: 'reading'
+  },
+  {
+    id: 'linksExplorer',
+    name: 'Explorateur de liens',
+    component: markRaw(LinksExplorerControl),
+    icon: 'pi pi-link',
+    emoji: '🔗',
+    category: 'navigation'
   }
 ]
 
