@@ -10,6 +10,7 @@ declare module 'vue' {
     AdvancedSearchPanel: typeof import('./../components/AdvancedSearchPanel.vue')['default']
     AppFooter: typeof import('./../components/AppFooter.vue')['default']
     AppHeader: typeof import('./../components/AppHeader.vue')['default']
+    AutoCopyControl: typeof import('./../components/AutoCopyControl.vue')['default']
     BetterGmailControl: typeof import('./../components/BetterGmailControl.vue')['default']
     Changelog: typeof import('./../components/Changelog.vue')['default']
     ContextMenu: typeof import('./../components/ContextMenu.vue')['default']

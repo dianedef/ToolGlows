@@ -367,6 +367,8 @@
     "injectStyles": true,
     "injectStylesheet": true,
     "setupPrimeVue": true,
-    "locale": true
+    "locale": true,
+    "useAutoCopyStore": true,
+    "useAutoCopy": true
   }
 }

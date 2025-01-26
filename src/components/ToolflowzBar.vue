@@ -133,6 +133,7 @@ import InstagramSavedLibrary from './InstagramSavedLibrary.vue'
 import RichCopyControl from './RichCopyControl.vue'
 import BetterGmailControl from './BetterGmailControl.vue'
 import QuickActionsControl from './QuickActionsControl.vue'
+import AutoCopyControl from './AutoCopyControl.vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
@@ -261,6 +262,14 @@ const initialTools: Tool[] = [
     icon: 'pi pi-bolt',
     emoji: '⚡',
     category: 'navigation'
+  },
+  {
+    id: 'autoCopy',
+    name: 'Copie automatique',
+    component: markRaw(AutoCopyControl),
+    icon: 'pi pi-copy',
+    emoji: '✂️',
+    category: 'reading'
   }
 ]
 
