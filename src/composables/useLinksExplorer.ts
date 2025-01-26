@@ -58,21 +58,29 @@ export function useLinksExplorer() {
       const internalLinks = links.value.filter(link => !link.isExternal)
       const externalLinks = links.value.filter(link => link.isExternal)
 
+      // Fonction pour formater un lien selon le mode
+      const formatLink = (link: typeof links.value[0]) => {
+        if (settings.value.useMarkdown) {
+          return `[${link.title?.trim() || 'Sans titre'}](${link.url})`
+        }
+        return link.url
+      }
+
       // Formater les liens internes
       const internalSection = internalLinks.length ? [
-        '📌 Liens Internes',
-        ...internalLinks.map(link => `${link.title?.trim() || 'Sans titre'}\n${link.url}`),
+        settings.value.useMarkdown ? '## 📌 Liens Internes' : '📌 Liens Internes',
+        ...internalLinks.map(formatLink),
         ''
       ].join('\n') : ''
 
       // Formater les liens externes
       const externalSection = externalLinks.length ? [
-        '🌐 Liens Externes',
-        ...externalLinks.map(link => `${link.title?.trim() || 'Sans titre'}\n${link.url}`),
+        settings.value.useMarkdown ? '## 🌐 Liens Externes' : '🌐 Liens Externes',
+        ...externalLinks.map(formatLink),
         ''
       ].join('\n') : ''
 
-      // Combiner les sections avec une ligne de séparation si nécessaire
+      // Combiner les sections
       const linksList = [
         internalSection,
         externalSection

@@ -63,7 +63,7 @@
     ⌛ Chargement...
   </div>
 
-  <!-- Panneau des paramètres (déplacé à l'extérieur) -->
+  <!-- Panneau des paramètres -->
   <Dialog
     v-model:visible="showSettings"
     modal
@@ -80,9 +80,9 @@
       <h3>🔧 Général</h3>
       <div class="toolflowz-setting-item">
         <Checkbox
-        v-model="autoHide"
-        :binary="true"
-        inputId="autoHide"
+          v-model="autoHide"
+          :binary="true"
+          inputId="autoHide"
         />
         <label for="autoHide">Masquer automatiquement</label>
       </div>
@@ -378,19 +378,9 @@ const closeSettings = () => {
 </script>
 
 <style scoped>
-.toolflowz-loading {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  border-radius: 8px;
-  z-index: 2147483647;
-}
-
 .toolflowz-bar {
   display: flex;
+  flex-direction: row;
   gap: 1rem;
   padding: 1rem;
   border-radius: 3rem;
@@ -401,6 +391,10 @@ const closeSettings = () => {
   position: fixed;
   cursor: move;
   min-width: fit-content;
+
+  &.toolflowz-expanded {
+    cursor: default;
+  }
 
   &.toolflowz-dragging {
     cursor: grabbing;
@@ -424,13 +418,24 @@ const closeSettings = () => {
   }
 }
 
-.toolflowz-tools-container {
-  display: flex;
-  gap: 1rem;
+.toolflowz-loading {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 8px;
+  z-index: 2147483647;
 }
 
-.toolflowz-tool-icon {
-  font-size: 1.8rem;
+.toolflowz-tool-emoji {
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .toolflowz-settings-content {
@@ -461,15 +466,6 @@ const closeSettings = () => {
   flex: 1;
 }
 
-.toolflowz-tool-emoji {
-  font-size: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-}
-
 .toolflowz-tool-name {
   color: var(--text-color);
   font-size: 0.9rem;
@@ -488,5 +484,12 @@ const closeSettings = () => {
   :deep(.p-dialog-content) {
     padding: 1.5rem;
   }
+}
+
+.toolflowz-tools-container {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 </style> 

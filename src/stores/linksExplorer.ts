@@ -15,6 +15,7 @@ interface LinksExplorerState {
     includeExternal: boolean
     includeInternal: boolean
     currentDepth: number
+    useMarkdown: boolean
   }
   isLoading: boolean
 }
@@ -27,7 +28,8 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
       maxDepth: 1,
       includeExternal: true,
       includeInternal: true,
-      currentDepth: 0
+      currentDepth: 0,
+      useMarkdown: true
     },
     isLoading: false
   }),
@@ -46,14 +48,36 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
       this.links = []
       
       try {
-        const links = Array.from(document.querySelectorAll('a')).map(link => ({
-          url: link.href,
+        // Fonction pour nettoyer l'URL
+        const cleanUrl = (url: string) => {
+          try {
+            const urlObj = new URL(url)
+            // Supprime le hash et ses paramètres
+            return urlObj.origin + urlObj.pathname
+          } catch {
+            return url
+          }
+        }
+
+        // Collecte et nettoyage des liens
+        const rawLinks = Array.from(document.querySelectorAll('a')).map(link => ({
+          url: cleanUrl(link.href),
           isExternal: link.hostname !== window.location.hostname,
           depth: 0,
           title: link.textContent?.trim()
         }))
 
-        this.links = links.filter(link => {
+        // Suppression des doublons en se basant sur l'URL
+        const uniqueLinks = rawLinks.reduce((acc, current) => {
+          const exists = acc.find(item => item.url === current.url)
+          if (!exists) {
+            acc.push(current)
+          }
+          return acc
+        }, [] as typeof rawLinks)
+
+        // Filtrage selon les paramètres
+        this.links = uniqueLinks.filter(link => {
           if (!link.url) return false
           if (this.settings.includeExternal && link.isExternal) return true
           if (this.settings.includeInternal && !link.isExternal) return true

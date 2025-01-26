@@ -49,7 +49,7 @@
 }
 
 /* Styles communs */
-.control-button {
+.toolflowz-control-button {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -63,7 +63,7 @@
   justify-content: center;
 }
 
-.settings-panel {
+.toolflowz-settings-panel {
   position: absolute;
   right: 100%;
   top: 0;
@@ -76,13 +76,13 @@
 }
 
 /* Animation pour les panneaux */
-.settings-panel-enter-active,
-.settings-panel-leave-active {
+.toolflowz-settings-panel-enter-active,
+.toolflowz-settings-panel-leave-active {
   transition: opacity 0.3s, transform 0.3s;
 }
 
-.settings-panel-enter-from,
-.settings-panel-leave-to {
+.toolflowz-settings-panel-enter-from,
+.toolflowz-settings-panel-leave-to {
   opacity: 0;
   transform: translateX(20px);
 }
@@ -148,7 +148,7 @@
 }
 
 /* Style spécifique pour le bouton principal */
-.main-button.p-button {
+.toolflowz-main-button.p-button {
   width: 48px !important;
   height: 48px !important;
   font-size: 1.5rem !important;
@@ -160,22 +160,22 @@
   transition: transform 0.3s ease !important;
 }
 
-.main-button.p-button:hover,
-.main-button.p-button:active,
-.main-button.p-button:focus {
+.toolflowz-main-button.p-button:hover,
+.toolflowz-main-button.p-button:active,
+.toolflowz-main-button.p-button:focus {
   background-color: white !important;
   transform: scale(1.1);
   color: var(--text-color) !important;
 }
 
-.main-button.p-button.dragging {
+.toolflowz-main-button.p-button.dragging {
   cursor: grabbing !important;
   transform: scale(1.1);
   box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
 }
 
 /* Style pour les boutons d'outils */
-.tools-container .p-button {
+.toolflowz-tools-container .p-button {
   width: 48px !important;
   height: 48px !important;
   font-size: 1.2rem !important;
@@ -185,18 +185,18 @@
   box-shadow: var(--card-shadow) !important;
 }
 
-.tools-container .p-button:hover {
+.toolflowz-tools-container .p-button:hover {
   background-color: white !important;
   transform: scale(1.1);
 }
 
-.tools-container .p-button.active {
+.toolflowz-tools-container .p-button.active {
   background-color: var(--primary-color) !important;
   color: white !important;
 }
 
 /* Style pour le conteneur d'outils */
-.tools-container {
+.toolflowz-tools-container {
   background: white !important;
   padding: 10px !important;
   border-radius: 12px !important;
