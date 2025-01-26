@@ -113,12 +113,6 @@ export function useAutoCopy() {
     const text = selection.toString()
     if (!text) return
 
-    // Vérifier si l'outil est actif
-    if (!toolflowzStore.activeTools.includes('autoCopy')) {
-      console.log('[DEBUG] AutoCopy n\'est pas actif')
-      return
-    }
-
     console.log('[DEBUG] Tentative de copie du texte:', text)
     isCopying.value = true
 
@@ -148,11 +142,7 @@ export function useAutoCopy() {
 
   // Gestionnaire d'événement pour la sélection de texte
   const handleSelection = () => {
-    console.log('[DEBUG] Événement de sélection détecté')
-    console.log('[DEBUG] AutoCopy actif?', toolflowzStore.activeTools.includes('autoCopy'))
-    if (toolflowzStore.activeTools.includes('autoCopy')) {
-      copySelection()
-    }
+    copySelection()
   }
 
   // Gestionnaire de raccourcis clavier

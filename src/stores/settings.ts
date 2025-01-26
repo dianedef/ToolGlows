@@ -29,10 +29,12 @@ export const useSettingsStore = defineStore('settings', () => {
     isPinned: false
   })
 
-  // Surveille les changements de settings pour les appliquer immédiatement
-  watch(() => settings.value, (newSettings) => {
-    console.log('[INFO] Settings changed:', newSettings)
-    applySettings(newSettings)
+  // Surveille uniquement les changements qui affectent l'UI
+  watch(() => ({
+    position: settings.value.position,
+    activeTools: settings.value.activeTools
+  }), (newSettings) => {
+    applySettings(settings.value)
   }, { deep: true })
 
   // Applique les settings à l'UI

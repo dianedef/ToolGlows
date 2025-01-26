@@ -14,8 +14,13 @@ import RadioButton from 'primevue/radiobutton'
 import InputText from 'primevue/inputtext'
 import Card from 'primevue/card'
 import Textarea from 'primevue/textarea'
+import ToastService from 'primevue/toastservice'
+import Toast from 'primevue/toast'
 
 export function setupPrimeVue(app: App) {
+  // Enregistrement du service Toast
+  app.use(ToastService)
+
   // Enregistrement des composants PrimeVue
   const components = {
     Button,
@@ -32,7 +37,8 @@ export function setupPrimeVue(app: App) {
     RadioButton,
     InputText,
     Card,
-    Textarea
+    Textarea,
+    Toast
   }
 
   Object.entries(components).forEach(([name, component]) => {

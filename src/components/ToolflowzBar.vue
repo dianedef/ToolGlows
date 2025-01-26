@@ -5,15 +5,15 @@
     class="toolflowz-bar" 
     :style="style"
     :class="{ 
-      'toolflowz-expanded': settingsStore.settings.expanded || settingsStore.settings.isPinned,
+      'toolflowz-expanded': isExpanded || settingsStore.settings.isPinned,
       'toolflowz-dragging': isDragging 
     }"
   >
     <!-- Bouton principal -->
     <Button 
       class="toolflowz-main-button p-button-rounded"
-      :icon="settingsStore.settings.expanded || settingsStore.settings.isPinned ? 'pi pi-times' : 'pi pi-bars'"
-      @click="handleMainButtonClick"
+      :icon="isExpanded || settingsStore.settings.isPinned ? 'pi pi-times' : 'pi pi-bars'"
+      @click.stop="handleMainButtonClick"
       text
       raised
       aria-label="Toolflowz"
@@ -22,7 +22,7 @@
     </Button>
 
     <!-- Barre d'outils -->
-    <div v-if="settingsStore.settings.expanded" class="toolflowz-tools-container">
+    <div v-if="isExpanded" class="toolflowz-tools-container">
       <!-- Bouton paramètres -->
       <Button 
         class="p-button-rounded p-button-text"
@@ -287,23 +287,32 @@ const { style, isDragging, position: dragPosition } = useDraggable(toolbarRef, {
   }
 })
 
-// Ajout du composable onClickOutside
-onClickOutside(toolbarRef, () => {
-  if (!settingsStore.settings.isPinned) {
-    settingsStore.updateSettings({ expanded: false })
+// Gestionnaire du clic sur le bouton principal
+const handleMainButtonClick = () => {
+  if (!isDragging.value) {
+    isExpanded.value = !isExpanded.value
+  }
+}
+
+// Si épinglé, toujours expanded
+watch(() => settingsStore.settings.isPinned, (isPinned) => {
+  if (isPinned) {
+    isExpanded.value = true
   }
 })
 
-// Ajouter un watcher pour gérer l'expanded quand isPinned change
-watch(() => settingsStore.settings.isPinned, (isPinned) => {
-  if (isPinned) {
-    settingsStore.updateSettings({ expanded: true })
+// Gestion du clic en dehors
+onClickOutside(toolbarRef, () => {
+  if (!settingsStore.settings.isPinned && isExpanded.value) {
+    isExpanded.value = false
   }
 })
 
 onMounted(async () => {
   try {
     await settingsStore.loadSettings()
+    // Charge l'état initial de expanded depuis les settings
+    isExpanded.value = settingsStore.settings.expanded
     
     dragPosition.value = {
       x: settingsStore.settings.position.x,
@@ -328,10 +337,6 @@ onMounted(async () => {
 
 const closeSettings = () => {
   showSettings.value = false
-}
-
-const handleMainButtonClick = () => {
-  settingsStore.updateSettings({ expanded: !settingsStore.settings.expanded })
 }
 </script>
 
