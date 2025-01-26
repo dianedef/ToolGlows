@@ -291,6 +291,7 @@ const { style, isDragging, position: dragPosition } = useDraggable(toolbarRef, {
 const handleMainButtonClick = () => {
   if (!isDragging.value) {
     isExpanded.value = !isExpanded.value
+    settingsStore.settings.expanded = isExpanded.value
   }
 }
 
@@ -298,6 +299,14 @@ const handleMainButtonClick = () => {
 watch(() => settingsStore.settings.isPinned, (isPinned) => {
   if (isPinned) {
     isExpanded.value = true
+    settingsStore.settings.expanded = true
+  }
+})
+
+// Synchronisation avec le store
+watch(() => settingsStore.settings.expanded, (expanded) => {
+  if (expanded !== isExpanded.value) {
+    isExpanded.value = expanded
   }
 })
 
@@ -305,6 +314,7 @@ watch(() => settingsStore.settings.isPinned, (isPinned) => {
 onClickOutside(toolbarRef, () => {
   if (!settingsStore.settings.isPinned && isExpanded.value) {
     isExpanded.value = false
+    settingsStore.settings.expanded = false
   }
 })
 
