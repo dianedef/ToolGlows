@@ -41,7 +41,7 @@ export const useSettingsStore = defineStore('settings', () => {
     
     // Validation des données
     if (!Array.isArray(newSettings.activeTools)) {
-      console.warn('[WARN] activeTools n\'est pas un tableau, conversion...', newSettings.activeTools)
+      // Conversion silencieuse sans warning
       newSettings.activeTools = Object.values(newSettings.activeTools || {})
     }
     
