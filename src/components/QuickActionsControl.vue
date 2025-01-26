@@ -7,7 +7,7 @@
     position="right"
     :style="{ width: '350px' }"
     @hide="closeDialog"
-    appendTo="self"
+    appendTo="body"
   >
     <div class="quick-actions-content">
       <div class="shortcuts-section">

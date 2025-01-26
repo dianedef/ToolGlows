@@ -8,7 +8,7 @@
     position="right"
     :style="{ width: '350px' }"
     @hide="closeDialog"
-    appendTo="self"
+    appendTo="body"
   >
     <div class="toolflowz-reader-options">
       <h4>Apparence</h4>

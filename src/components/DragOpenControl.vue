@@ -6,7 +6,7 @@
     position="right"
     :style="{ width: '450px' }"
     :dismissableMask="true"
-    appendTo="self"
+    appendTo="body"
     @hide="closeDialog"
   >
     <div class="drag-options">

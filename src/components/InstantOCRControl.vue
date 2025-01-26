@@ -1,6 +1,5 @@
 <template>
   <Dialog
-    v-if="!isLoading"
     v-model:visible="ocrStore.isActive"
     :modal="true"
     :dismissableMask="true"
@@ -8,77 +7,79 @@
     position="right"
     :style="{ width: '350px' }"
     @hide="closeDialog"
-    appendTo="self"
+    appendTo="body"
   >
-    <div v-if="isLoading" class="loading-state">
-      <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-      <p>Chargement des options...</p>
-    </div>
-    
-    <div v-else class="ocr-options">
-      <div class="field mb-3">
-        <h4>Langue</h4>
-        <div class="field-checkbox mb-2">
-          <Checkbox
-            v-model="ocrStore.options.autoDetectLanguage"
-            :binary="true"
-            @change="ocrStore.saveOptions()"
-          />
-          <label>Détection automatique</label>
-        </div>
-        
-        <Dropdown
-          v-if="!ocrStore.options.autoDetectLanguage"
-          v-model="ocrStore.options.language"
-          :options="languageOptions"
-          optionLabel="name"
-          optionValue="code"
-          @change="ocrStore.saveOptions()"
-          class="w-full"
-        />
+    <div class="ocr-options">
+      <div v-if="isLoading" class="loading-state">
+        <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+        <p>Chargement des options...</p>
       </div>
-
-      <div class="field mb-3">
-        <h4>Options</h4>
-        <div class="field-checkbox mb-2">
-          <Checkbox
-            v-model="ocrStore.options.copyToClipboard"
-            :binary="true"
+      
+      <template v-else>
+        <div class="field mb-3">
+          <h4>Langue</h4>
+          <div class="field-checkbox mb-2">
+            <Checkbox
+              v-model="ocrStore.options.autoDetectLanguage"
+              :binary="true"
+              @change="ocrStore.saveOptions()"
+            />
+            <label>Détection automatique</label>
+          </div>
+          
+          <Dropdown
+            v-if="!ocrStore.options.autoDetectLanguage"
+            v-model="ocrStore.options.language"
+            :options="languageOptions"
+            optionLabel="name"
+            optionValue="code"
             @change="ocrStore.saveOptions()"
+            class="w-full"
           />
-          <label>Copier automatiquement</label>
         </div>
 
-        <div class="field-checkbox mb-2">
-          <Checkbox
-            v-model="ocrStore.options.showConfidence"
-            :binary="true"
-            @change="ocrStore.saveOptions()"
-          />
-          <label>Afficher le score de confiance</label>
+        <div class="field mb-3">
+          <h4>Options</h4>
+          <div class="field-checkbox mb-2">
+            <Checkbox
+              v-model="ocrStore.options.copyToClipboard"
+              :binary="true"
+              @change="ocrStore.saveOptions()"
+            />
+            <label>Copier automatiquement</label>
+          </div>
+
+          <div class="field-checkbox mb-2">
+            <Checkbox
+              v-model="ocrStore.options.showConfidence"
+              :binary="true"
+              @change="ocrStore.saveOptions()"
+            />
+            <label>Afficher le score de confiance</label>
+          </div>
+
+          <div class="field-checkbox mb-2">
+            <Checkbox
+              v-model="ocrStore.options.enableSpellCheck"
+              :binary="true"
+              @change="ocrStore.saveOptions()"
+            />
+            <label>Correction orthographique</label>
+          </div>
         </div>
 
-        <div class="field-checkbox mb-2">
-          <Checkbox
-            v-model="ocrStore.options.enableSpellCheck"
-            :binary="true"
+        <div class="field mb-3">
+          <h4>Seuil de confiance minimum</h4>
+          <Slider
+            v-model="ocrStore.options.minimumConfidence"
+            :min="0"
+            :max="100"
+            :step="5"
             @change="ocrStore.saveOptions()"
           />
-          <label>Correction orthographique</label>
+          <small>{{ ocrStore.options.minimumConfidence }}%</small>
         </div>
-      </div>
-
-      <div class="field mb-3">
-        <h4>Seuil de confiance minimum</h4>
-        <Slider
-          v-model="ocrStore.options.minimumConfidence"
-          :min="0"
-          :max="100"
-          :step="5"
-          @change="ocrStore.saveOptions()"
-        />
-        <small>{{ ocrStore.options.minimumConfidence }}%</small>
-      </div>
+      </template>
     </div>
   </Dialog>
 </template>
@@ -114,13 +115,21 @@ const languageOptions = [
 ]
 
 onMounted(async () => {
-  if (!ocrStore.isInitialized) {
+  try {
     await ocrStore.loadOptions()
+  } catch (error) {
+    console.error('[ERROR] Failed to load OCR options:', error)
+  } finally {
+    isLoading.value = false
   }
 })
 </script>
 
 <style scoped>
+.ocr-options {
+  padding: 1rem;
+}
+
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -129,10 +138,6 @@ onMounted(async () => {
   padding: 2rem;
   gap: 1rem;
   color: var(--text-color-secondary);
-}
-
-.ocr-options {
-  padding: 1rem;
 }
 
 .field {

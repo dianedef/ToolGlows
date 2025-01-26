@@ -58,61 +58,61 @@
         data-component="toolflowz-tool"
       />
     </template>
-
-    <!-- Panneau des paramètres -->
-    <Dialog
-      v-model:visible="showSettings"
-      modal
-      :dismissableMask="true"
-      header="⚙️ Paramètres"
-      :style="{ width: '50vw' }"
-      :breakpoints="{ '960px': '75vw', '641px': '100vw' }"
-      @hide="closeSettings"
-      class="toolflowz-settings-dialog"
-      appendTo="self"
-    >
-      <div class="toolflowz-settings-content">
-        <!-- Paramètres généraux -->
-        <h3>🔧 Général</h3>
-        <div class="toolflowz-setting-item">
-          <Checkbox
-          v-model="autoHide"
-          :binary="true"
-          inputId="autoHide"
-          />
-          <label for="autoHide">Masquer automatiquement</label>
-        </div>
-        <div class="toolflowz-setting-item">
-          <Checkbox 
-            v-model="settingsStore.settings.isPinned"
-            :binary="true"
-            inputId="pinBar"
-          />
-          <label for="pinBar">Épingler la barre d'outils</label>
-        </div>
-        
-        <!-- Gestion des outils -->
-        <h3>🛠️ Outils actifs</h3>
-        <div class="toolflowz-tools-grid">
-          <div v-for="tool in toolflowzStore.tools" :key="tool.id" class="toolflowz-tool-item">
-            <Checkbox
-              :modelValue="toolflowzStore.activeTools.includes(tool.id)"
-              @update:modelValue="() => toolflowzStore.toggleTool(tool.id)"
-              :binary="true"
-              :inputId="'tool-' + tool.id"
-            />
-            <div class="toolflowz-tool-header">
-              <span class="toolflowz-tool-emoji">{{ tool.emoji }}</span>
-              <label :for="'tool-' + tool.id" class="toolflowz-tool-name">{{ tool.name }}</label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Dialog>
   </div>
   <div v-else class="toolflowz-loading">
     ⌛ Chargement...
   </div>
+
+  <!-- Panneau des paramètres (déplacé à l'extérieur) -->
+  <Dialog
+    v-model:visible="showSettings"
+    modal
+    :dismissableMask="true"
+    header="⚙️ Paramètres"
+    :style="{ width: '50vw' }"
+    :breakpoints="{ '960px': '75vw', '641px': '100vw' }"
+    @hide="closeSettings"
+    class="toolflowz-settings-dialog"
+    appendTo="body"
+  >
+    <div class="toolflowz-settings-content">
+      <!-- Paramètres généraux -->
+      <h3>🔧 Général</h3>
+      <div class="toolflowz-setting-item">
+        <Checkbox
+        v-model="autoHide"
+        :binary="true"
+        inputId="autoHide"
+        />
+        <label for="autoHide">Masquer automatiquement</label>
+      </div>
+      <div class="toolflowz-setting-item">
+        <Checkbox 
+          v-model="settingsStore.settings.isPinned"
+          :binary="true"
+          inputId="pinBar"
+        />
+        <label for="pinBar">Épingler la barre d'outils</label>
+      </div>
+      
+      <!-- Gestion des outils -->
+      <h3>🛠️ Outils actifs</h3>
+      <div class="toolflowz-tools-grid">
+        <div v-for="tool in toolflowzStore.tools" :key="tool.id" class="toolflowz-tool-item">
+          <Checkbox
+            :modelValue="toolflowzStore.activeTools.includes(tool.id)"
+            @update:modelValue="() => toolflowzStore.toggleTool(tool.id)"
+            :binary="true"
+            :inputId="'tool-' + tool.id"
+          />
+          <div class="toolflowz-tool-header">
+            <span class="toolflowz-tool-emoji">{{ tool.emoji }}</span>
+            <label :for="'tool-' + tool.id" class="toolflowz-tool-name">{{ tool.name }}</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
