@@ -9,6 +9,7 @@
       'toolflowz-dragging': isDragging 
     }"
   >
+    <Toast position="bottom-right" />
     <!-- Bouton principal -->
     <Button 
       class="toolflowz-main-button p-button-rounded"
@@ -138,6 +139,7 @@ import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import { useDraggable, onClickOutside } from '@vueuse/core'
+import Toast from 'primevue/toast'
 
 // États locaux
 const isExpanded = ref(false)

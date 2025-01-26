@@ -1,10 +1,12 @@
 import { ref, onMounted, onUnmounted, inject } from 'vue'
 import { useAutoCopyStore } from '@/stores/autoCopy'
 import { useToolflowzStore } from '@/stores/toolflowz'
+import { useToast } from 'primevue/usetoast'
 
 export function useAutoCopy() {
   const store = useAutoCopyStore()
   const toolflowzStore = useToolflowzStore()
+  const toast = useToast()
   const isCopying = ref(false)
 
   // Fonction pour appliquer le template au texte
@@ -56,16 +58,14 @@ export function useAutoCopy() {
   // Fonction pour envoyer une notification
   const sendNotification = (title: string, message: string) => {
     try {
-      chrome.runtime.sendMessage({
-        type: 'SHOW_NOTIFICATION',
-        payload: { title, message }
-      }).catch(() => {
-        // Ignorer l'erreur de connexion
-        console.log('[DEBUG] Notification non envoyée (extension non prête)')
+      toast.add({
+        severity: 'success',
+        summary: title,
+        detail: message,
+        life: 3000
       })
     } catch (error) {
-      // Ignorer l'erreur
-      console.log('[DEBUG] Notification non envoyée (erreur):', error)
+      console.log('[DEBUG] Erreur lors de l\'envoi de la notification:', error)
     }
   }
 

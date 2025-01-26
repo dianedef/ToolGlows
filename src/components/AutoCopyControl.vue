@@ -1,68 +1,94 @@
 <template>
-  <Dialog
-    v-model:visible="copyStore.isActive"
-    :header="'Auto Copy'"
-    :modal="true"
-    position="right"
-    :style="{ width: '500px' }"
-    :dismissableMask="true"
-    @hide="closeDialog"
-  >
-    <div class="copy-options">
-      <div class="field mb-3">
-        <h4>Format actif</h4>
-        <div class="formats-list">
-          <div
-            v-for="format in copyStore.settings.formats"
-            :key="format.id"
-            class="format-item"
-            :class="{ 'active': format.id === copyStore.settings.activeFormat }"
-            @click="copyStore.setActiveFormat(format.id)"
-          >
-            <div class="format-info">
-              <span class="format-icon">{{ format.icon }}</span>
-              <div class="format-details">
-                <span class="format-name">{{ format.name }}</span>
-                <small v-if="format.shortcut" class="format-shortcut">
-                  {{ format.shortcut }}
-                </small>
+  <div>
+    <Dialog
+      v-model:visible="copyStore.isActive"
+      :header="'Auto Copy'"
+      :modal="true"
+      position="right"
+      :style="{ width: '500px' }"
+      :dismissableMask="true"
+      @hide="closeDialog"
+    >
+      <div class="copy-options">
+        <div class="field mb-3">
+          <h4>Format actif</h4>
+          <div class="formats-list">
+            <div
+              v-for="format in copyStore.settings.formats"
+              :key="format.id"
+              class="format-item"
+              :class="{ 'active': format.id === copyStore.settings.activeFormat }"
+              @click="copyStore.setActiveFormat(format.id)"
+            >
+              <div class="format-info">
+                <span class="format-icon">{{ format.icon }}</span>
+                <div class="format-details">
+                  <span class="format-name">{{ format.name }}</span>
+                  <small v-if="format.shortcut" class="format-shortcut">
+                    {{ format.shortcut }}
+                  </small>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        <div class="field mb-3">
+          <h4>Options</h4>
+          <div class="field-checkbox mb-2">
+            <Checkbox
+              v-model="copyStore.settings.preserveFormatting"
+              :binary="true"
+              @change="() => {
+                copyStore.saveSettings();
+                toast.add({ 
+                  severity: 'success', 
+                  summary: 'Mise en forme', 
+                  detail: copyStore.settings.preserveFormatting ? 'Mise en forme activée' : 'Mise en forme désactivée',
+                  life: 3000 
+                });
+              }"
+            />
+            <label>Conserver la mise en forme</label>
+          </div>
+
+          <div class="field-checkbox mb-2">
+            <Checkbox
+              v-model="copyStore.settings.includeSource"
+              :binary="true"
+              @change="() => {
+                copyStore.saveSettings();
+                toast.add({ 
+                  severity: 'success', 
+                  summary: 'Source', 
+                  detail: copyStore.settings.includeSource ? 'Source incluse' : 'Source non incluse',
+                  life: 3000 
+                });
+              }"
+            />
+            <label>Inclure la source</label>
+          </div>
+
+          <div class="field-checkbox mb-2">
+            <Checkbox
+              v-model="copyStore.settings.showNotifications"
+              :binary="true"
+              @change="() => {
+                copyStore.saveSettings();
+                toast.add({ 
+                  severity: 'success', 
+                  summary: 'Notifications', 
+                  detail: copyStore.settings.showNotifications ? 'Notifications activées' : 'Notifications désactivées',
+                  life: 3000 
+                });
+              }"
+            />
+            <label>Afficher les notifications</label>
+          </div>
+        </div>
       </div>
-
-      <div class="field mb-3">
-        <h4>Options</h4>
-        <div class="field-checkbox mb-2">
-          <Checkbox
-            v-model="copyStore.settings.preserveFormatting"
-            :binary="true"
-            @change="copyStore.saveSettings()"
-          />
-          <label>Conserver la mise en forme</label>
-        </div>
-
-        <div class="field-checkbox mb-2">
-          <Checkbox
-            v-model="copyStore.settings.includeSource"
-            :binary="true"
-            @change="copyStore.saveSettings()"
-          />
-          <label>Inclure la source</label>
-        </div>
-
-        <div class="field-checkbox mb-2">
-          <Checkbox
-            v-model="copyStore.settings.showNotifications"
-            :binary="true"
-            @change="copyStore.saveSettings()"
-          />
-          <label>Afficher les notifications</label>
-        </div>
-      </div>
-    </div>
-  </Dialog>
+    </Dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -71,8 +97,10 @@ import { useAutoCopyStore } from '@/stores/autoCopy'
 import { useAutoCopy } from '@/composables/useAutoCopy'
 import Dialog from 'primevue/dialog'
 import Checkbox from 'primevue/checkbox'
+import { useToast } from 'primevue/usetoast'
 
 const copyStore = useAutoCopyStore()
+const toast = useToast()
 
 // Initialiser le composable
 useAutoCopy()
@@ -83,6 +111,7 @@ onMounted(async () => {
 
 const closeDialog = () => {
   copyStore.isActive = false
+  toast.add({ severity: 'info', summary: 'Auto Copy', detail: 'Paramètres sauvegardés', life: 3000 })
 }
 </script>
 
