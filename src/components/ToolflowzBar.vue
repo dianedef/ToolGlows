@@ -69,6 +69,7 @@
       :breakpoints="{ '960px': '75vw', '641px': '100vw' }"
       @hide="closeSettings"
       class="toolflowz-settings-dialog"
+      appendTo="self"
     >
       <div class="toolflowz-settings-content">
         <!-- Paramètres généraux -->
@@ -121,6 +122,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { useToolflowzStore } from '@/stores/toolflowz'
 import { useInstantOCRStore } from '@/stores/instantOCR'
 import { useWordCounterStore } from '@/stores/wordCounter'
+import { useAutoCopyStore } from '@/stores/autoCopy'
 import WordCounterPopup from './WordCounterPopup.vue'
 import InstantOCRControl from './InstantOCRControl.vue'
 import DarkModeControl from './DarkModeControl.vue'
@@ -154,6 +156,7 @@ const settingsStore = inject('settingsStore') as ReturnType<typeof useSettingsSt
 const toolflowzStore = inject('toolflowzStore') as ReturnType<typeof useToolflowzStore>
 const ocrStore = inject('ocrStore') as ReturnType<typeof useInstantOCRStore>
 const wordCounterStore = inject('wordCounterStore') as ReturnType<typeof useWordCounterStore>
+const autoCopyStore = useAutoCopyStore()
 
 if (!settingsStore || !toolflowzStore || !ocrStore || !wordCounterStore) {
   throw new Error('Les stores requis n\'ont pas été injectés')
@@ -317,6 +320,19 @@ onClickOutside(toolbarRef, () => {
   if (!settingsStore.settings.isPinned && isExpanded.value) {
     isExpanded.value = false
     settingsStore.settings.expanded = false
+  }
+})
+
+// Synchronisation avec AutoCopy
+watch(() => isVisible.value['autoCopy'], (newValue) => {
+  if (autoCopyStore.isActive !== newValue) {
+    autoCopyStore.setActive(newValue)
+  }
+})
+
+watch(() => autoCopyStore.isActive, (newValue) => {
+  if (isVisible.value['autoCopy'] !== newValue) {
+    isVisible.value['autoCopy'] = newValue
   }
 })
 

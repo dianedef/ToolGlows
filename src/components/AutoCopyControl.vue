@@ -110,7 +110,7 @@ onMounted(async () => {
 })
 
 const closeDialog = () => {
-  copyStore.isActive = false
+  copyStore.setActive(false)
   toast.add({ severity: 'info', summary: 'Auto Copy', detail: 'Paramètres sauvegardés', life: 3000 })
 }
 </script>

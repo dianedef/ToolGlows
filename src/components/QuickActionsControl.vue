@@ -3,9 +3,11 @@
     v-model:visible="dialogVisible"
     :modal="true"
     :dismissableMask="true"
-    header="⚡ Actions rapides"
-    class="quick-actions-dialog"
+    :header="'Actions rapides'"
+    position="right"
+    :style="{ width: '350px' }"
     @hide="closeDialog"
+    appendTo="self"
   >
     <div class="quick-actions-content">
       <div class="shortcuts-section">

@@ -34,7 +34,9 @@ function createRootElement() {
   if (!rootElement) {
     rootElement = document.createElement('div')
     rootElement.id = rootId
-    document.body.appendChild(rootElement)
+    // Insertion en premier dans le html
+    const htmlElement = document.documentElement
+    htmlElement.insertBefore(rootElement, htmlElement.firstChild)
   }
   
   return rootElement

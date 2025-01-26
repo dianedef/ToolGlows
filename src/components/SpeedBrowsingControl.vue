@@ -7,6 +7,7 @@
     position="right"
     :style="{ width: '350px' }"
     @hide="closeDialog"
+    appendTo="self"
   >
     <div class="speed-options">
       <!-- Vitesse de défilement -->

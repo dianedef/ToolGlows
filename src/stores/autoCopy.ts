@@ -59,17 +59,16 @@ export const useAutoCopyStore = defineStore('autoCopy', {
       try {
         const result = await chrome.storage.sync.get('autoCopySettings')
         if (result.autoCopySettings) {
-          // Fusionner avec les paramètres par défaut pour s'assurer que tous les champs existent
           this.settings = {
             ...defaultSettings,
             ...result.autoCopySettings,
-            formats: defaultFormats // Toujours utiliser les formats par défaut
+            formats: defaultFormats
           }
         }
         console.log('[DEBUG] Settings loaded:', this.settings)
       } catch (error) {
         console.error('[ERROR] Failed to load Auto Copy settings:', error)
-        this.settings = { ...defaultSettings } // Utiliser les paramètres par défaut en cas d'erreur
+        this.settings = { ...defaultSettings }
       }
     },
 
@@ -87,8 +86,11 @@ export const useAutoCopyStore = defineStore('autoCopy', {
       await this.saveSettings()
     },
 
-    setActive(value: boolean) {
-      this.isActive = value
+    setActiveFormat(formatId: string) {
+      if (this.settings.formats.some(f => f.id === formatId)) {
+        this.settings.activeFormat = formatId
+        this.saveSettings()
+      }
     },
 
     addFormat(format: CopyFormat) {
@@ -112,11 +114,8 @@ export const useAutoCopyStore = defineStore('autoCopy', {
       }
     },
 
-    setActiveFormat(formatId: string) {
-      if (this.settings.formats.some(f => f.id === formatId)) {
-        this.settings.activeFormat = formatId
-        this.saveSettings()
-      }
+    setActive(value: boolean) {
+      this.isActive = value
     }
   }
 }) 

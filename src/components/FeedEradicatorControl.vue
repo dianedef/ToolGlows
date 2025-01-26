@@ -6,6 +6,7 @@
     position="right"
     :style="{ width: '350px' }"
     :dismissableMask="true"
+    appendTo="self"
     @hide="closeDialog"
   >
     <div class="feed-options">

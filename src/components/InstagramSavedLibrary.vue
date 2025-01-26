@@ -1,11 +1,12 @@
 <template>
   <Dialog
     v-model:visible="igStore.isActive"
-    :header="'Instagram Saved Library'"
+    :header="'Bibliothèque Instagram'"
     :modal="true"
     position="right"
-    :style="{ width: '450px' }"
+    :style="{ width: '350px' }"
     :dismissableMask="true"
+    appendTo="self"
     @hide="closeDialog"
   >
     <div class="instagram-options">

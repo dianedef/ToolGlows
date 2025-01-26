@@ -1,12 +1,13 @@
 <template>
   <Dialog
     v-model:visible="gmailStore.isActive"
-    :header="'Better Gmail'"
     :modal="true"
-    position="right"
-    :style="{ width: '450px' }"
     :dismissableMask="true"
+    :header="'Gmail amélioré'"
+    position="right"
+    :style="{ width: '350px' }"
     @hide="closeDialog"
+    appendTo="self"
   >
     <div class="toolflowz-gmail-options">
       <div class="toolflowz-field mb-3">

@@ -1,12 +1,14 @@
 <template>
   <Dialog
+    v-if="!isLoading"
     v-model:visible="ocrStore.isActive"
     :modal="true"
     :dismissableMask="true"
-    :header="'OCR Instantané'"
+    :header="'OCR instantané'"
     position="right"
     :style="{ width: '350px' }"
     @hide="closeDialog"
+    appendTo="self"
   >
     <div v-if="isLoading" class="loading-state">
       <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>

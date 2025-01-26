@@ -24,7 +24,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const { data: settings, promise: settingsLoaded } = useBrowserSyncStorage<ToolflowzSettings>('toolflowzSettings', {
     expanded: false,
-    position: { x: 20, y: 20 },
+    position: { x: window.innerWidth - 100, y: 20 },
     activeTools: [],
     isPinned: false
   })
@@ -104,8 +104,16 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const updatePosition = async (x: number, y: number) => {
     console.log('[INFO] Updating position:', { x, y })
+    
+    // S'assure que la position reste dans les limites de la fenêtre
+    const maxX = window.innerWidth - 100 // Garde une marge de 100px pour la barre
+    const maxY = window.innerHeight - 100
+    
+    const boundedX = Math.max(20, Math.min(x, maxX))
+    const boundedY = Math.max(20, Math.min(y, maxY))
+    
     // Met à jour localement
-    settings.value.position = { x, y }
+    settings.value.position = { x: boundedX, y: boundedY }
     
     try {
       // Envoie au background
