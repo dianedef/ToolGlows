@@ -6,6 +6,7 @@
     :style="{ width: '50vw' }"
     :breakpoints="{ '960px': '75vw', '641px': '100vw' }"
     :maximizable="true"
+    :dismissableMask="true"
     class="toolflowz-links-explorer-dialog"
   >
     <div class="toolflowz-links-explorer-content">
@@ -121,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useLinksExplorer } from '@/composables/useLinksExplorer'
 import { useToast } from 'primevue/usetoast'
 import Dialog from 'primevue/dialog'
@@ -148,8 +149,13 @@ const {
   settings,
   exploreLinks,
   exploreDeeper,
-  copyAllLinks
+  copyAllLinks,
+  loadSettings
 } = useLinksExplorer()
+
+onMounted(async () => {
+  await loadSettings()
+})
 
 watch(() => props.visible, (newValue) => {
   dialogVisible.value = newValue

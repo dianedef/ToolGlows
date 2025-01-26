@@ -20,27 +20,55 @@ interface LinksExplorerState {
   isLoading: boolean
 }
 
+const defaultSettings = {
+  maxDepth: 1,
+  includeExternal: true,
+  includeInternal: true,
+  currentDepth: 0,
+  useMarkdown: true
+}
+
 export const useLinksExplorerStore = defineStore('linksExplorer', {
   state: (): LinksExplorerState => ({
     isActive: false,
     links: [],
-    settings: {
-      maxDepth: 1,
-      includeExternal: true,
-      includeInternal: true,
-      currentDepth: 0,
-      useMarkdown: true
-    },
+    settings: { ...defaultSettings },
     isLoading: false
   }),
 
   actions: {
+    async loadSettings() {
+      try {
+        const result = await chrome.storage.sync.get('linksExplorerSettings')
+        if (result.linksExplorerSettings) {
+          this.settings = {
+            ...defaultSettings,
+            ...result.linksExplorerSettings
+          }
+        }
+        console.log('[DEBUG] Links Explorer settings loaded:', this.settings)
+      } catch (error) {
+        console.error('[ERROR] Failed to load Links Explorer settings:', error)
+        this.settings = { ...defaultSettings }
+      }
+    },
+
+    async saveSettings() {
+      try {
+        await chrome.storage.sync.set({ linksExplorerSettings: this.settings })
+        console.log('[SUCCESS] Links Explorer settings saved:', this.settings)
+      } catch (error) {
+        console.error('[ERROR] Failed to save Links Explorer settings:', error)
+      }
+    },
+
     setActive(value: boolean) {
       this.isActive = value
     },
 
-    updateSettings(settings: Partial<LinksExplorerState['settings']>) {
+    async updateSettings(settings: Partial<LinksExplorerState['settings']>) {
       this.settings = { ...this.settings, ...settings }
+      await this.saveSettings()
     },
 
     async exploreLinks() {
@@ -93,12 +121,14 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
     async exploreDeeper() {
       if (this.settings.currentDepth >= this.settings.maxDepth) return
       this.settings.currentDepth++
+      await this.saveSettings()
       // TODO: Implémenter la logique de scraping plus profond
     },
 
     clearLinks() {
       this.links = []
       this.settings.currentDepth = 0
+      this.saveSettings()
     }
   }
 }) 

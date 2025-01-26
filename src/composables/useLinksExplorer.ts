@@ -100,6 +100,7 @@ export function useLinksExplorer() {
     exploreLinks: store.exploreLinks,
     exploreDeeper: store.exploreDeeper,
     updateSettings: store.updateSettings,
-    copyAllLinks
+    copyAllLinks,
+    loadSettings: store.loadSettings
   }
 } 
