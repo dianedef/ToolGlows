@@ -9,10 +9,10 @@
     :style="{ width: '350px' }"
     @hide="closeDialog"
   >
-    <div class="reader-options">
+    <div class="toolflowz-reader-options">
       <h4>Apparence</h4>
       
-      <div class="field mb-3">
+      <div class="toolflowz-field mb-3">
         <label>Police</label>
         <Dropdown
           v-model="readerModeStore.options.fontFamily"
@@ -21,7 +21,7 @@
         />
       </div>
 
-      <div class="field mb-3">
+      <div class="toolflowz-field mb-3">
         <label>Taille du texte</label>
         <Slider 
           v-model="readerModeStore.options.fontSize"
@@ -31,7 +31,7 @@
         />
       </div>
 
-      <div class="field mb-3">
+      <div class="toolflowz-field mb-3">
         <label>Hauteur de ligne</label>
         <Slider
           v-model="readerModeStore.options.lineHeight"
@@ -42,7 +42,7 @@
         />
       </div>
 
-      <div class="field mb-3">
+      <div class="toolflowz-field mb-3">
         <label>Largeur maximale</label>
         <Slider
           v-model="readerModeStore.options.maxWidth"
@@ -54,7 +54,7 @@
       </div>
 
       <h4>Thème</h4>
-      <div class="field-radiobutton mb-3">
+      <div class="toolflowz-field-radiobutton mb-3">
         <RadioButton
           v-model="readerModeStore.options.theme"
           value="light"
@@ -62,7 +62,7 @@
         />
         <label>Clair</label>
       </div>
-      <div class="field-radiobutton mb-3">
+      <div class="toolflowz-field-radiobutton mb-3">
         <RadioButton
           v-model="readerModeStore.options.theme"
           value="sepia"
@@ -70,7 +70,7 @@
         />
         <label>Sépia</label>
       </div>
-      <div class="field-radiobutton mb-3">
+      <div class="toolflowz-field-radiobutton mb-3">
         <RadioButton
           v-model="readerModeStore.options.theme"
           value="dark"
@@ -80,7 +80,7 @@
       </div>
 
       <h4>Contenu</h4>
-      <div class="field-checkbox mb-3">
+      <div class="toolflowz-field-checkbox mb-3">
         <Checkbox
           v-model="readerModeStore.options.showImages"
           :binary="true"
@@ -88,7 +88,7 @@
         />
         <label>Afficher les images</label>
       </div>
-      <div class="field-checkbox mb-3">
+      <div class="toolflowz-field-checkbox mb-3">
         <Checkbox
           v-model="readerModeStore.options.showLinks"
           :binary="true"
@@ -123,13 +123,13 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.reader-options {
+.toolflowz-reader-options {
   padding: 1rem;
 }
-.field {
+.toolflowz-field {
   margin-bottom: 1rem;
 }
-.field label {
+.toolflowz-field label {
   display: block;
   margin-bottom: 0.5rem;
 }

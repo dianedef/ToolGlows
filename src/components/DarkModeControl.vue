@@ -9,24 +9,24 @@
     :style="{ width: '350px' }"
     @hide="closeDialog"
   >
-    <div class="dark-mode-options">
-      <div class="field mb-3">
+    <div class="toolflowz-dark-mode-options">
+      <div class="toolflowz-field mb-3">
         <h4>Couleurs</h4>
-        <div class="color-picker mb-2">
+        <div class="toolflowz-color-picker mb-2">
           <label>Arrière-plan</label>
           <ColorPicker
             v-model="darkModeStore.options.backgroundColor"
             @change="darkModeStore.saveOptions()"
           />
         </div>
-        <div class="color-picker mb-2">
+        <div class="toolflowz-color-picker mb-2">
           <label>Texte</label>
           <ColorPicker
             v-model="darkModeStore.options.textColor"
             @change="darkModeStore.saveOptions()"
           />
         </div>
-        <div class="color-picker mb-2">
+        <div class="toolflowz-color-picker mb-2">
           <label>Liens</label>
           <ColorPicker
             v-model="darkModeStore.options.linkColor"
@@ -35,7 +35,7 @@
         </div>
       </div>
 
-      <div class="field mb-3">
+      <div class="toolflowz-field mb-3">
         <h4>Contraste</h4>
         <Slider
           v-model="darkModeStore.options.contrastLevel"
@@ -46,7 +46,7 @@
         />
       </div>
 
-      <div class="field-checkbox mb-3">
+      <div class="toolflowz-field-checkbox mb-3">
         <Checkbox
           v-model="darkModeStore.options.invertImages"
           :binary="true"
@@ -57,9 +57,9 @@
 
       <Divider />
 
-      <div class="field mb-3">
+      <div class="toolflowz-field mb-3">
         <h4>Programmation</h4>
-        <div class="field-checkbox mb-2">
+        <div class="toolflowz-field-checkbox mb-2">
           <Checkbox
             v-model="darkModeStore.options.autoEnable"
             :binary="true"
@@ -68,8 +68,8 @@
           <label>Activer automatiquement</label>
         </div>
         
-        <div v-if="darkModeStore.options.autoEnable" class="schedule">
-          <div class="time-picker mb-2">
+        <div v-if="darkModeStore.options.autoEnable" class="toolflowz-schedule">
+          <div class="toolflowz-time-picker mb-2">
             <label>Début</label>
             <Calendar
               v-model="darkModeStore.options.scheduleStart"
@@ -77,7 +77,7 @@
               @change="darkModeStore.saveOptions()"
             />
           </div>
-          <div class="time-picker">
+          <div class="toolflowz-time-picker">
             <label>Fin</label>
             <Calendar
               v-model="darkModeStore.options.scheduleEnd"
@@ -120,38 +120,38 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.dark-mode-options {
+.toolflowz-dark-mode-options {
   padding: 1rem;
 }
 
-.field {
+.toolflowz-field {
   margin-bottom: 1rem;
 }
 
-.field h4 {
+.toolflowz-field h4 {
   margin-bottom: 0.5rem;
   color: var(--text-color);
 }
 
-.color-picker {
+.toolflowz-color-picker {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.field-checkbox {
+.toolflowz-field-checkbox {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.schedule {
+.toolflowz-schedule {
   margin-top: 1rem;
   padding-left: 1.5rem;
 }
 
-.time-picker {
+.toolflowz-time-picker {
   display: flex;
   align-items: center;
   justify-content: space-between;

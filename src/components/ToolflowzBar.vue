@@ -5,24 +5,24 @@
     class="toolflowz-bar" 
     :style="style"
     :class="{ 
-      expanded: settingsStore.settings.expanded || settingsStore.settings.isPinned,
-      dragging: isDragging 
+      'toolflowz-expanded': settingsStore.settings.expanded || settingsStore.settings.isPinned,
+      'toolflowz-dragging': isDragging 
     }"
   >
     <!-- Bouton principal -->
     <Button 
-      class="main-button p-button-rounded"
+      class="toolflowz-main-button p-button-rounded"
       :icon="settingsStore.settings.expanded || settingsStore.settings.isPinned ? 'pi pi-times' : 'pi pi-bars'"
       @click="handleMainButtonClick"
       text
       raised
       aria-label="Toolflowz"
     >
-      <span class="tool-emoji">🔧</span>
+      <span class="toolflowz-tool-emoji">🔧</span>
     </Button>
 
     <!-- Barre d'outils -->
-    <div v-if="settingsStore.settings.expanded" class="tools-container">
+    <div v-if="settingsStore.settings.expanded" class="toolflowz-tools-container">
       <!-- Bouton paramètres -->
       <Button 
         class="p-button-rounded p-button-text"
@@ -30,7 +30,7 @@
         severity="secondary"
         aria-label="Paramètres"
       >
-        <span class="tool-emoji">⚙️</span>
+        <span class="toolflowz-tool-emoji">⚙️</span>
       </Button>
 
       <!-- Boutons des outils actifs -->
@@ -38,10 +38,10 @@
         <Button 
           v-if="toolflowzStore.activeTools.includes(tool.id)"
           class="p-button-rounded p-button-text"
-          @click="currentToolId = currentToolId === tool.id ? null : tool.id"
+          @click="isVisible[tool.id] = !isVisible[tool.id]"
           :aria-label="tool.name"
         >
-          <span class="tool-emoji">{{ tool.emoji }}</span>
+          <span class="toolflowz-tool-emoji">{{ tool.emoji }}</span>
         </Button>
       </template>
     </div>
@@ -51,11 +51,10 @@
       <component
         v-if="toolflowzStore.activeTools.includes(tool.id)"
         :is="tool.component"
-        :modelValue="currentToolId === tool.id"
-        :visible="currentToolId === tool.id"
-        @update:modelValue="(val: boolean) => currentToolId = val ? tool.id : null"
-        @update:visible="(val: boolean) => currentToolId = val ? tool.id : null"
-        data-toolflowz-component
+        v-model="isVisible[tool.id]"
+        :visible="isVisible[tool.id]"
+        @update:visible="(val: boolean) => isVisible[tool.id] = val"
+        data-component="toolflowz-tool"
       />
     </template>
 
@@ -68,11 +67,12 @@
       :style="{ width: '50vw' }"
       :breakpoints="{ '960px': '75vw', '641px': '100vw' }"
       @hide="closeSettings"
+      class="toolflowz-settings-dialog"
     >
-      <div class="settings-content">
+      <div class="toolflowz-settings-content">
         <!-- Paramètres généraux -->
         <h3>🔧 Général</h3>
-        <div class="setting-item">
+        <div class="toolflowz-setting-item">
           <Checkbox
           v-model="autoHide"
           :binary="true"
@@ -80,7 +80,7 @@
           />
           <label for="autoHide">Masquer automatiquement</label>
         </div>
-        <div class="setting-item">
+        <div class="toolflowz-setting-item">
           <Checkbox 
             v-model="settingsStore.settings.isPinned"
             :binary="true"
@@ -91,25 +91,24 @@
         
         <!-- Gestion des outils -->
         <h3>🛠️ Outils actifs</h3>
-        <div class="tools-grid">
-          <div v-for="tool in toolflowzStore.tools" :key="tool.id" class="tool-item">
+        <div class="toolflowz-tools-grid">
+          <div v-for="tool in toolflowzStore.tools" :key="tool.id" class="toolflowz-tool-item">
             <Checkbox
               :modelValue="toolflowzStore.activeTools.includes(tool.id)"
               @update:modelValue="() => toolflowzStore.toggleTool(tool.id)"
               :binary="true"
               :inputId="'tool-' + tool.id"
             />
-            <div class="tool-header">
-              <span class="tool-emoji">{{ tool.emoji }}</span>
-              <label :for="'tool-' + tool.id" class="tool-name">{{ tool.name }}</label>
+            <div class="toolflowz-tool-header">
+              <span class="toolflowz-tool-emoji">{{ tool.emoji }}</span>
+              <label :for="'tool-' + tool.id" class="toolflowz-tool-name">{{ tool.name }}</label>
             </div>
           </div>
         </div>
-
       </div>
     </Dialog>
   </div>
-  <div v-else class="loading">
+  <div v-else class="toolflowz-loading">
     ⌛ Chargement...
   </div>
 </template>
@@ -144,7 +143,7 @@ const isExpanded = ref(false)
 const showSettings = ref(false)
 const autoHide = ref(false)
 const isLoading = ref(true)
-const currentToolId = ref<string | null>(null)
+const isVisible = ref<Record<string, boolean>>({})
 const position = ref({ x: 0, y: 0 })
 
 // Injection des stores avec typage
@@ -305,6 +304,11 @@ onMounted(async () => {
     console.log('[INFO] Initializing tools')
     await toolflowzStore.initTools(initialTools)
     
+    // Initialiser isVisible pour chaque outil
+    initialTools.forEach(tool => {
+      isVisible.value[tool.id] = false
+    })
+    
     isLoading.value = false
     console.log('[SUCCESS] Initialization complete')
   } catch (error) {
@@ -323,7 +327,7 @@ const handleMainButtonClick = () => {
 </script>
 
 <style scoped>
-.loading {
+.toolflowz-loading {
   position: fixed;
   bottom: 20px;
   left: 20px;
@@ -331,48 +335,66 @@ const handleMainButtonClick = () => {
   background: rgba(0, 0, 0, 0.7);
   color: white;
   border-radius: 8px;
-  z-index: 1000;
+  z-index: 2147483647;
 }
 
 .toolflowz-bar {
   display: flex;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 2rem;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 3rem;
   background: var(--surface-card);
   box-shadow: var(--card-shadow);
-  z-index: 1000;
+  z-index: 2147483647;
   user-select: none;
   position: fixed;
   cursor: move;
+  min-width: fit-content;
 
-  &.dragging {
+  &.toolflowz-dragging {
     cursor: grabbing;
+  }
+
+  :deep(.p-button) {
+    width: 4rem !important;
+    height: 4rem !important;
+    font-size: 1.5rem;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+
+  :deep(.p-button-icon) {
+    font-size: 1.8rem;
+    margin: 0 !important;
+    width: auto !important;
+    height: auto !important;
   }
 }
 
-.tools-container {
+.toolflowz-tools-container {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
-.tool-icon {
-  font-size: 1.2rem;
+.toolflowz-tool-icon {
+  font-size: 1.8rem;
 }
 
-.settings-content {
+.toolflowz-settings-content {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.tools-grid {
+.toolflowz-tools-grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
-.tool-item {
+.toolflowz-tool-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -381,28 +403,39 @@ const handleMainButtonClick = () => {
   border-radius: var(--border-radius);
 }
 
-.tool-header {
+.toolflowz-tool-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex: 1;
 }
 
-.tool-emoji {
-  font-size: 1.2rem;
+.toolflowz-tool-emoji {
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
-.tool-name {
+.toolflowz-tool-name {
   color: var(--text-color);
   font-size: 0.9rem;
 }
 
-.setting-item {
+.toolflowz-setting-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem;
   background: var(--surface-ground);
   border-radius: var(--border-radius);
+}
+
+.toolflowz-settings-dialog {
+  :deep(.p-dialog-content) {
+    padding: 1.5rem;
+  }
 }
 </style> 

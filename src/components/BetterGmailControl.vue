@@ -8,28 +8,28 @@
     :dismissableMask="true"
     @hide="closeDialog"
   >
-    <div class="gmail-options">
-      <div class="field mb-3">
+    <div class="toolflowz-gmail-options">
+      <div class="toolflowz-field mb-3">
         <h4>Labels</h4>
-        <div class="labels-list">
+        <div class="toolflowz-labels-list">
           <div
             v-for="label in gmailStore.options.labels"
             :key="label.id"
-            class="label-item"
+            class="toolflowz-label-item"
           >
-            <div class="label-info">
+            <div class="toolflowz-label-info">
               <span
-                class="label-color"
+                class="toolflowz-label-color"
                 :style="{ backgroundColor: label.color }"
               />
-              <div class="label-details">
-                <span class="label-name">{{ label.name }}</span>
-                <small v-if="label.shortcut" class="label-shortcut">
+              <div class="toolflowz-label-details">
+                <span class="toolflowz-label-name">{{ label.name }}</span>
+                <small v-if="label.shortcut" class="toolflowz-label-shortcut">
                   {{ label.shortcut }}
                 </small>
               </div>
             </div>
-            <div class="label-actions">
+            <div class="toolflowz-label-actions">
               <Button
                 icon="pi pi-pencil"
                 text
@@ -53,9 +53,9 @@
         </div>
       </div>
 
-      <div class="field mb-3">
+      <div class="toolflowz-field mb-3">
         <h4>Options générales</h4>
-        <div class="field-checkbox mb-2">
+        <div class="toolflowz-field-checkbox mb-2">
           <Checkbox
             v-model="gmailStore.options.autoArchive"
             :binary="true"
@@ -64,7 +64,7 @@
           <label>Archivage automatique</label>
         </div>
 
-        <div class="field-slider mb-2">
+        <div class="toolflowz-field-slider mb-2">
           <label>Délai d'archivage (secondes)</label>
           <Slider
             v-model="gmailStore.options.archiveDelay"
@@ -76,7 +76,7 @@
           <small>{{ gmailStore.options.archiveDelay }} secondes</small>
         </div>
 
-        <div class="field-checkbox mb-2">
+        <div class="toolflowz-field-checkbox mb-2">
           <Checkbox
             v-model="gmailStore.options.showUnreadCount"
             :binary="true"
@@ -85,7 +85,7 @@
           <label>Afficher le nombre de messages non lus</label>
         </div>
 
-        <div class="field-checkbox mb-2">
+        <div class="toolflowz-field-checkbox mb-2">
           <Checkbox
             v-model="gmailStore.options.showPreview"
             :binary="true"
@@ -94,7 +94,7 @@
           <label>Afficher l'aperçu des messages</label>
         </div>
 
-        <div class="field-dropdown mb-2">
+        <div class="toolflowz-field-dropdown mb-2">
           <label>Position de l'aperçu</label>
           <Dropdown
             v-model="gmailStore.options.previewPosition"
@@ -107,19 +107,19 @@
         </div>
       </div>
 
-      <div class="field mb-3">
+      <div class="toolflowz-field mb-3">
         <h4>Raccourcis clavier</h4>
-        <div class="shortcuts-list">
+        <div class="toolflowz-shortcuts-list">
           <div
             v-for="shortcut in gmailStore.options.customKeyboardShortcuts"
             :key="shortcut.id"
-            class="shortcut-item"
+            class="toolflowz-shortcut-item"
           >
-            <div class="shortcut-info">
-              <span class="shortcut-name">{{ shortcut.name }}</span>
-              <code class="shortcut-key">{{ shortcut.key }}</code>
+            <div class="toolflowz-shortcut-info">
+              <span class="toolflowz-shortcut-name">{{ shortcut.name }}</span>
+              <code class="toolflowz-shortcut-key">{{ shortcut.key }}</code>
             </div>
-            <div class="shortcut-actions">
+            <div class="toolflowz-shortcut-actions">
               <Button
                 icon="pi pi-pencil"
                 text
@@ -143,23 +143,23 @@
         </div>
       </div>
 
-      <div class="field mb-3">
+      <div class="toolflowz-field mb-3">
         <h4>Filtres</h4>
-        <div class="filters-list">
+        <div class="toolflowz-filters-list">
           <div
             v-for="filter in gmailStore.options.filters"
             :key="filter.id"
-            class="filter-item"
+            class="toolflowz-filter-item"
           >
-            <div class="filter-info">
-              <span class="filter-name">{{ filter.name }}</span>
-              <div class="filter-conditions">
-                <small v-for="(condition, index) in filter.conditions" :key="index">
+            <div class="toolflowz-filter-info">
+              <span class="toolflowz-filter-name">{{ filter.name }}</span>
+              <div class="toolflowz-filter-conditions">
+                <small v-for="(condition, index) in filter.conditions" :key="index" class="toolflowz-filter-condition">
                   {{ condition.field }} {{ condition.operator }} "{{ condition.value }}"
                 </small>
               </div>
             </div>
-            <div class="filter-actions">
+            <div class="toolflowz-filter-actions">
               <Button
                 icon="pi pi-pencil"
                 text
@@ -183,9 +183,9 @@
         </div>
       </div>
 
-      <div class="field mb-3">
+      <div class="toolflowz-field mb-3">
         <h4>Options de composition</h4>
-        <div class="field-input mb-2">
+        <div class="toolflowz-field-input mb-2">
           <label>Signature</label>
           <Textarea
             v-model="gmailStore.options.composeDefaults.signature"
@@ -195,7 +195,7 @@
           />
         </div>
 
-        <div class="field-dropdown mb-2">
+        <div class="toolflowz-field-dropdown mb-2">
           <label>Police</label>
           <Dropdown
             v-model="gmailStore.options.composeDefaults.font"
@@ -205,7 +205,7 @@
           />
         </div>
 
-        <div class="field-spinner mb-2">
+        <div class="toolflowz-field-spinner mb-2">
           <label>Taille de police</label>
           <InputNumber
             v-model="gmailStore.options.composeDefaults.fontSize"
@@ -215,7 +215,7 @@
           />
         </div>
 
-        <div class="field-checkbox mb-2">
+        <div class="toolflowz-field-checkbox mb-2">
           <Checkbox
             v-model="gmailStore.options.composeDefaults.spellCheck"
             :binary="true"
@@ -224,7 +224,7 @@
           <label>Vérification orthographique</label>
         </div>
 
-        <div class="field-checkbox mb-2">
+        <div class="toolflowz-field-checkbox mb-2">
           <Checkbox
             v-model="gmailStore.options.composeDefaults.confirmationBeforeSend"
             :binary="true"
@@ -322,7 +322,7 @@
         <div
           v-for="(condition, index) in newFilter.conditions"
           :key="index"
-          class="condition-row"
+          class="toolflowz-condition-row"
         >
           <Dropdown
             v-model="condition.field"
@@ -362,7 +362,7 @@
         <div
           v-for="(action, index) in newFilter.actions"
           :key="index"
-          class="action-row"
+          class="toolflowz-action-row"
         >
           <Dropdown
             v-model="action.type"
@@ -573,35 +573,30 @@ const closeDialog = () => {
 </script>
 
 <style scoped>
-.gmail-options {
+.toolflowz-gmail-options {
   padding: 1rem;
 }
 
-.field {
+.toolflowz-field {
   margin-bottom: 1.5rem;
 }
 
-.field h4 {
-  margin-bottom: 0.75rem;
-  color: var(--text-color);
-}
-
-.field h5 {
+.toolflowz-field h4 {
   margin-bottom: 0.5rem;
   color: var(--text-color);
 }
 
-.labels-list,
-.shortcuts-list,
-.filters-list {
+.toolflowz-labels-list,
+.toolflowz-shortcuts-list,
+.toolflowz-filters-list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.label-item,
-.shortcut-item,
-.filter-item {
+.toolflowz-label-item,
+.toolflowz-shortcut-item,
+.toolflowz-filter-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -611,80 +606,80 @@ const closeDialog = () => {
   border: 1px solid var(--surface-border);
 }
 
-.label-info,
-.shortcut-info,
-.filter-info {
+.toolflowz-label-info,
+.toolflowz-shortcut-info,
+.toolflowz-filter-info {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.label-color {
+.toolflowz-label-color {
   width: 1rem;
   height: 1rem;
   border-radius: 50%;
 }
 
-.label-details,
-.filter-details {
+.toolflowz-label-details,
+.toolflowz-filter-details {
   display: flex;
   flex-direction: column;
 }
 
-.label-name,
-.shortcut-name,
-.filter-name {
+.toolflowz-label-name,
+.toolflowz-shortcut-name,
+.toolflowz-filter-name {
   font-weight: 500;
 }
 
-.label-shortcut,
-.filter-conditions {
+.toolflowz-label-shortcut,
+.toolflowz-filter-conditions {
   font-size: 0.875rem;
   color: var(--text-color-secondary);
 }
 
-.label-actions,
-.shortcut-actions,
-.filter-actions {
+.toolflowz-label-actions,
+.toolflowz-shortcut-actions,
+.toolflowz-filter-actions {
   display: flex;
   gap: 0.25rem;
 }
 
-.field-checkbox {
+.toolflowz-field-checkbox {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.field-slider {
+.toolflowz-field-slider {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.field-slider label,
-.field-input label,
-.field-dropdown label,
-.field-spinner label {
+.toolflowz-field-slider label,
+.toolflowz-field-input label,
+.toolflowz-field-dropdown label,
+.toolflowz-field-spinner label {
   font-size: 0.875rem;
   color: var(--text-color);
   margin-bottom: 0.25rem;
 }
 
-.field-slider small {
+.toolflowz-field-slider small {
   color: var(--text-color-secondary);
   text-align: center;
 }
 
-.field-input,
-.field-dropdown,
-.field-spinner {
+.toolflowz-field-input,
+.toolflowz-field-dropdown,
+.toolflowz-field-spinner {
   display: flex;
   flex-direction: column;
   margin-bottom: 0.5rem;
 }
 
-.shortcut-key {
+.toolflowz-shortcut-key {
   font-family: monospace;
   padding: 0.25rem 0.5rem;
   background: var(--surface-ground);
@@ -692,21 +687,21 @@ const closeDialog = () => {
   font-size: 0.875rem;
 }
 
-.condition-row,
-.action-row {
+.toolflowz-condition-row,
+.toolflowz-action-row {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
   align-items: center;
 }
 
-.filter-conditions {
+.toolflowz-filter-conditions {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.filter-conditions small {
+.toolflowz-filter-condition {
   font-family: monospace;
   padding: 0.125rem 0.25rem;
   background: var(--surface-ground);

@@ -8,10 +8,10 @@
     :style="{ width: '350px' }"
     @hide="closeDialog"
   >
-    <div class="scroll-options">
-      <div class="field mb-3">
+    <div class="toolflowz-scroll-options">
+      <div class="toolflowz-field mb-3">
         <h4>Seuil de déclenchement</h4>
-        <div class="threshold-slider">
+        <div class="toolflowz-threshold-slider">
           <Slider
             v-model="scrollStore.options.threshold"
             :min="100"
@@ -19,13 +19,13 @@
             :step="50"
             @change="scrollStore.saveOptions()"
           />
-          <small>{{ scrollStore.options.threshold }}px avant la fin</small>
+          <small class="toolflowz-small">{{ scrollStore.options.threshold }}px avant la fin</small>
         </div>
       </div>
 
-      <div class="field mb-3">
+      <div class="toolflowz-field mb-3">
         <h4>Options</h4>
-        <div class="field-checkbox mb-2">
+        <div class="toolflowz-field-checkbox mb-2">
           <Checkbox
             v-model="scrollStore.options.autoLoad"
             :binary="true"
@@ -34,7 +34,7 @@
           <label>Chargement automatique</label>
         </div>
 
-        <div class="field-checkbox mb-2">
+        <div class="toolflowz-field-checkbox mb-2">
           <Checkbox
             v-model="scrollStore.options.showProgress"
             :binary="true"
@@ -44,7 +44,7 @@
         </div>
       </div>
 
-      <div class="field mb-3">
+      <div class="toolflowz-field mb-3">
         <h4>Limite de pages</h4>
         <InputNumber
           v-model="scrollStore.options.maxPages"
@@ -53,7 +53,7 @@
           @change="scrollStore.saveOptions()"
           class="w-full"
         />
-        <small>Nombre maximum de pages à charger</small>
+        <small class="toolflowz-small">Nombre maximum de pages à charger</small>
       </div>
     </div>
   </Dialog>
@@ -79,32 +79,32 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.scroll-options {
+.toolflowz-scroll-options {
   padding: 1rem;
 }
 
-.field {
+.toolflowz-field {
   margin-bottom: 1rem;
 }
 
-.field h4 {
+.toolflowz-field h4 {
   margin-bottom: 0.5rem;
   color: var(--text-color);
 }
 
-.field-checkbox {
+.toolflowz-field-checkbox {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.threshold-slider {
+.toolflowz-threshold-slider {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-small {
+.toolflowz-small {
   color: var(--text-color-secondary);
   display: block;
   text-align: center;
