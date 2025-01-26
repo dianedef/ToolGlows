@@ -17,19 +17,49 @@
   
   /* Position de base */
   position: fixed !important;
-  z-index: 2147483647 !important; /* Valeur maximale pour z-index */
-  top: 20px !important;
-  left: 20px !important;
-  transform: none !important; /* Suppression du translateZ qui peut causer des problèmes */
-  min-width: 48px !important; /* Largeur minimale pour assurer la visibilité */
-  min-height: 48px !important; /* Hauteur minimale pour assurer la visibilité */
-  max-width: 100vw !important; /* Ne pas dépasser la largeur de la fenêtre */
-  max-height: 100vh !important; /* Ne pas dépasser la hauteur de la fenêtre */
-  pointer-events: none;
+  z-index: 2147483647 !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  width: 100vw !important;
+  height: 100vh !important;
   
   /* Les éléments à l'intérieur peuvent recevoir des événements */
   > * {
-    pointer-events: auto;
+    pointer-events: auto !important;
+  }
+
+  /* Styles pour les composants PrimeVue */
+  .p-dialog {
+    z-index: 2147483647 !important;
+  }
+
+  .p-dialog-mask {
+    z-index: 2147483646 !important;
+  }
+
+  /* Réinitialisation pour les composants internes */
+  .toolflowz-bar {
+    display: flex !important;
+    gap: 1rem !important;
+    padding: 1rem !important;
+    border-radius: 3rem !important;
+    background: var(--surface-card) !important;
+    box-shadow: var(--card-shadow) !important;
+    z-index: 2147483647 !important;
+    user-select: none !important;
+    cursor: move !important;
+    min-width: fit-content !important;
+    
+    &.dragging {
+      cursor: grabbing !important;
+    }
+  }
+
+  /* Styles pour les boutons et autres éléments interactifs */
+  button, 
+  .p-button,
+  .toolflowz-tools-container {
+    pointer-events: auto !important;
   }
 
   /* Styles des boutons */
