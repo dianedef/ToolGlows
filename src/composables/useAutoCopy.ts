@@ -118,14 +118,14 @@ export function useAutoCopy() {
   // Fonction pour copier le texte sélectionné
   const copySelection = async () => {
     const selection = window.getSelection()
-    if (!selection) return
+    if (!selection || selection.rangeCount === 0) return
 
     // Vérifier si la sélection est dans un élément exclu
     const range = selection.getRangeAt(0)
     const container = range.commonAncestorContainer
     const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : container as HTMLElement
     
-    if (element && isElementExcluded(element)) {
+    if (!element || isElementExcluded(element)) {
       console.log('[DEBUG] Sélection dans un élément exclu, copie ignorée')
       return
     }
