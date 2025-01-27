@@ -68,6 +68,7 @@
     v-model:visible="showSettings"
     modal
     :dismissableMask="true"
+    :maximizable="true"
     header="⚙️ Paramètres"
     :style="{ width: '50vw' }"
     :breakpoints="{ '960px': '75vw', '641px': '100vw' }"
@@ -138,6 +139,7 @@ import BetterGmailControl from './BetterGmailControl.vue'
 import QuickActionsControl from './QuickActionsControl.vue'
 import AutoCopyControl from './AutoCopyControl.vue'
 import LinksExplorerControl from './LinksExplorerControl.vue'
+import SocialAnalysisControl from './SocialAnalysisControl.vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
@@ -284,6 +286,14 @@ const initialTools: Tool[] = [
     icon: 'pi pi-link',
     emoji: '🔗',
     category: 'navigation'
+  },
+  {
+    id: 'socialAnalysis',
+    name: 'Analyse Sociale',
+    component: markRaw(SocialAnalysisControl),
+    icon: 'pi pi-users',
+    emoji: '👥',
+    category: 'social'
   }
 ]
 
@@ -382,7 +392,6 @@ const closeSettings = () => {
   display: flex;
   flex-direction: row;
   gap: 1rem;
-  padding: 1rem;
   border-radius: 3rem;
   background: var(--surface-card);
   box-shadow: var(--card-shadow);
@@ -441,7 +450,7 @@ const closeSettings = () => {
 .toolflowz-settings-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .toolflowz-tools-grid {

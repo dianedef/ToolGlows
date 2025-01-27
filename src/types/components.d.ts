@@ -45,6 +45,7 @@ declare module 'vue' {
     RouterLinkUp: typeof import('./../components/RouterLinkUp.vue')['default']
     RouterView: typeof import('vue-router')['RouterView']
     SearchJumperUI: typeof import('./../components/SearchJumperUI.vue')['default']
+    SocialAnalysisControl: typeof import('./../components/SocialAnalysisControl.vue')['default']
     SpeedBrowsingControl: typeof import('./../components/SpeedBrowsingControl.vue')['default']
     TailwindEmptyState: typeof import('./../components/state/tailwind-empty-state.vue')['default']
     TestComponent: typeof import('./../components/TestComponent.vue')['default']
