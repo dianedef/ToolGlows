@@ -145,6 +145,7 @@ import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import { useDraggable, onClickOutside } from '@vueuse/core'
 import Toast from 'primevue/toast'
+import { useExcludeToolflowzBar } from '@/composables/excludeToolflowzBar'
 
 // États locaux
 const isExpanded = ref(false)
@@ -354,6 +355,9 @@ watch(() => autoCopyStore.isActive, (newValue) => {
     isVisible.value['autoCopy'] = newValue
   }
 })
+
+// Exclure la barre du mode sombre
+useExcludeToolflowzBar()
 
 onMounted(async () => {
   try {

@@ -115,12 +115,16 @@ import { useAutoCopy } from '@/composables/useAutoCopy'
 import Dialog from 'primevue/dialog'
 import Checkbox from 'primevue/checkbox'
 import { useToast } from 'primevue/usetoast'
+import { useExcludeToolflowzBar } from '@/composables/excludeToolflowzBar'
 
 const copyStore = useAutoCopyStore()
 const toast = useToast()
 
 // Initialiser le composable
 useAutoCopy()
+
+// Exclure du mode sombre
+useExcludeToolflowzBar()
 
 onMounted(async () => {
   console.log('[DEBUG] Avant loadSettings - formats:', copyStore.settings.formats)
