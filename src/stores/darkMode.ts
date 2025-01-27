@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia'
-import { sendMessage } from 'webext-bridge/content-script'
 import { watch, ref, computed } from 'vue'
+import { sendMessage } from 'webext-bridge/content-script'
+import { onMessage } from 'webext-bridge/background'
+
+// Type pour la sérialisation JSON
+type JsonValue = string | number | boolean | { [key: string]: JsonValue } | JsonValue[]
 
 interface DarkModeOptions {
   backgroundColor: string
@@ -14,6 +18,26 @@ interface DarkModeOptions {
   excludedDomains: string[]
   transitionDuration: number
   syncWithSystem: boolean
+}
+
+// Messages pour la synchronisation
+interface SyncMessage {
+  [key: string]: boolean | DarkModeOptions
+  isActive: boolean
+  options: DarkModeOptions
+}
+
+// Messages pour le content script
+interface ContentMessage {
+  [key: string]: string | number | boolean
+  styles: string
+  isActive: boolean
+  backgroundColor: string
+  textColor: string
+  linkColor: string
+  invertImages: boolean
+  contrastLevel: number
+  transitionDuration: number
 }
 
 const defaultOptions: DarkModeOptions = {
@@ -107,20 +131,12 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     }
 
     try {
-      // S'assurer que excludedDomains est un tableau avant la sauvegarde
-      if (!Array.isArray(options.value.excludedDomains)) {
-        options.value.excludedDomains = []
-      }
-
       await Promise.all([
         chrome.storage.sync.set({ darkModeOptions: options.value }),
         chrome.storage.local.set({ darkModeActive: isActive.value })
       ])
       
-      // Appliquer les changements immédiatement
-      applyDarkMode()
-      
-      console.log('[SUCCESS] Dark mode options saved')
+      console.log('[SUCCESS] Dark mode options saved and synced')
     } catch (error) {
       console.error('[ERROR] Failed to save dark mode options:', error)
     }
@@ -160,8 +176,8 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     }
   }
   
-  function applyDarkMode() {
-    if (!isInitialized.value || isDomainExcluded.value) return
+  async function applyDarkMode() {
+    console.log('[DARK MODE STORE] 🎨 Applying dark mode with options:', options.value)
 
     const styles = `
       html, body {
@@ -197,71 +213,40 @@ export const useDarkModeStore = defineStore('darkMode', () => {
         color: ${options.value.textColor} !important;
         border-color: #444 !important;
       }
-      
-      /* Éléments spécifiques */
-      .p-component,
-      .p-component * {
-        background-color: ${options.value.backgroundColor} !important;
-        color: ${options.value.textColor} !important;
-      }
-      
-      /* Exceptions pour certains composants PrimeVue */
-      .p-button {
-        background-color: var(--primary-color) !important;
-        color: var(--primary-color-text) !important;
-      }
-      
-      .p-button.p-button-secondary {
-        background-color: var(--secondary-color) !important;
-        color: var(--secondary-color-text) !important;
-      }
-      
-      .p-button.p-button-text {
-        background-color: transparent !important;
-      }
-      
-      /* Bordures et ombres */
-      .p-dialog,
-      .p-dropdown-panel,
-      .p-menu {
-        border: 1px solid #444 !important;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5) !important;
-      }
-      
-      /* Arrière-plans spéciaux */
-      .p-dialog-header,
-      .p-dialog-content,
-      .p-dialog-footer {
-        background-color: ${options.value.backgroundColor} !important;
-        color: ${options.value.textColor} !important;
-      }
-      
-      /* Textes et titres */
-      h1, h2, h3, h4, h5, h6, p, span {
-        color: ${options.value.textColor} !important;
-      }
     `
 
-    sendMessage('APPLY_DARK_MODE', {
-      styles,
-      isActive: isActive.value
-    }, 'background').catch(error => {
-      console.error('[ERROR] Failed to send dark mode update:', error)
-    })
+    try {
+      const message: ContentMessage = {
+        styles,
+        isActive: isActive.value,
+        backgroundColor: options.value.backgroundColor,
+        textColor: options.value.textColor,
+        linkColor: options.value.linkColor,
+        invertImages: options.value.invertImages,
+        contrastLevel: options.value.contrastLevel,
+        transitionDuration: options.value.transitionDuration
+      }
 
-    // Appliquer aussi les styles à la popup de l'extension
-    const popupStyle = document.getElementById('dark-mode-styles')
-    if (popupStyle) {
-      popupStyle.remove()
-    }
-
-    if (isActive.value) {
-      const style = document.createElement('style')
-      style.id = 'dark-mode-styles'
-      style.textContent = styles
-      document.head.appendChild(style)
+      await sendMessage('DARK_MODE_UPDATE', message, 'content-script')
+      console.log('[DARK MODE STORE] ✅ Dark mode update sent')
+    } catch (error) {
+      console.error('[DARK MODE STORE] ❌ Failed to send dark mode update:', error)
     }
   }
+
+  // Écouter les mises à jour depuis d'autres onglets
+  onMessage('DARK_MODE_SYNC', ({ data }) => {
+    console.log('[DEBUG] Received dark mode sync:', data)
+    if (typeof data === 'object' && data !== null) {
+      const message = data as SyncMessage
+      if (message.options) {
+        options.value = message.options
+      }
+      if (typeof message.isActive === 'boolean') {
+        isActive.value = message.isActive
+      }
+    }
+  })
 
   return {
     options,

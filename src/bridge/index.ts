@@ -5,11 +5,28 @@ import type { Tool } from '@/types/tools'
 const EXTENSION_NAMESPACE = 'com.toolflowz.extension'
 
 // Types pour la communication
-interface Settings {
+export interface Settings {
   expanded: boolean
   position: { x: number; y: number }
   activeTools: string[]
   isPinned: boolean
+  darkMode?: {
+    options?: {
+      backgroundColor: string
+      textColor: string
+      linkColor: string
+      contrastLevel: number
+      invertImages: boolean
+      autoEnable: boolean
+      scheduleStart: string
+      scheduleEnd: string
+      excludedDomains: string[]
+      transitionDuration: number
+      syncWithSystem: boolean
+    }
+    isActive?: boolean
+    styles?: string
+  }
 }
 
 // Type pour assurer la compatibilité JSON

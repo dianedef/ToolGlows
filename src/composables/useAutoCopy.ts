@@ -107,10 +107,28 @@ export function useAutoCopy() {
     }
   }
 
+  // Fonction pour vérifier si un élément doit être exclu de la copie
+  const isElementExcluded = (element: HTMLElement): boolean => {
+    // Vérifier si l'élément ou un de ses parents correspond aux sélecteurs d'exclusion
+    const isExcluded = element.matches('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') ||
+                      element.closest('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') !== null
+    return isExcluded
+  }
+
   // Fonction pour copier le texte sélectionné
   const copySelection = async () => {
     const selection = window.getSelection()
     if (!selection) return
+
+    // Vérifier si la sélection est dans un élément exclu
+    const range = selection.getRangeAt(0)
+    const container = range.commonAncestorContainer
+    const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : container as HTMLElement
+    
+    if (element && isElementExcluded(element)) {
+      console.log('[DEBUG] Sélection dans un élément exclu, copie ignorée')
+      return
+    }
 
     const text = selection.toString()
     if (!text) return
@@ -172,22 +190,6 @@ export function useAutoCopy() {
     }
   }
 
-  // Fonction pour vérifier si un élément appartient à notre extension
-  const isPartOfExtension = (element: HTMLElement): boolean => {
-    let current = element
-    while (current && current !== document.body) {
-      if (current.id === 'toolflowz-extension' || current.classList.contains('toolflowz-extension')) {
-        return true
-      }
-      if (current.parentElement) {
-        current = current.parentElement
-      } else {
-        break
-      }
-    }
-    return false
-  }
-
   // Fonction pour activer le mode ALT
   const enableAltMode = () => {
     if (!store.settings.enableAltSelection) return
@@ -198,34 +200,28 @@ export function useAutoCopy() {
     const selector = 'div, p, article, section, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, code, table, tr, td, th'
     const elements = document.querySelectorAll(selector)
     elements.forEach((el) => {
-      if (el instanceof HTMLElement) {
-        // Vérifier si l'élément fait partie de l'extension ou de PrimeVue
-        const isExcluded = el.matches('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') ||
-                          el.closest('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') !== null
+      if (el instanceof HTMLElement && !isElementExcluded(el)) {
+        el.dataset.originalOutline = el.style.outline
+        el.dataset.originalTransition = el.style.transition
+        el.dataset.originalBackground = el.style.backgroundColor
+        el.style.outline = '2px dashed #007bff'
+        el.style.transition = 'all 0.2s ease-in-out'
         
-        if (!isExcluded) {
-          el.dataset.originalOutline = el.style.outline
-          el.dataset.originalTransition = el.style.transition
-          el.dataset.originalBackground = el.style.backgroundColor
-          el.style.outline = '2px dashed #007bff'
-          el.style.transition = 'all 0.2s ease-in-out'
-          
-          // Ajouter les gestionnaires de survol
-          el.addEventListener('mouseenter', () => {
-            if (isAltMode.value) {
-              el.style.outline = '2px dashed #00ff00'
-              el.style.backgroundColor = 'rgba(0, 255, 0, 0.1)'
-            }
-          })
-          el.addEventListener('mouseleave', () => {
-            if (isAltMode.value) {
-              el.style.outline = '2px dashed #007bff'
-              el.style.backgroundColor = el.dataset.originalBackground || ''
-            }
-          })
-          
-          highlightedElements.value.push(el)
-        }
+        // Ajouter les gestionnaires de survol
+        el.addEventListener('mouseenter', () => {
+          if (isAltMode.value) {
+            el.style.outline = '2px dashed #00ff00'
+            el.style.backgroundColor = 'rgba(0, 255, 0, 0.1)'
+          }
+        })
+        el.addEventListener('mouseleave', () => {
+          if (isAltMode.value) {
+            el.style.outline = '2px dashed #007bff'
+            el.style.backgroundColor = el.dataset.originalBackground || ''
+          }
+        })
+        
+        highlightedElements.value.push(el)
       }
     })
   }
@@ -257,11 +253,7 @@ export function useAutoCopy() {
     const element = event.target as HTMLElement
     if (!element) return
 
-    // Vérifier si l'élément fait partie de l'extension ou de PrimeVue
-    const isExcluded = element.matches('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') ||
-                       element.closest('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') !== null
-
-    if (!isExcluded) {
+    if (!isElementExcluded(element)) {
       const text = element.innerText || element.textContent
       if (text) {
         copyToClipboard(formatText(text))

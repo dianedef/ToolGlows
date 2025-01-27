@@ -1,5 +1,16 @@
 import { onMessage } from 'webext-bridge/content-script'
 
+interface DarkModeMessage {
+  styles: string
+  isActive: boolean
+  backgroundColor: string
+  textColor: string
+  linkColor: string
+  invertImages: boolean
+  contrastLevel: number
+  transitionDuration: number
+}
+
 // Gestionnaire des styles du mode sombre
 let darkModeStyle: HTMLStyleElement | null = null
 const STYLE_ID = 'dark-mode-content-styles'
@@ -99,30 +110,40 @@ const removeDarkModeStyles = (): boolean => {
   }
 }
 
-// Écouter les messages via le bridge
-onMessage('APPLY_DARK_MODE', ({ data }) => {
-  try {
-    console.log('[DARK MODE] 📥 Received style update:', data)
-    const { styles, isActive } = data as { styles: string; isActive: boolean }
-    
-    if (isActive) {
-      if (!styles) {
-        throw new Error('No styles provided')
-      }
-      const success = applyDarkModeStyles(styles)
-      if (success) {
-        isDarkModeActive = true
-      } else {
-        console.warn('[DARK MODE] ⚠️ Failed to apply dark mode styles')
+// Vérifier si un objet est un message de mode sombre
+function isDarkModeMessage(data: unknown): data is DarkModeMessage {
+  if (typeof data !== 'object' || data === null) return false
+  
+  const msg = data as Partial<DarkModeMessage>
+  return (
+    typeof msg.styles === 'string' &&
+    typeof msg.isActive === 'boolean' &&
+    typeof msg.backgroundColor === 'string' &&
+    typeof msg.textColor === 'string' &&
+    typeof msg.linkColor === 'string' &&
+    typeof msg.invertImages === 'boolean' &&
+    typeof msg.contrastLevel === 'number' &&
+    typeof msg.transitionDuration === 'number'
+  )
+}
+
+// Écouter les messages pour le mode sombre
+console.log('[DARK MODE] 🎧 Initializing dark mode listeners')
+
+onMessage('DARK_MODE_UPDATE', ({ data }) => {
+  console.log('[DARK MODE] 📥 Received update:', data)
+  
+  if (isDarkModeMessage(data)) {
+    if (data.isActive) {
+      if (data.styles) {
+        const success = applyDarkModeStyles(data.styles)
+        if (success) {
+          isDarkModeActive = true
+        }
       }
     } else {
-      const success = removeDarkModeStyles()
-      if (!success) {
-        console.warn('[DARK MODE] ⚠️ Failed to remove dark mode styles')
-      }
+      removeDarkModeStyles()
     }
-  } catch (error) {
-    console.error('[DARK MODE] ❌ Error processing message:', error)
   }
 })
 
