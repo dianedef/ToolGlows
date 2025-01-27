@@ -171,32 +171,80 @@ onMessage('GET_INITIAL_STATE', async () => {
 })
 
 // Gestionnaire pour le mode sombre
-onMessage('APPLY_DARK_MODE', async ({ data, sender }) => {
-  console.log('[BACKGROUND] 🌓 Relaying dark mode update to content script')
+onMessage('APPLY_DARK_MODE', async ({ data }) => {
+  console.log('[BACKGROUND] 🌓 Relaying dark mode update to content scripts')
   
-  // Obtenir l'onglet actif
-  const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
-  const activeTab = tabs[0]
-  
-  if (activeTab?.id) {
-    try {
-      // Injecter les styles via l'API chrome.scripting
-      if (data.isActive) {
-        await chrome.scripting.insertCSS({
-          target: { tabId: activeTab.id },
-          css: data.styles
-        })
-      } else {
-        // Supprimer les styles si le mode sombre est désactivé
-        await chrome.scripting.removeCSS({
-          target: { tabId: activeTab.id },
-          css: data.styles
-        })
+  try {
+    // Obtenir tous les onglets
+    const tabs = await chrome.tabs.query({})
+    
+    // Appliquer les styles à tous les onglets
+    for (const tab of tabs) {
+      if (tab.id) {
+        try {
+          if (data.isActive) {
+            await chrome.scripting.insertCSS({
+              target: { tabId: tab.id },
+              css: data.styles
+            })
+            console.log(`[BACKGROUND] ✨ Dark mode styles applied to tab ${tab.id}`)
+          } else {
+            await chrome.scripting.removeCSS({
+              target: { tabId: tab.id },
+              css: data.styles
+            })
+            console.log(`[BACKGROUND] 🌞 Dark mode styles removed from tab ${tab.id}`)
+          }
+        } catch (error) {
+          console.error(`[BACKGROUND] ❌ Failed to update styles for tab ${tab.id}:`, error)
+        }
       }
-      console.log('[BACKGROUND] ✨ Dark mode styles updated successfully')
-    } catch (error) {
-      console.error('[BACKGROUND] ❌ Failed to update dark mode styles:', error)
     }
+  } catch (error) {
+    console.error('[BACKGROUND] ❌ Failed to query tabs:', error)
+  }
+})
+
+// Gestionnaire pour l'injection du mode sombre
+onMessage('INJECT_DARK_MODE', async ({ data }) => {
+  console.log('[BACKGROUND] 🎨 Injecting dark mode styles')
+  
+  try {
+    // Obtenir tous les onglets
+    const tabs = await chrome.tabs.query({})
+    
+    // Appliquer ou supprimer les styles sur tous les onglets
+    for (const tab of tabs) {
+      if (tab.id && tab.url) {
+        // Vérifier si l'URL est accessible
+        if (tab.url.startsWith('chrome://') || tab.url.startsWith('edge://') || tab.url.startsWith('about:')) {
+          console.log(`[BACKGROUND] ⚠️ Skipping protected URL: ${tab.url}`)
+          continue
+        }
+
+        try {
+          if (data.isActive) {
+            // Injecter les styles
+            await chrome.scripting.insertCSS({
+              target: { tabId: tab.id },
+              css: data.styles
+            })
+            console.log(`[BACKGROUND] ✨ Dark mode styles injected in tab ${tab.id}`)
+          } else {
+            // Supprimer les styles
+            await chrome.scripting.removeCSS({
+              target: { tabId: tab.id },
+              css: data.styles
+            })
+            console.log(`[BACKGROUND] 🌞 Dark mode styles removed from tab ${tab.id}`)
+          }
+        } catch (error) {
+          console.error(`[BACKGROUND] ❌ Failed to update styles for tab ${tab.id}:`, error)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[BACKGROUND] ❌ Failed to query tabs:', error)
   }
 })
 

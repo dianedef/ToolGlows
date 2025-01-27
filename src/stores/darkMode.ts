@@ -216,19 +216,13 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     `
 
     try {
-      const message: ContentMessage = {
+      // Envoyer au background script pour injection via chrome.scripting
+      await sendMessage('INJECT_DARK_MODE', {
         styles,
-        isActive: isActive.value,
-        backgroundColor: options.value.backgroundColor,
-        textColor: options.value.textColor,
-        linkColor: options.value.linkColor,
-        invertImages: options.value.invertImages,
-        contrastLevel: options.value.contrastLevel,
-        transitionDuration: options.value.transitionDuration
-      }
-
-      await sendMessage('DARK_MODE_UPDATE', message, 'content-script')
-      console.log('[DARK MODE STORE] ✅ Dark mode update sent')
+        isActive: isActive.value
+      }, 'background')
+      
+      console.log('[DARK MODE STORE] ✅ Dark mode update sent to background')
     } catch (error) {
       console.error('[DARK MODE STORE] ❌ Failed to send dark mode update:', error)
     }

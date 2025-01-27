@@ -31,9 +31,9 @@ export default {
   },
   content_scripts: [
     {
-      all_frames: false,
+      all_frames: true,
       js: ["src/content-script/index.ts"],
-      matches: ["*://*/*"],
+      matches: ["<all_urls>"],
       run_at: "document_end",
     },
   ],
@@ -43,13 +43,13 @@ export default {
   devtools_page: "src/devtools/index.html",
   options_page: "src/ui/options-page/index.html",
   offline_enabled: true,
-  host_permissions: [
-    "<all_urls>"
-  ],
+  host_permissions: ["<all_urls>"],
   permissions: [
     "storage",
     "scripting",
-    "activeTab"
+    "activeTab",
+    "tabs",
+    "webNavigation"
   ],
   web_accessible_resources: [
     {
@@ -58,7 +58,7 @@ export default {
         "src/ui/devtools-panel/index.html",
         "src/ui/setup/index.html"
       ],
-      matches: ["*://*/*"]
+      matches: ["<all_urls>"]
     }
   ],
   icons: {
