@@ -371,6 +371,8 @@
     "useAutoCopyStore": true,
     "useAutoCopy": true,
     "useLinksExplorer": true,
-    "useLinksExplorerStore": true
+    "useLinksExplorerStore": true,
+    "useSocialAnalysis": true,
+    "useSocialAnalysisStore": true
   }
 }

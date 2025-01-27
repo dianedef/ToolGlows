@@ -296,6 +296,8 @@ declare global {
   const useSettingsStore: typeof import('../stores/settings')['useSettingsStore']
   const useShare: typeof import('@vueuse/core')['useShare']
   const useSlots: typeof import('vue')['useSlots']
+  const useSocialAnalysis: typeof import('../composables/useSocialAnalysis')['useSocialAnalysis']
+  const useSocialAnalysisStore: typeof import('../stores/socialAnalysis')['useSocialAnalysisStore']
   const useSorted: typeof import('@vueuse/core')['useSorted']
   const useSpeechRecognition: typeof import('@vueuse/core')['useSpeechRecognition']
   const useSpeechSynthesis: typeof import('@vueuse/core')['useSpeechSynthesis']
@@ -673,6 +675,8 @@ declare module 'vue' {
     readonly useSettingsStore: UnwrapRef<typeof import('../stores/settings')['useSettingsStore']>
     readonly useShare: UnwrapRef<typeof import('@vueuse/core')['useShare']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
+    readonly useSocialAnalysis: UnwrapRef<typeof import('../composables/useSocialAnalysis')['useSocialAnalysis']>
+    readonly useSocialAnalysisStore: UnwrapRef<typeof import('../stores/socialAnalysis')['useSocialAnalysisStore']>
     readonly useSorted: UnwrapRef<typeof import('@vueuse/core')['useSorted']>
     readonly useSpeechRecognition: UnwrapRef<typeof import('@vueuse/core')['useSpeechRecognition']>
     readonly useSpeechSynthesis: UnwrapRef<typeof import('@vueuse/core')['useSpeechSynthesis']>

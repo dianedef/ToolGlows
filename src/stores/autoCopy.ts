@@ -14,6 +14,7 @@ interface AutoCopySettings {
   preserveFormatting: boolean
   includeSource: boolean
   showNotifications: boolean
+  enableAltSelection: boolean
 }
 
 const defaultFormats: CopyFormat[] = [
@@ -45,51 +46,78 @@ const defaultSettings: AutoCopySettings = {
   activeFormat: 'text',
   preserveFormatting: true,
   includeSource: true,
-  showNotifications: true
+  showNotifications: true,
+  enableAltSelection: true
 }
 
 export const useAutoCopyStore = defineStore('autoCopy', {
   state: () => ({
-    settings: { ...defaultSettings },
-    isActive: false
+    isActive: false,
+    settings: defaultSettings
   }),
 
   actions: {
-    async loadSettings() {
-      try {
-        const result = await chrome.storage.sync.get('autoCopySettings')
-        if (result.autoCopySettings) {
-          this.settings = {
-            ...defaultSettings,
-            ...result.autoCopySettings,
-            formats: defaultFormats
-          }
-        }
-        console.log('[DEBUG] Settings loaded:', this.settings)
-      } catch (error) {
-        console.error('[ERROR] Failed to load Auto Copy settings:', error)
-        this.settings = { ...defaultSettings }
+    setActive(value: boolean) {
+      this.isActive = value
+    },
+
+    setActiveFormat(format: string) {
+      this.settings.activeFormat = format
+      this.saveSettings()
+    },
+
+    updateSettings(settings: AutoCopySettings) {
+      this.settings = {
+        ...defaultSettings,
+        ...settings,
+        formats: settings.formats || defaultFormats
       }
+      this.saveSettings()
     },
 
     async saveSettings() {
       try {
-        await chrome.storage.sync.set({ autoCopySettings: this.settings })
-        console.log('[SUCCESS] Auto Copy settings saved:', this.settings)
+        // S'assurer que formats est un tableau avant la sauvegarde
+        const settingsToSave = {
+          ...this.settings,
+          formats: Array.isArray(this.settings.formats) ? this.settings.formats : defaultFormats
+        }
+        
+        await chrome.storage.sync.set({ autoCopySettings: settingsToSave })
       } catch (error) {
-        console.error('[ERROR] Failed to save Auto Copy settings:', error)
+        console.error('Erreur lors de la sauvegarde des paramètres:', error)
       }
     },
 
-    async updateSettings(newSettings: Partial<AutoCopySettings>) {
-      this.settings = { ...this.settings, ...newSettings }
-      await this.saveSettings()
-    },
-
-    setActiveFormat(formatId: string) {
-      if (this.settings.formats.some(f => f.id === formatId)) {
-        this.settings.activeFormat = formatId
-        this.saveSettings()
+    async loadSettings() {
+      try {
+        const data = await chrome.storage.sync.get('autoCopySettings')
+        
+        if (data.autoCopySettings) {
+          // Convertir formats en tableau si nécessaire
+          let loadedFormats = data.autoCopySettings.formats
+          if (loadedFormats && !Array.isArray(loadedFormats)) {
+            loadedFormats = Object.values(loadedFormats)
+          }
+          
+          // S'assurer que le format actif existe dans la liste des formats
+          const formats = Array.isArray(loadedFormats) ? loadedFormats : defaultFormats
+          const activeFormat = data.autoCopySettings.activeFormat
+          const formatExists = formats.some(f => f.id === activeFormat)
+          
+          this.settings = {
+            ...defaultSettings,
+            ...data.autoCopySettings,
+            formats,
+            // Si le format actif n'existe pas, utiliser le format par défaut
+            activeFormat: formatExists ? activeFormat : defaultSettings.activeFormat
+          }
+        } else {
+          this.settings = defaultSettings
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des paramètres:', error)
+        this.settings = defaultSettings
       }
     },
 
@@ -112,10 +140,6 @@ export const useAutoCopyStore = defineStore('autoCopy', {
         Object.assign(format, updates)
         this.saveSettings()
       }
-    },
-
-    setActive(value: boolean) {
-      this.isActive = value
     }
   }
 }) 

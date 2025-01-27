@@ -151,18 +151,20 @@ export function useAutoCopy() {
   const handleShortcut = (event: KeyboardEvent) => {
     if (!toolflowzStore.activeTools.includes('autoCopy')) return
 
-    const format = store.settings.formats.find(f => {
-      if (!f.shortcut) return false
-      const keys = f.shortcut.toLowerCase().split('+')
-      return keys.every(key => {
-        switch (key) {
-          case 'alt': return event.altKey
-          case 'ctrl': return event.ctrlKey
-          case 'shift': return event.shiftKey
-          default: return event.key.toLowerCase() === key
-        }
-      })
-    })
+    const format = Array.isArray(store.settings.formats) 
+      ? store.settings.formats.find(f => {
+          if (!f.shortcut) return false
+          const keys = f.shortcut.toLowerCase().split('+')
+          return keys.every(key => {
+            switch (key) {
+              case 'alt': return event.altKey
+              case 'ctrl': return event.ctrlKey
+              case 'shift': return event.shiftKey
+              default: return event.key.toLowerCase() === key
+            }
+          })
+        })
+      : null
 
     if (format) {
       store.setActiveFormat(format.id)
@@ -188,32 +190,42 @@ export function useAutoCopy() {
 
   // Fonction pour activer le mode ALT
   const enableAltMode = () => {
+    if (!store.settings.enableAltSelection) return
+    
     isAltMode.value = true
     document.body.style.cursor = 'pointer'
-    const elements = document.querySelectorAll('div, p, article, section, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote')
+    // Sélectionner tous les éléments de texte sauf ceux de notre extension
+    const selector = 'div, p, article, section, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, code, table, tr, td, th'
+    const elements = document.querySelectorAll(selector)
     elements.forEach((el) => {
-      if (el instanceof HTMLElement && !isPartOfExtension(el)) {
-        el.dataset.originalOutline = el.style.outline
-        el.dataset.originalTransition = el.style.transition
-        el.dataset.originalBackground = el.style.backgroundColor
-        el.style.outline = '2px dashed #007bff'
-        el.style.transition = 'all 0.2s ease-in-out'
+      if (el instanceof HTMLElement) {
+        // Vérifier si l'élément fait partie de l'extension ou de PrimeVue
+        const isExcluded = el.matches('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') ||
+                          el.closest('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') !== null
         
-        // Ajouter les gestionnaires de survol
-        el.addEventListener('mouseenter', () => {
-          if (isAltMode.value) {
-            el.style.outline = '2px dashed #00ff00'
-            el.style.backgroundColor = 'rgba(0, 255, 0, 0.1)'
-          }
-        })
-        el.addEventListener('mouseleave', () => {
-          if (isAltMode.value) {
-            el.style.outline = '2px dashed #007bff'
-            el.style.backgroundColor = el.dataset.originalBackground || ''
-          }
-        })
-        
-        highlightedElements.value.push(el)
+        if (!isExcluded) {
+          el.dataset.originalOutline = el.style.outline
+          el.dataset.originalTransition = el.style.transition
+          el.dataset.originalBackground = el.style.backgroundColor
+          el.style.outline = '2px dashed #007bff'
+          el.style.transition = 'all 0.2s ease-in-out'
+          
+          // Ajouter les gestionnaires de survol
+          el.addEventListener('mouseenter', () => {
+            if (isAltMode.value) {
+              el.style.outline = '2px dashed #00ff00'
+              el.style.backgroundColor = 'rgba(0, 255, 0, 0.1)'
+            }
+          })
+          el.addEventListener('mouseleave', () => {
+            if (isAltMode.value) {
+              el.style.outline = '2px dashed #007bff'
+              el.style.backgroundColor = el.dataset.originalBackground || ''
+            }
+          })
+          
+          highlightedElements.value.push(el)
+        }
       }
     })
   }
@@ -239,11 +251,17 @@ export function useAutoCopy() {
 
   // Gestionnaire de clic pour le mode ALT
   const handleAltClick = (event: MouseEvent) => {
-    if (!isAltMode.value) return
+    if (!isAltMode.value || !store.settings.enableAltSelection) return
     
     event.preventDefault()
     const element = event.target as HTMLElement
-    if (element && !isPartOfExtension(element)) {
+    if (!element) return
+
+    // Vérifier si l'élément fait partie de l'extension ou de PrimeVue
+    const isExcluded = element.matches('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') ||
+                       element.closest('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') !== null
+
+    if (!isExcluded) {
       const text = element.innerText || element.textContent
       if (text) {
         copyToClipboard(formatText(text))
@@ -272,7 +290,6 @@ export function useAutoCopy() {
 
   // Monter/démonter les écouteurs d'événements
   onMounted(() => {
-    console.log('[DEBUG] Montage des écouteurs d\'événements AutoCopy')
     document.addEventListener('mouseup', handleSelection)
     document.addEventListener('keyup', handleSelection)
     document.addEventListener('keydown', handleShortcut)
@@ -282,7 +299,6 @@ export function useAutoCopy() {
   })
 
   onUnmounted(() => {
-    console.log('[DEBUG] Démontage des écouteurs d\'événements AutoCopy')
     document.removeEventListener('mouseup', handleSelection)
     document.removeEventListener('keyup', handleSelection)
     document.removeEventListener('keydown', handleShortcut)

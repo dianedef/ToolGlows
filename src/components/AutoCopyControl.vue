@@ -85,6 +85,23 @@
             />
             <label>Afficher les notifications</label>
           </div>
+
+          <div class="field-checkbox mb-2">
+            <Checkbox
+              v-model="copyStore.settings.enableAltSelection"
+              :binary="true"
+              @change="() => {
+                copyStore.saveSettings();
+                toast.add({ 
+                  severity: 'success', 
+                  summary: 'Sélection ALT', 
+                  detail: copyStore.settings.enableAltSelection ? 'Sélection ALT activée' : 'Sélection ALT désactivée',
+                  life: 3000 
+                });
+              }"
+            />
+            <label>Activer la sélection avec ALT</label>
+          </div>
         </div>
       </div>
     </Dialog>
@@ -106,11 +123,14 @@ const toast = useToast()
 useAutoCopy()
 
 onMounted(async () => {
+  console.log('[DEBUG] Avant loadSettings - formats:', copyStore.settings.formats)
   await copyStore.loadSettings()
+  console.log('[DEBUG] Après loadSettings - formats:', copyStore.settings.formats)
 })
 
 const closeDialog = () => {
   copyStore.setActive(false)
+  console.log('[DEBUG] Fermeture dialog - formats:', copyStore.settings.formats)
   toast.add({ severity: 'info', summary: 'Auto Copy', detail: 'Paramètres sauvegardés', life: 3000 })
 }
 </script>
