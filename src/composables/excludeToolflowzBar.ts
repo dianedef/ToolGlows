@@ -13,7 +13,14 @@ export function useExcludeToolflowzBar() {
     '.toolflowz-tools-container',
     '.toolflowz-settings-group',
     '.toolflowz-settings-header',
-    '.toolflowz-tool-emoji'
+    '.toolflowz-tool-emoji',
+    '.p-toast',
+    '.p-toast-message',
+    '.p-toast-message-content',
+    '.p-toast-message-icon',
+    '.p-toast-message-text',
+    '.p-toast-detail',
+    '.p-toast-icon-close'
   ].join(', ')
   
   function addExclusionStyles() {
@@ -42,7 +49,10 @@ export function useExcludeToolflowzBar() {
       .toolflowz-tool-name,
       .toolflowz-setting-item label,
       .p-dialog[class*="toolflowz"] .p-dialog-header,
-      .p-dialog[class*="toolflowz"] .p-dialog-content {
+      .p-dialog[class*="toolflowz"] .p-dialog-content,
+      .p-toast,
+      .p-toast-message,
+      .p-toast-message-content {
         background-color: var(--surface-card) !important;
         color: var(--text-color) !important;
       }
@@ -56,7 +66,11 @@ export function useExcludeToolflowzBar() {
       .p-checkbox-box,
       .p-inputtext,
       .p-dropdown,
-      .p-multiselect {
+      .p-multiselect,
+      .p-toast-icon-close,
+      .p-togglebutton,
+      .p-togglebutton-input,
+      .p-togglebutton-box {
         background-color: var(--surface-ground) !important;
         color: var(--text-color) !important;
         border-color: var(--surface-border) !important;
@@ -95,14 +109,59 @@ export function useExcludeToolflowzBar() {
       /* Styles pour les survols */
       .toolflowz-tool-item:hover,
       .toolflowz-setting-item:hover,
-      .p-button:hover {
+      .p-button:hover,
+      .p-toast-icon-close:hover {
         background-color: var(--surface-hover) !important;
       }
 
       /* Styles pour les icônes */
       .p-icon,
-      .pi {
+      .pi,
+      .p-toast-message-icon {
         color: var(--text-color) !important;
+      }
+
+      /* Styles spécifiques pour les toasts */
+      .p-toast {
+        opacity: 1 !important;
+      }
+      
+      .p-toast-message-success {
+        border-left-color: var(--green-500) !important;
+      }
+      
+      .p-toast-message-info {
+        border-left-color: var(--blue-500) !important;
+      }
+      
+      .p-toast-message-warn {
+        border-left-color: var(--yellow-500) !important;
+      }
+      
+      .p-toast-message-error {
+        border-left-color: var(--red-500) !important;
+      }
+
+      /* Styles spécifiques pour le toggle button */
+      .p-togglebutton {
+        &.p-highlight {
+          background-color: var(--primary-color) !important;
+          border-color: var(--primary-color) !important;
+          
+          .p-button-label {
+            color: var(--primary-color-text) !important;
+          }
+        }
+        
+        &:not(.p-disabled):hover {
+          background-color: var(--surface-hover) !important;
+        }
+      }
+
+      .p-togglebutton-input {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
       }
     `
     document.head.appendChild(style)
