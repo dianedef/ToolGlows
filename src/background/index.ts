@@ -170,6 +170,36 @@ onMessage('GET_INITIAL_STATE', async () => {
   }
 })
 
+// Gestionnaire pour le mode sombre
+onMessage('APPLY_DARK_MODE', async ({ data, sender }) => {
+  console.log('[BACKGROUND] 🌓 Relaying dark mode update to content script')
+  
+  // Obtenir l'onglet actif
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
+  const activeTab = tabs[0]
+  
+  if (activeTab?.id) {
+    try {
+      // Injecter les styles via l'API chrome.scripting
+      if (data.isActive) {
+        await chrome.scripting.insertCSS({
+          target: { tabId: activeTab.id },
+          css: data.styles
+        })
+      } else {
+        // Supprimer les styles si le mode sombre est désactivé
+        await chrome.scripting.removeCSS({
+          target: { tabId: activeTab.id },
+          css: data.styles
+        })
+      }
+      console.log('[BACKGROUND] ✨ Dark mode styles updated successfully')
+    } catch (error) {
+      console.error('[BACKGROUND] ❌ Failed to update dark mode styles:', error)
+    }
+  }
+})
+
 // Gestion des erreurs globale
 self.onerror = function (message: string | Event, source?: string, lineno?: number, colno?: number, error?: Error) {
   const errorDetails: ErrorDetails = {

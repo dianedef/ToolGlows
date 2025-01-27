@@ -9,6 +9,7 @@ import { injectStyles, injectStylesheet } from '../utils/styleInjection'
 import mainStyles from '@/assets/main.css?inline'
 import contentStyles from '@/content-script/index.scss?inline'
 import { setupSecureBridge } from '@/bridge'
+import './darkMode'
 
 // Import des stores
 import { useSettingsStore } from '../stores/settings'

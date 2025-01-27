@@ -49,6 +49,7 @@ declare module 'vue' {
     TailwindEmptyState: typeof import('./../components/state/tailwind-empty-state.vue')['default']
     TestComponent: typeof import('./../components/TestComponent.vue')['default']
     ThemeSwitch: typeof import('./../components/ThemeSwitch.vue')['default']
+    TimeSelector: typeof import('./../components/TimeSelector.vue')['default']
     ToolflowzBar: typeof import('./../components/ToolflowzBar.vue')['default']
     Update: typeof import('./../components/update.vue')['default']
     WordCounterPopup: typeof import('./../components/WordCounterPopup.vue')['default']
