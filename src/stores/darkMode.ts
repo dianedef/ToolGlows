@@ -180,9 +180,52 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     console.log('[DARK MODE STORE] 🎨 Applying dark mode with options:', options.value)
 
     const styles = `
+      /* Styles de base */
       html, body {
         background-color: ${options.value.backgroundColor} !important;
         color: ${options.value.textColor} !important;
+      }
+      
+      /* Styles des scrollbars pour Webkit (Chrome, Safari, etc.) */
+      ::-webkit-scrollbar {
+        width: 12px !important;
+        height: 12px !important;
+        background-color: ${options.value.backgroundColor} !important;
+      }
+
+      ::-webkit-scrollbar-track {
+        background-color: ${options.value.backgroundColor} !important;
+        border-radius: 8px !important;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background-color: #444 !important;
+        border: 2px solid ${options.value.backgroundColor} !important;
+        border-radius: 8px !important;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: #666 !important;
+      }
+
+      ::-webkit-scrollbar-corner {
+        background-color: ${options.value.backgroundColor} !important;
+      }
+
+      /* Styles des scrollbars pour Firefox */
+      * {
+        scrollbar-color: #444 ${options.value.backgroundColor} !important;
+        scrollbar-width: thin !important;
+      }
+
+      /* Reste des styles... */
+      html {
+        background: ${options.value.backgroundColor} !important;
+      }
+
+      body {
+        background: ${options.value.backgroundColor} !important;
+        margin-color: ${options.value.backgroundColor} !important;
       }
       
       * {
@@ -191,9 +234,66 @@ export const useDarkModeStore = defineStore('darkMode', () => {
       }
 
       /* Éléments de base */
-      div, section, article, aside, nav, header, footer, main {
+      div, section, article, aside, nav, header, footer, main,
+      table, tr, td, th, thead, tbody, tfoot,
+      form, fieldset, legend,
+      pre, code, blockquote,
+      ul, ol, li, dl, dt, dd,
+      details, summary, i, em {
         background-color: ${options.value.backgroundColor} !important;
         color: ${options.value.textColor} !important;
+        background: ${options.value.backgroundColor} !important;
+      }
+
+      /* Gestion des marges et bordures */
+      body::before,
+      body::after,
+      div::before,
+      div::after,
+      main::before,
+      main::after,
+      article::before,
+      article::after,
+      section::before,
+      section::after,
+      nav::before,
+      nav::after,
+      details::before,
+      details::after,
+      summary::before,
+      summary::after,
+      i::before,
+      i::after {
+        background: ${options.value.backgroundColor} !important;
+        background-color: ${options.value.backgroundColor} !important;
+        border-color: #444 !important;
+      }
+
+      /* Bordures et marges des tableaux */
+      table, th, td {
+        border-color: #444 !important;
+      }
+      
+      /* Bordures des conteneurs */
+      div, section, article, aside, nav, header, footer, main,
+      .container, .content, .wrapper, .main,
+      [class*="container"], [class*="content"], [class*="wrapper"],
+      [class*="main"], [class*="body"], [class*="section"],
+      details, summary {
+        border-color: #444 !important;
+        outline-color: #444 !important;
+        background: ${options.value.backgroundColor} !important;
+      }
+
+      /* Suppression des marges blanches */
+      [class*="bg-"],
+      [class*="background"],
+      [style*="background"],
+      [style*="bg-"],
+      [style*="margin"],
+      [style*="padding"] {
+        background: ${options.value.backgroundColor} !important;
+        background-color: ${options.value.backgroundColor} !important;
       }
       
       /* Liens */
@@ -207,11 +307,57 @@ export const useDarkModeStore = defineStore('darkMode', () => {
                brightness(${options.value.contrastLevel}) !important;
       }
       
-      /* Formulaires */
-      input, textarea, select, button {
+      /* Formulaires et contrôles */
+      input, textarea, select, button,
+      [type="text"], [type="password"], [type="email"], [type="number"],
+      [type="tel"], [type="url"], [type="search"], [type="date"],
+      [type="time"], [type="datetime-local"], [type="month"],
+      [type="week"], [type="color"], [type="file"],
+      [type="submit"], [type="reset"], [type="button"] {
         background-color: ${options.value.backgroundColor} !important;
         color: ${options.value.textColor} !important;
         border-color: #444 !important;
+      }
+
+      /* Conteneurs spécifiques */
+      .container, .content, .wrapper, .main,
+      [class*="container"], [class*="content"], [class*="wrapper"],
+      [class*="main"], [class*="body"], [class*="section"] {
+        background-color: ${options.value.backgroundColor} !important;
+        color: ${options.value.textColor} !important;
+        background: ${options.value.backgroundColor} !important;
+      }
+
+      /* Gestion des iframes */
+      iframe {
+        border-color: #444 !important;
+      }
+      
+      /* Gestion des éléments avec des ombres */
+      [class*="shadow"],
+      [class*="card"],
+      [style*="box-shadow"] {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) !important;
+      }
+
+      /* Styles pour les icônes */
+      i[class*="icon"],
+      i[class*="fa-"],
+      i[class*="material"],
+      i[class*="pi-"],
+      span[class*="icon"],
+      span[class*="fa-"],
+      span[class*="material"],
+      span[class*="pi-"] {
+        color: ${options.value.textColor} !important;
+        background-color: #2a2a2a !important;
+        background: #2a2a2a !important;
+      }
+
+      /* Styles spécifiques pour les icônes sans classe */
+      i, span[class*="icon"] {
+        background-color: #2a2a2a !important;
+        background: #2a2a2a !important;
       }
     `
 
