@@ -8,6 +8,8 @@ export function useAutoCopy() {
   const toolflowzStore = useToolflowzStore()
   const toast = useToast()
   const isCopying = ref(false)
+  const isAltMode = ref(false)
+  const highlightedElements = ref<HTMLElement[]>([])
 
   // Fonction pour appliquer le template au texte
   const applyTemplate = (text: string, format: string): string => {
@@ -168,12 +170,115 @@ export function useAutoCopy() {
     }
   }
 
+  // Fonction pour vérifier si un élément appartient à notre extension
+  const isPartOfExtension = (element: HTMLElement): boolean => {
+    let current = element
+    while (current && current !== document.body) {
+      if (current.id === 'toolflowz-extension' || current.classList.contains('toolflowz-extension')) {
+        return true
+      }
+      if (current.parentElement) {
+        current = current.parentElement
+      } else {
+        break
+      }
+    }
+    return false
+  }
+
+  // Fonction pour activer le mode ALT
+  const enableAltMode = () => {
+    isAltMode.value = true
+    document.body.style.cursor = 'pointer'
+    const elements = document.querySelectorAll('div, p, article, section, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote')
+    elements.forEach((el) => {
+      if (el instanceof HTMLElement && !isPartOfExtension(el)) {
+        el.dataset.originalOutline = el.style.outline
+        el.dataset.originalTransition = el.style.transition
+        el.dataset.originalBackground = el.style.backgroundColor
+        el.style.outline = '2px dashed #007bff'
+        el.style.transition = 'all 0.2s ease-in-out'
+        
+        // Ajouter les gestionnaires de survol
+        el.addEventListener('mouseenter', () => {
+          if (isAltMode.value) {
+            el.style.outline = '2px dashed #00ff00'
+            el.style.backgroundColor = 'rgba(0, 255, 0, 0.1)'
+          }
+        })
+        el.addEventListener('mouseleave', () => {
+          if (isAltMode.value) {
+            el.style.outline = '2px dashed #007bff'
+            el.style.backgroundColor = el.dataset.originalBackground || ''
+          }
+        })
+        
+        highlightedElements.value.push(el)
+      }
+    })
+  }
+
+  // Fonction pour désactiver le mode ALT
+  const disableAltMode = () => {
+    isAltMode.value = false
+    document.body.style.cursor = 'default'
+    highlightedElements.value.forEach((el) => {
+      el.style.outline = el.dataset.originalOutline || ''
+      el.style.transition = el.dataset.originalTransition || ''
+      el.style.backgroundColor = el.dataset.originalBackground || ''
+      delete el.dataset.originalOutline
+      delete el.dataset.originalTransition
+      delete el.dataset.originalBackground
+      
+      // Retirer les gestionnaires de survol
+      el.removeEventListener('mouseenter', () => {})
+      el.removeEventListener('mouseleave', () => {})
+    })
+    highlightedElements.value = []
+  }
+
+  // Gestionnaire de clic pour le mode ALT
+  const handleAltClick = (event: MouseEvent) => {
+    if (!isAltMode.value) return
+    
+    event.preventDefault()
+    const element = event.target as HTMLElement
+    if (element && !isPartOfExtension(element)) {
+      const text = element.innerText || element.textContent
+      if (text) {
+        copyToClipboard(formatText(text))
+        if (store.settings.showNotifications) {
+          sendNotification('Texte copié', 'L\'élément a été copié dans le presse-papier')
+        }
+      }
+    }
+    disableAltMode()
+  }
+
+  // Gestionnaires de touches pour ALT
+  const handleAltKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Alt' && !isAltMode.value) {
+      event.preventDefault()
+      enableAltMode()
+    }
+  }
+
+  const handleAltKeyUp = (event: KeyboardEvent) => {
+    if (event.key === 'Alt' && isAltMode.value) {
+      event.preventDefault()
+      disableAltMode()
+    }
+  }
+
   // Monter/démonter les écouteurs d'événements
   onMounted(() => {
     console.log('[DEBUG] Montage des écouteurs d\'événements AutoCopy')
     document.addEventListener('mouseup', handleSelection)
     document.addEventListener('keyup', handleSelection)
     document.addEventListener('keydown', handleShortcut)
+    document.addEventListener('keydown', handleAltKeyDown)
+    document.addEventListener('keyup', handleAltKeyUp)
+    document.addEventListener('click', handleAltClick)
   })
 
   onUnmounted(() => {
@@ -181,10 +286,16 @@ export function useAutoCopy() {
     document.removeEventListener('mouseup', handleSelection)
     document.removeEventListener('keyup', handleSelection)
     document.removeEventListener('keydown', handleShortcut)
+    document.removeEventListener('keydown', handleAltKeyDown)
+    document.removeEventListener('keyup', handleAltKeyUp)
+    document.removeEventListener('click', handleAltClick)
+    // S'assurer que les styles sont nettoyés
+    disableAltMode()
   })
 
   return {
     isCopying,
+    isAltMode,
     settings: store.settings,
     updateSettings: store.updateSettings,
     setActiveFormat: store.setActiveFormat
