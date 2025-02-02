@@ -85,7 +85,7 @@ export const useAutoCopyStore = defineStore('autoCopy', {
         
         await chrome.storage.sync.set({ autoCopySettings: settingsToSave })
       } catch (error) {
-        console.error('Erreur lors de la sauvegarde des paramètres:', error)
+        console.error('Error during settings save:', error)
       }
     },
 
@@ -116,7 +116,7 @@ export const useAutoCopyStore = defineStore('autoCopy', {
           this.settings = defaultSettings
         }
       } catch (error) {
-        console.error('Erreur lors du chargement des paramètres:', error)
+        console.error('Error during settings load:', error)
         this.settings = defaultSettings
       }
     },

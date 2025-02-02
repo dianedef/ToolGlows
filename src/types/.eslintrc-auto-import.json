@@ -373,6 +373,8 @@
     "useLinksExplorer": true,
     "useLinksExplorerStore": true,
     "useSocialAnalysis": true,
-    "useSocialAnalysisStore": true
+    "useSocialAnalysisStore": true,
+    "useExcludeToolflowzBar": true,
+    "useThemeStore": true
   }
 }

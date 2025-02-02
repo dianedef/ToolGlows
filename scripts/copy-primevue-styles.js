@@ -114,7 +114,6 @@ async function copyFiles() {
       console.log('✓ PrimeIcons fonts copied')
     }
 
-    console.log('✓ Tous les fichiers ont été copiés avec succès !')
   } catch (error) {
     console.error('Erreur lors de la copie des fichiers:', error)
     process.exit(1)

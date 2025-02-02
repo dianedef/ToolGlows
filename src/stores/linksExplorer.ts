@@ -55,9 +55,20 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
 
     async saveSettings() {
       try {
+        // Check if the extension context is still valid
+        if (!chrome.runtime?.id) {
+          console.log('[INFO] Extension context invalidated, skipping settings save')
+          return
+        }
+        
         await chrome.storage.sync.set({ linksExplorerSettings: this.settings })
         console.log('[SUCCESS] Links Explorer settings saved:', this.settings)
       } catch (error) {
+        // Ignore the error if it's related to the invalidated context
+        if (error.message?.includes('Extension context invalidated')) {
+          console.log('[INFO] Extension context invalidated, skipping settings save')
+          return
+        }
         console.error('[ERROR] Failed to save Links Explorer settings:', error)
       }
     },
@@ -78,7 +89,7 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
       if (depth === 0) this.links = []
       
       try {
-        // Fonction pour nettoyer l'URL
+        // Function to clean the URL
         const cleanUrl = (url: string) => {
           try {
             const urlObj = new URL(url)
@@ -88,7 +99,7 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
           }
         }
 
-        // Collecte des liens de la page courante
+        // Collect links from the current page
         const rawLinks = Array.from(document.querySelectorAll('a')).map(link => ({
           url: cleanUrl(link.href),
           isExternal: link.hostname !== window.location.hostname,
@@ -96,37 +107,37 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
           title: link.textContent?.trim()
         }))
 
-        // Filtrage initial des liens
+        // Initial filtering of links
         const newLinks = rawLinks.filter(link => {
           if (!link.url) return false
-          // Éviter les doublons
+          // Avoid duplicates
           if (this.links.some(existingLink => existingLink.url === link.url)) return false
           if (this.settings.includeExternal && link.isExternal) return true
           if (this.settings.includeInternal && !link.isExternal) return true
           return false
         })
 
-        // Ajouter les nouveaux liens
+        // Add the new links
         this.links.push(...newLinks)
 
-        // Explorer récursivement les liens internes si nécessaire
+        // Recursively explore internal links if necessary
         if (depth < this.settings.maxDepth - 1) {
           const internalLinks = newLinks.filter(link => !link.isExternal)
           for (const link of internalLinks) {
             try {
-              // Charger la page dans un iframe temporaire
+              // Load the page in a temporary iframe
               const iframe = document.createElement('iframe')
               iframe.style.display = 'none'
               document.body.appendChild(iframe)
               
-              // Attendre le chargement de la page
+              // Wait for the page to load
               await new Promise((resolve, reject) => {
                 iframe.onload = resolve
                 iframe.onerror = reject
                 iframe.src = link.url
               })
 
-              // Explorer les liens dans l'iframe
+              // Explore the links in the iframe
               if (iframe.contentDocument) {
                 const iframeLinks = Array.from(iframe.contentDocument.querySelectorAll('a')).map(link => ({
                   url: cleanUrl(link.href),
@@ -135,7 +146,7 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
                   title: link.textContent?.trim()
                 }))
 
-                // Filtrer et ajouter les liens
+                // Filter and add the links
                 const newIframeLinks = iframeLinks.filter(link => {
                   if (!link.url) return false
                   if (this.links.some(existingLink => existingLink.url === link.url)) return false
@@ -147,16 +158,16 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
                 this.links.push(...newIframeLinks)
               }
 
-              // Nettoyer
+              // Clean up
               document.body.removeChild(iframe)
             } catch (error) {
-              console.warn(`[WARN] Impossible d'explorer ${link.url}:`, error)
+              console.warn(`[WARN] Unable to explore ${link.url}:`, error)
             }
           }
         }
 
       } catch (error) {
-        console.error('Erreur lors de l\'exploration des liens:', error)
+        console.error('Error while exploring links:', error)
       } finally {
         this.isLoading = false
       }
@@ -172,13 +183,13 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
       await this.saveSettings()
 
       try {
-        // On explore niveau par niveau
+        // Explore level by level
         for (let depth = 0; depth <= this.settings.currentDepth; depth++) {
-          console.log(`[DEBUG] Exploration du niveau ${depth}`)
+          console.log(`[DEBUG] Exploring depth ${depth}`)
           await this.exploreLinks(depth)
         }
       } catch (error) {
-        console.error('[ERROR] Erreur lors de l\'exploration en profondeur:', error)
+        console.error('[ERROR] Error while exploring deeper:', error)
       } finally {
         this.isLoading = false
       }
@@ -187,7 +198,10 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
     clearLinks() {
       this.links = []
       this.settings.currentDepth = 0
-      this.saveSettings()
+      // Only save if we're not unloading the page
+      if (document.readyState !== 'unloading') {
+        this.saveSettings()
+      }
     }
   }
 }) 

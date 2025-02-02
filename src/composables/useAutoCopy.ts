@@ -11,7 +11,7 @@ export function useAutoCopy() {
   const isAltMode = ref(false)
   const highlightedElements = ref<HTMLElement[]>([])
 
-  // Fonction pour appliquer le template au texte
+  // Function to apply the template to the text
   const applyTemplate = (text: string, format: string): string => {
     const activeFormat = store.settings.formats.find(f => f.id === format)
     if (!activeFormat) return text
@@ -24,7 +24,7 @@ export function useAutoCopy() {
       .replace('{url}', url)
       .replace('{title}', title)
 
-    // Si on ne veut pas inclure la source, on retire la ligne correspondante
+    // If we don't want to include the source, we remove the corresponding line
     if (!store.settings.includeSource) {
       result = result.split('\n').filter(line => !line.includes('Source:')).join('\n')
     }
@@ -32,7 +32,7 @@ export function useAutoCopy() {
     return result
   }
 
-  // Fonction pour formater le texte selon le format choisi
+  // Function to format the text according to the chosen format
   const formatText = (text: string): string => {
     let formattedText = text
 
@@ -47,7 +47,7 @@ export function useAutoCopy() {
             .replace(/<a href="(.*?)">(.*?)<\/a>/g, '[$2]($1)')
           break
         case 'html':
-          // Garder le HTML tel quel
+          // Keep HTML as is
           break
         default:
           formattedText = formattedText.replace(/<[^>]+>/g, '')
@@ -57,7 +57,7 @@ export function useAutoCopy() {
     return applyTemplate(formattedText, store.settings.activeFormat)
   }
 
-  // Fonction pour envoyer une notification
+  // Function to send a notification
   const sendNotification = (title: string, message: string) => {
     try {
       toast.add({
@@ -67,23 +67,23 @@ export function useAutoCopy() {
         life: 3000
       })
     } catch (error) {
-      console.log('[DEBUG] Erreur lors de l\'envoi de la notification:', error)
+      console.log('[DEBUG] Error sending notification:', error)
     }
   }
 
-  // Fonction pour copier du texte dans le presse-papier
+  // Function to copy text to the clipboard
   const copyToClipboard = async (text: string): Promise<boolean> => {
-    // Essayer d'abord avec l'API Clipboard moderne
+    // First try with the modern Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
       try {
         await navigator.clipboard.writeText(text)
         return true
       } catch (error) {
-        console.log('[DEBUG] Échec de la copie avec navigator.clipboard:', error)
+        console.log('[DEBUG] Failed to copy with navigator.clipboard:', error)
       }
     }
 
-    // Méthode de secours avec execCommand
+    // Fallback method with execCommand
     try {
       const textarea = document.createElement('textarea')
       textarea.value = text
@@ -98,74 +98,74 @@ export function useAutoCopy() {
       if (success) {
         return true
       } else {
-        console.log('[DEBUG] Échec de la copie avec execCommand')
+        console.log('[DEBUG] Copy failed with execCommand')
         return false
       }
     } catch (error) {
-      console.error('[ERROR] Échec de toutes les méthodes de copie:', error)
+      console.error('[ERROR] Copy failed with all methods:', error)
       return false
     }
   }
 
-  // Fonction pour vérifier si un élément doit être exclu de la copie
+  // Function to check if an element should be excluded from the copy
   const isElementExcluded = (element: HTMLElement): boolean => {
-    // Vérifier si l'élément ou un de ses parents correspond aux sélecteurs d'exclusion
+    // Check if the element or one of its parents matches the exclusion selectors
     const isExcluded = element.matches('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') ||
                       element.closest('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') !== null
     return isExcluded
   }
 
-  // Fonction pour copier le texte sélectionné
+  // Function to copy the selected text
   const copySelection = async () => {
     const selection = window.getSelection()
     if (!selection || selection.rangeCount === 0) return
 
-    // Vérifier si la sélection est dans un élément exclu
+    // Check if the selection is in an excluded element
     const range = selection.getRangeAt(0)
     const container = range.commonAncestorContainer
     const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : container as HTMLElement
     
     if (!element || isElementExcluded(element)) {
-      console.log('[DEBUG] Sélection dans un élément exclu, copie ignorée')
+      console.log('[DEBUG] Selection in an excluded element, copy ignored')
       return
     }
 
     const text = selection.toString()
     if (!text) return
 
-    console.log('[DEBUG] Tentative de copie du texte:', text)
+    console.log('[DEBUG] Attempting to copy text:', text)
     isCopying.value = true
 
     try {
       const formattedText = formatText(text)
-      console.log('[DEBUG] Texte formaté:', formattedText)
+      console.log('[DEBUG] Formatted text:', formattedText)
       
       const success = await copyToClipboard(formattedText)
       
       if (success) {
-        console.log('[DEBUG] Texte copié avec succès')
+        console.log('[DEBUG] Text copied successfully')
         if (store.settings.showNotifications) {
-          sendNotification('Texte copié', 'Le texte sélectionné a été copié dans le presse-papier')
+          sendNotification('Text copied', 'The selected text has been copied to the clipboard')
         }
       } else {
-        throw new Error('Impossible de copier le texte')
+        throw new Error('Failed to copy text')
       }
     } catch (error) {
-      console.error('[ERROR] Erreur lors de la copie:', error)
+      console.error('[ERROR] Error during copy:', error)
       if (store.settings.showNotifications) {
-        sendNotification('Erreur', 'Impossible de copier le texte sélectionné')
+        sendNotification('Error', 'Failed to copy the selected text')
       }
     } finally {
       isCopying.value = false
     }
   }
 
-  // Gestionnaire d'événement pour la sélection de texte
+  // Event handler for text selection
   const handleSelection = () => {
     copySelection()
   }
 
-  // Gestionnaire de raccourcis clavier
+  // Keyboard shortcut handler
   const handleShortcut = (event: KeyboardEvent) => {
     if (!toolflowzStore.activeTools.includes('autoCopy')) return
 
@@ -190,13 +190,13 @@ export function useAutoCopy() {
     }
   }
 
-  // Fonction pour activer le mode ALT
+  // Function to enable ALT mode
   const enableAltMode = () => {
     if (!store.settings.enableAltSelection) return
     
     isAltMode.value = true
     document.body.style.cursor = 'pointer'
-    // Sélectionner tous les éléments de texte sauf ceux de notre extension
+    // Select all text elements except those of our extension
     const selector = 'div, p, article, section, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, code, table, tr, td, th'
     const elements = document.querySelectorAll(selector)
     elements.forEach((el) => {
@@ -207,7 +207,7 @@ export function useAutoCopy() {
         el.style.outline = '2px dashed #007bff'
         el.style.transition = 'all 0.2s ease-in-out'
         
-        // Ajouter les gestionnaires de survol
+        // Add hover handlers
         el.addEventListener('mouseenter', () => {
           if (isAltMode.value) {
             el.style.outline = '2px dashed #00ff00'
@@ -226,7 +226,7 @@ export function useAutoCopy() {
     })
   }
 
-  // Fonction pour désactiver le mode ALT
+  // Function to disable ALT mode
   const disableAltMode = () => {
     isAltMode.value = false
     document.body.style.cursor = 'default'
@@ -238,14 +238,14 @@ export function useAutoCopy() {
       delete el.dataset.originalTransition
       delete el.dataset.originalBackground
       
-      // Retirer les gestionnaires de survol
+      // Remove hover handlers
       el.removeEventListener('mouseenter', () => {})
       el.removeEventListener('mouseleave', () => {})
     })
     highlightedElements.value = []
   }
 
-  // Gestionnaire de clic pour le mode ALT
+  // ALT mode click handler
   const handleAltClick = (event: MouseEvent) => {
     if (!isAltMode.value || !store.settings.enableAltSelection) return
     
@@ -258,14 +258,14 @@ export function useAutoCopy() {
       if (text) {
         copyToClipboard(formatText(text))
         if (store.settings.showNotifications) {
-          sendNotification('Texte copié', 'L\'élément a été copié dans le presse-papier')
+          sendNotification('Text copied', 'The element has been copied to the clipboard')
         }
       }
     }
     disableAltMode()
   }
 
-  // Gestionnaires de touches pour ALT
+  // ALT mode keydown handler
   const handleAltKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Alt' && !isAltMode.value) {
       event.preventDefault()
@@ -280,7 +280,7 @@ export function useAutoCopy() {
     }
   }
 
-  // Monter/démonter les écouteurs d'événements
+  // Mount/unmount event listeners
   onMounted(() => {
     document.addEventListener('mouseup', handleSelection)
     document.addEventListener('keyup', handleSelection)
@@ -297,7 +297,7 @@ export function useAutoCopy() {
     document.removeEventListener('keydown', handleAltKeyDown)
     document.removeEventListener('keyup', handleAltKeyUp)
     document.removeEventListener('click', handleAltClick)
-    // S'assurer que les styles sont nettoyés
+    // Ensure styles are cleaned up
     disableAltMode()
   })
 

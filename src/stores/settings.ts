@@ -12,6 +12,8 @@ export interface ToolflowzSettings {
   }
   activeTools: string[]
   isPinned: boolean
+  toolbarColor?: string
+  toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -26,13 +28,16 @@ export const useSettingsStore = defineStore('settings', () => {
     expanded: false,
     position: { x: window.innerWidth - 100, y: 20 },
     activeTools: [],
-    isPinned: false
-  })
+    isPinned: false,
+    toolbarColor: '#ff69b4',
+    toolbarSize: 'md'
+  } as ToolflowzSettings)
 
   // Surveille uniquement les changements qui affectent l'UI
   watch(() => ({
     position: settings.value.position,
-    activeTools: settings.value.activeTools
+    activeTools: settings.value.activeTools,
+    toolbarColor: settings.value.toolbarColor
   }), (newSettings) => {
     applySettings(settings.value)
   }, { deep: true })
@@ -47,11 +52,10 @@ export const useSettingsStore = defineStore('settings', () => {
       newSettings.activeTools = Object.values(newSettings.activeTools || {})
     }
     
-    // Position
+    // Applique les styles à la barre d'outils
     const toolbar = document.querySelector('.toolflowz-bar') as HTMLElement
-    if (toolbar && newSettings.position) {
-      toolbar.style.left = `${newSettings.position.x}px`
-      toolbar.style.top = `${newSettings.position.y}px`
+    if (toolbar) {
+      toolbar.style.backgroundColor = newSettings.toolbarColor || '#ffffff'
     }
 
     // Outils actifs - seulement si différents des outils actuels
@@ -90,8 +94,11 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const updateSettings = async (newSettings: Partial<ToolflowzSettings>) => {
     console.log('[INFO] Updating settings:', newSettings)
-    // Met à jour localement
-    settings.value = { ...settings.value, ...newSettings }
+    // Met à jour localement en préservant les valeurs existantes
+    settings.value = { 
+      ...settings.value,
+      ...newSettings
+    }
     
     try {
       // Envoie au background

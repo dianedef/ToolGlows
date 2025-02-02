@@ -54,8 +54,8 @@ export function useInstantOCR() {
       
       worker.value = newWorker
     } catch (e) {
-      console.error('ERROR: Erreur lors de l\'initialisation du worker OCR:', e)
-      error.value = e instanceof Error ? e.message : 'Échec de l\'initialisation OCR'
+      console.error('ERROR: Error during OCR worker initialization:', e)
+      error.value = e instanceof Error ? e.message : 'OCR worker initialization failed'
     }
   }
 

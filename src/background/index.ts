@@ -16,6 +16,8 @@ interface Settings {
   position: { x: number; y: number }
   activeTools: string[]
   isPinned: boolean
+  toolbarColor?: string
+  toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 }
 
 interface MessageData {
@@ -66,8 +68,13 @@ chrome.runtime.onInstalled.addListener(async (opt) => {
 const broadcastToOtherTabs = async (type: string, data: MessageData, sourceTabId?: number) => {
   console.log(`[BACKGROUND] 📢 Broadcasting ${type} to other tabs, source:`, sourceTabId)
   try {
-    // Récupère tous les onglets actifs
-    const tabs = await chrome.tabs.query({ status: 'complete' })
+    // Récupère tous les onglets actifs avec l'URL de l'extension
+    const tabs = await chrome.tabs.query({
+      url: [
+        "http://*/*",
+        "https://*/*"
+      ]
+    })
     console.log('[BACKGROUND] 📋 Found active tabs:', tabs.length)
 
     // Broadcast en parallèle à tous les onglets
@@ -77,7 +84,7 @@ const broadcastToOtherTabs = async (type: string, data: MessageData, sourceTabId
         if (!tab.id) return
 
         try {
-          console.log(`[BACKGROUND] 📤 Sending to tab ${tab.id}`)
+          console.log(`[BACKGROUND] 📤 Sending to tab ${tab.id}:`, data)
           await sendMessage(type, data, { context: 'content-script', tabId: tab.id })
           console.log(`[BACKGROUND] ✅ Sent to tab ${tab.id}`)
         } catch (error) {
@@ -107,6 +114,7 @@ onMessage('SETTINGS_UPDATED', async ({ data, sender }) => {
       settings.activeTools = Object.values(settings.activeTools || {})
     }
     
+    // Mise à jour de l'état global
     globalState.settings = settings
 
     // Sauvegarder dans le storage
@@ -114,10 +122,19 @@ onMessage('SETTINGS_UPDATED', async ({ data, sender }) => {
       toolflowzSettings: settings 
     })
 
-    // Broadcast aux autres onglets
+    console.log('[BACKGROUND] 💾 Settings saved:', settings)
+
+    // Broadcast immédiat aux autres onglets
     await broadcastToOtherTabs('SETTINGS_SYNC', { 
       settings: settings 
     }, sourceTabId)
+
+    // Re-broadcast après un court délai pour s'assurer que tous les onglets sont prêts
+    setTimeout(async () => {
+      await broadcastToOtherTabs('SETTINGS_SYNC', { 
+        settings: settings 
+      }, sourceTabId)
+    }, 500)
   } catch (error) {
     console.error('[ERROR] Settings update error:', error)
   }
@@ -205,6 +222,20 @@ onMessage('APPLY_DARK_MODE', async ({ data }) => {
   }
 })
 
+// Vérifier si on peut injecter des styles dans cet onglet
+function canInjectStyles(url: string): boolean {
+  try {
+    const urlObj = new URL(url)
+    return !urlObj.protocol.startsWith('chrome') && 
+           !urlObj.protocol.startsWith('edge') && 
+           !urlObj.protocol.startsWith('about') &&
+           !urlObj.protocol.startsWith('chrome-extension') &&
+           !urlObj.protocol.startsWith('moz-extension')
+  } catch {
+    return false
+  }
+}
+
 // Gestionnaire pour l'injection du mode sombre
 onMessage('INJECT_DARK_MODE', async ({ data }) => {
   console.log('[BACKGROUND] 🎨 Injecting dark mode styles')
@@ -213,25 +244,17 @@ onMessage('INJECT_DARK_MODE', async ({ data }) => {
     // Obtenir tous les onglets
     const tabs = await chrome.tabs.query({})
     
-    // Appliquer ou supprimer les styles sur tous les onglets
+    // Appliquer ou supprimer les styles sur les onglets autorisés
     for (const tab of tabs) {
-      if (tab.id && tab.url) {
-        // Vérifier si l'URL est accessible
-        if (tab.url.startsWith('chrome://') || tab.url.startsWith('edge://') || tab.url.startsWith('about:')) {
-          console.log(`[BACKGROUND] ⚠️ Skipping protected URL: ${tab.url}`)
-          continue
-        }
-
+      if (tab.id && tab.url && canInjectStyles(tab.url)) {
         try {
           if (data.isActive) {
-            // Injecter les styles
             await chrome.scripting.insertCSS({
               target: { tabId: tab.id },
               css: data.styles
             })
             console.log(`[BACKGROUND] ✨ Dark mode styles injected in tab ${tab.id}`)
           } else {
-            // Supprimer les styles
             await chrome.scripting.removeCSS({
               target: { tabId: tab.id },
               css: data.styles
@@ -239,7 +262,10 @@ onMessage('INJECT_DARK_MODE', async ({ data }) => {
             console.log(`[BACKGROUND] 🌞 Dark mode styles removed from tab ${tab.id}`)
           }
         } catch (error) {
-          console.error(`[BACKGROUND] ❌ Failed to update styles for tab ${tab.id}:`, error)
+          // Log uniquement si ce n'est pas une erreur de permission
+          if (!error.message?.includes('Cannot access contents of the page')) {
+            console.error(`[BACKGROUND] ❌ Failed to update styles for tab ${tab.id}:`, error)
+          }
         }
       }
     }

@@ -8,7 +8,6 @@
     :style="{ width: '350px' }"
     :maximizable="true"
     @hide="closeDialog"
-    appendTo="self"
   >
     <div class="toolflowz-gmail-options">
       <div class="toolflowz-field mb-3">
@@ -244,6 +243,7 @@
       :dismissableMask="true"
       :maximizable="true"
       class="p-fluid"
+      appendTo="body"
       @hide="showAddLabelDialog = false"
     >
       <div class="field mb-3">
@@ -280,6 +280,7 @@
       :dismissableMask="true"
       :maximizable="true"
       class="p-fluid"
+      appendTo="body"
       @hide="showAddShortcutDialog = false"
     >
       <div class="field mb-3">
@@ -316,6 +317,7 @@
       :dismissableMask="true"
       :maximizable="true"
       class="p-fluid"
+      appendTo="body"
       @hide="showAddFilterDialog = false"
     >
       <div class="field mb-3">
@@ -413,7 +415,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useBetterGmailStore } from '@/stores/betterGmail'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
@@ -424,6 +426,28 @@ import Dropdown from 'primevue/dropdown'
 import ColorPicker from 'primevue/colorpicker'
 import Textarea from 'primevue/textarea'
 import InputNumber from 'primevue/inputnumber'
+
+type FieldType = 'from' | 'to' | 'subject' | 'hasAttachment'
+type OperatorType = 'contains' | 'notContains' | 'equals' | 'notEquals' | 'matches'
+type ActionType = 'label' | 'archive' | 'mark' | 'star' | 'forward'
+
+interface Condition {
+  field: FieldType
+  operator: OperatorType
+  value: string
+}
+
+interface Action {
+  type: ActionType
+  value: string
+}
+
+interface Filter {
+  id: string
+  name: string
+  conditions: Condition[]
+  actions: Action[]
+}
 
 const gmailStore = useBetterGmailStore()
 const showAddLabelDialog = ref(false)
@@ -447,7 +471,7 @@ const newShortcut = ref({
   action: ''
 })
 
-const newFilter = ref({
+const newFilter = ref<Filter>({
   id: '',
   name: '',
   conditions: [],

@@ -10,6 +10,8 @@ export interface Settings {
   position: { x: number; y: number }
   activeTools: string[]
   isPinned: boolean
+  toolbarColor?: string
+  toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   darkMode?: {
     options?: {
       backgroundColor: string
@@ -66,6 +68,8 @@ interface SerializableSettings {
   position: { x: number; y: number }
   activeTools: string[]
   isPinned: boolean
+  toolbarColor?: string
+  toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 }
 
 // Fonctions pour envoyer des messages au background script
@@ -79,7 +83,9 @@ export const bridgeApi = {
         y: settings.position.y
       },
       activeTools: [...settings.activeTools],
-      isPinned: settings.isPinned
+      isPinned: settings.isPinned,
+      toolbarColor: settings.toolbarColor,
+      toolbarSize: settings.toolbarSize
     }
     await sendMessage('SETTINGS_UPDATED', { settings: jsonSettings }, 'background')
   },
@@ -93,7 +99,9 @@ export const bridgeApi = {
           typeof settings.position?.x === 'number' &&
           typeof settings.position?.y === 'number' &&
           Array.isArray(settings.activeTools) &&
-          typeof settings.isPinned === 'boolean') {
+          typeof settings.isPinned === 'boolean' &&
+          (!settings.toolbarColor || typeof settings.toolbarColor === 'string') &&
+          (!settings.toolbarSize || ['xs', 'sm', 'md', 'lg', 'xl'].includes(settings.toolbarSize))) {
         return { 
           settings: {
             expanded: settings.expanded,
@@ -102,7 +110,9 @@ export const bridgeApi = {
               y: settings.position.y
             },
             activeTools: settings.activeTools,
-            isPinned: settings.isPinned
+            isPinned: settings.isPinned,
+            toolbarColor: settings.toolbarColor,
+            toolbarSize: settings.toolbarSize || 'md'
           } as Settings 
         }
       }

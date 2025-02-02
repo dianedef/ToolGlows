@@ -3,7 +3,7 @@
     v-if="!isLoading"
     ref="toolbarRef"
     class="toolflowz-bar" 
-    :style="style"
+    :style="toolbarStyle"
     :class="{ 
       'toolflowz-expanded': isExpanded || settingsStore.settings.isPinned,
       'toolflowz-dragging': isDragging 
@@ -78,7 +78,10 @@
   >
     <div class="toolflowz-settings-content">
       <!-- Paramètres généraux -->
-      <h3>🔧 Général</h3>
+      <div class="toolflowz-settings-header">
+        <h3>🔧 Général</h3>
+        <ThemeSwatch />
+      </div>
       <div class="toolflowz-setting-item">
         <Checkbox
           v-model="autoHide"
@@ -94,6 +97,23 @@
           inputId="pinBar"
         />
         <label for="pinBar">Épingler la barre d'outils</label>
+      </div>
+
+      <div class="toolflowz-setting-item">
+        <label for="toolbarSize">Taille de la barre d'outils</label>
+        <Dropdown
+          v-model="settingsStore.settings.toolbarSize"
+          :options="[
+            { label: 'Très petite', value: 'xs' },
+            { label: 'Petite', value: 'sm' },
+            { label: 'Moyenne', value: 'md' },
+            { label: 'Grande', value: 'lg' },
+            { label: 'Très grande', value: 'xl' }
+          ]"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full md:w-14rem"
+        />
       </div>
       
       <!-- Gestion des outils -->
@@ -117,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, markRaw, onUnmounted, computed, watch } from 'vue'
+import { ref, onMounted, inject, markRaw, onUnmounted, computed, watch, nextTick } from 'vue'
 import type { Tool } from '@/types/tools'
 import { useSettingsStore } from '@/stores/settings'
 import { useToolflowzStore } from '@/stores/toolflowz'
@@ -143,9 +163,12 @@ import SocialAnalysisControl from './SocialAnalysisControl.vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
+import Dropdown from 'primevue/dropdown'
 import { useDraggable, onClickOutside } from '@vueuse/core'
 import Toast from 'primevue/toast'
 import { useExcludeToolflowzBar } from '@/composables/excludeToolflowzBar'
+import ThemeSwatch from './ThemeSwatch.vue'
+import { useDebounceFn } from '@vueuse/core'
 
 // États locaux
 const isExpanded = ref(false)
@@ -153,7 +176,7 @@ const showSettings = ref(false)
 const autoHide = ref(false)
 const isLoading = ref(true)
 const isVisible = ref<Record<string, boolean>>({})
-const position = ref({ x: 0, y: 0 })
+const toolbarRef = ref<HTMLElement | null>(null)
 
 // Injection des stores avec typage
 const settingsStore = inject('settingsStore') as ReturnType<typeof useSettingsStore>
@@ -298,17 +321,149 @@ const initialTools: Tool[] = [
   }
 ]
 
-// Ajout de la référence pour la barre d'outils
-const toolbarRef = ref<HTMLElement | null>(null)
+// Fonction pour calculer les limites de position
+const calculateBoundaries = (x: number, y: number) => {
+  if (!toolbarRef.value) return { x, y }
 
-// Configuration du drag
-const { style, isDragging, position: dragPosition } = useDraggable(toolbarRef, {
-  initialValue: {
-    x: settingsStore.settings.position.x,
-    y: settingsStore.settings.position.y
+  // Obtenir les dimensions réelles de la barre
+  const rect = toolbarRef.value.getBoundingClientRect()
+  const margin = 20 // Marge de sécurité
+
+  // Calculer les limites en s'assurant que la barre reste entièrement visible
+  const maxX = Math.max(margin, Math.min(window.innerWidth - rect.width - margin, x))
+  const maxY = Math.max(margin, Math.min(window.innerHeight - rect.height - margin, y))
+
+  // Si la barre est près du bord droit et est ou va être étendue,
+  // on la décale pour qu'elle reste entièrement visible
+  const isExpanded = settingsStore.settings.expanded || settingsStore.settings.isPinned
+  if (isExpanded && maxX + rect.width > window.innerWidth - margin) {
+    return {
+      x: window.innerWidth - rect.width - margin,
+      y: maxY
+    }
+  }
+
+  return { x: maxX, y: maxY }
+}
+
+// Configuration du drag and drop
+const position = ref({
+  x: settingsStore.settings.position.x || window.innerWidth - 100,
+  y: settingsStore.settings.position.y || 20
+})
+
+// Synchronisation avec les settings et l'état expanded
+watch([
+  () => settingsStore.settings.position,
+  () => settingsStore.settings.expanded,
+  () => settingsStore.settings.isPinned,
+  () => toolflowzStore.activeTools
+], ([newPosition]) => {
+  if (!isDragging.value && newPosition) {
+    try {
+      // Attendre que le DOM soit mis à jour
+      nextTick(() => {
+        const boundedPosition = calculateBoundaries(newPosition.x, newPosition.y)
+        if (boundedPosition.x !== position.value.x || boundedPosition.y !== position.value.y) {
+          position.value = boundedPosition
+        }
+      })
+    } catch (error) {
+      console.error('[ERROR] Failed to update position:', error)
+    }
+  }
+}, { deep: true })
+
+const { isDragging } = useDraggable(toolbarRef, {
+  initialValue: position.value,
+  onMove: ({ x, y }) => {
+    try {
+      const boundedPosition = calculateBoundaries(x, y)
+      position.value = boundedPosition
+    } catch (error) {
+      console.error('[ERROR] Failed to update position during drag:', error)
+    }
   },
-  onEnd: (position) => {
-    settingsStore.updatePosition(position.x, position.y)
+  onEnd: async ({ x, y }) => {
+    try {
+      const boundedPosition = calculateBoundaries(x, y)
+      position.value = boundedPosition
+      
+      // Mise à jour des settings avec retry
+      const maxRetries = 3
+      let retryCount = 0
+      
+      while (retryCount < maxRetries) {
+        try {
+          await settingsStore.updateSettings({
+            ...settingsStore.settings,
+            position: boundedPosition
+          })
+          break
+        } catch (error) {
+          retryCount++
+          if (retryCount === maxRetries) {
+            console.error('[ERROR] Failed to update settings after retries:', error)
+          } else {
+            await new Promise(resolve => setTimeout(resolve, 100 * retryCount))
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[ERROR] Failed to handle drag end:', error)
+    }
+  }
+})
+
+// Gestionnaire de redimensionnement de la fenêtre avec debounce
+const handleResize = useDebounceFn(async () => {
+  if (!isDragging.value) {
+    try {
+      const boundedPosition = calculateBoundaries(position.value.x, position.value.y)
+      if (boundedPosition.x !== position.value.x || boundedPosition.y !== position.value.y) {
+        position.value = boundedPosition
+        await settingsStore.updateSettings({
+          ...settingsStore.settings,
+          position: boundedPosition
+        })
+      }
+    } catch (error) {
+      console.error('[ERROR] Failed to handle resize:', error)
+    }
+  }
+}, 100)
+
+// Écouter les changements de taille de fenêtre
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
+// Constantes pour les tailles
+const sizeClasses = {
+  'xs': { buttonSize: '2.5rem', fontSize: '1.2rem', emojiSize: '1.5rem' },
+  'sm': { buttonSize: '3rem', fontSize: '1.3rem', emojiSize: '1.7rem' },
+  'md': { buttonSize: '4rem', fontSize: '1.5rem', emojiSize: '2rem' },
+  'lg': { buttonSize: '5rem', fontSize: '1.7rem', emojiSize: '2.3rem' },
+  'xl': { buttonSize: '6rem', fontSize: '1.9rem', emojiSize: '2.6rem' }
+}
+
+// Computed style qui combine le style du drag et les autres styles
+const toolbarStyle = computed(() => {
+  const size = sizeClasses[settingsStore.settings.toolbarSize || 'md']
+  
+  return {
+    position: 'fixed' as const,
+    left: `${position.value.x}px`,
+    top: `${position.value.y}px`,
+    backgroundColor: settingsStore.settings.toolbarColor || '#ff69b4',
+    '--button-size': size.buttonSize,
+    '--font-size': size.fontSize,
+    '--emoji-size': size.emojiSize,
+    zIndex: 2147483647
   }
 })
 
@@ -362,18 +517,31 @@ useExcludeToolflowzBar()
 onMounted(async () => {
   try {
     await settingsStore.loadSettings()
-    // Charge l'état initial de expanded depuis les settings
     isExpanded.value = settingsStore.settings.expanded
     
-    dragPosition.value = {
-      x: settingsStore.settings.position.x,
-      y: settingsStore.settings.position.y
+    // Applique la position initiale avec les limites
+    const boundedPosition = calculateBoundaries(
+      settingsStore.settings.position.x || window.innerWidth - 100,
+      settingsStore.settings.position.y || 20
+    )
+    position.value = boundedPosition
+    
+    // Met à jour le store si la position a été ajustée
+    if (boundedPosition.x !== settingsStore.settings.position.x || 
+        boundedPosition.y !== settingsStore.settings.position.y) {
+      try {
+        await settingsStore.updateSettings({
+          ...settingsStore.settings,
+          position: boundedPosition
+        })
+      } catch (error) {
+        console.error('[ERROR] Failed to update initial position:', error)
+      }
     }
     
     console.log('[INFO] Initializing tools')
     await toolflowzStore.initTools(initialTools)
     
-    // Initialiser isVisible pour chaque outil
     initialTools.forEach(tool => {
       isVisible.value[tool.id] = false
     })
@@ -397,26 +565,26 @@ const closeSettings = () => {
   flex-direction: row;
   gap: 1rem;
   border-radius: 3rem;
-  background: var(--surface-card);
   box-shadow: var(--card-shadow);
-  z-index: 2147483647;
   user-select: none;
-  position: fixed;
   cursor: move;
   min-width: fit-content;
+  padding: 0.5rem;
+  touch-action: none;
 
   &.toolflowz-expanded {
     cursor: default;
   }
 
   &.toolflowz-dragging {
-    cursor: grabbing;
+    cursor: grabbing !important;
+    opacity: 0.95;
   }
 
   :deep(.p-button) {
-    width: 4rem !important;
-    height: 4rem !important;
-    font-size: 1.5rem;
+    width: var(--button-size) !important;
+    height: var(--button-size) !important;
+    font-size: var(--font-size);
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -424,7 +592,7 @@ const closeSettings = () => {
   }
 
   :deep(.p-button-icon) {
-    font-size: 1.8rem;
+    font-size: var(--font-size);
     margin: 0 !important;
     width: auto !important;
     height: auto !important;
@@ -443,7 +611,7 @@ const closeSettings = () => {
 }
 
 .toolflowz-tool-emoji {
-  font-size: 2rem;
+  font-size: var(--emoji-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -451,10 +619,19 @@ const closeSettings = () => {
   height: 100%;
 }
 
-.toolflowz-settings-content {
+.toolflowz-settings-header {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  
+  h3 {
+    margin: 0;
+  }
+}
+
+.toolflowz-settings-content {
+  padding: 1rem;
 }
 
 .toolflowz-tools-grid {
@@ -491,6 +668,7 @@ const closeSettings = () => {
   padding: 0.5rem;
   background: var(--surface-ground);
   border-radius: var(--border-radius);
+  flex-wrap: wrap;
 }
 
 .toolflowz-settings-dialog {

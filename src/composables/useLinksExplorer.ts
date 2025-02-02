@@ -1,32 +1,28 @@
 import { useLinksExplorerStore } from '@/stores/linksExplorer'
 import { storeToRefs } from 'pinia'
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted } from 'vue'
 
 export function useLinksExplorer() {
   const store = useLinksExplorerStore()
   const { links, isLoading, settings } = storeToRefs(store)
 
   onMounted(() => {
-    // Initialisation si nécessaire
+    // Initialization if necessary
   })
 
-  onUnmounted(() => {
-    store.clearLinks()
-  })
-
-  // Fonction pour copier du texte dans le presse-papier
+  // Function to copy text to the clipboard
   const copyToClipboard = async (text: string): Promise<boolean> => {
-    // Essayer d'abord avec l'API Clipboard moderne
+    // First try with the modern Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
       try {
         await navigator.clipboard.writeText(text)
         return true
       } catch (error) {
-        console.log('[DEBUG] Échec de la copie avec navigator.clipboard:', error)
+        console.log('[DEBUG] Failed to copy with navigator.clipboard:', error)
       }
     }
 
-    // Méthode de secours avec execCommand
+    // Fallback method with execCommand
     try {
       const textarea = document.createElement('textarea')
       textarea.value = text
@@ -41,11 +37,11 @@ export function useLinksExplorer() {
       if (success) {
         return true
       } else {
-        console.log('[DEBUG] Échec de la copie avec execCommand')
+        console.log('[DEBUG] Copy failed with execCommand')
         return false
       }
     } catch (error) {
-      console.error('[ERROR] Échec de toutes les méthodes de copie:', error)
+      console.error('[ERROR] Copy failed with all methods:', error)
       return false
     }
   }
@@ -54,33 +50,33 @@ export function useLinksExplorer() {
     if (!links.value.length) return false
 
     try {
-      // Séparer les liens internes et externes
+      // Separate internal and external links
       const internalLinks = links.value.filter(link => !link.isExternal)
       const externalLinks = links.value.filter(link => link.isExternal)
 
-      // Fonction pour formater un lien selon le mode
+      // Function to format a link based on the mode
       const formatLink = (link: typeof links.value[0]) => {
         if (settings.value.useMarkdown) {
-          return `[${link.title?.trim() || 'Sans titre'}](${link.url})`
+          return `[${link.title?.trim() || 'Untitled'}](${link.url})`
         }
         return link.url
       }
 
-      // Formater les liens internes
+      // Format internal links
       const internalSection = internalLinks.length ? [
-        settings.value.useMarkdown ? '## 📌 Liens Internes' : '📌 Liens Internes',
+        settings.value.useMarkdown ? '## 📌 Internal Links' : '📌 Internal Links',
         ...internalLinks.map(formatLink),
         ''
       ].join('\n') : ''
 
-      // Formater les liens externes
+      // Format external links
       const externalSection = externalLinks.length ? [
-        settings.value.useMarkdown ? '## 🌐 Liens Externes' : '🌐 Liens Externes',
+        settings.value.useMarkdown ? '## 🌐 External Links' : '🌐 External Links',
         ...externalLinks.map(formatLink),
         ''
       ].join('\n') : ''
 
-      // Combiner les sections
+      // Combine sections
       const linksList = [
         internalSection,
         externalSection
@@ -88,7 +84,7 @@ export function useLinksExplorer() {
 
       return await copyToClipboard(linksList)
     } catch (error) {
-      console.error('[ERROR] Erreur lors de la copie des liens:', error)
+      console.error('[ERROR] Error copying links:', error)
       return false
     }
   }

@@ -10,6 +10,7 @@ import Sidebar from 'primevue/sidebar'
 import Checkbox from 'primevue/checkbox'
 import Dropdown from 'primevue/dropdown'
 import Panel from 'primevue/panel'
+import ThemeSwatch from './components/ThemeSwatch.vue'
 
 // Styles PrimeVue
 import 'primevue/resources/themes/lara-light-blue/theme.css'
@@ -43,6 +44,7 @@ app.component('Sidebar', Sidebar)
 app.component('Checkbox', Checkbox)
 app.component('Dropdown', Dropdown)
 app.component('Panel', Panel)
+app.component('ThemeSwatch', ThemeSwatch)
 
 // S'assurer que le DOM est prêt avant le montage
 if (document.readyState === 'loading') {
