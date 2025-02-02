@@ -375,6 +375,9 @@
     "useSocialAnalysis": true,
     "useSocialAnalysisStore": true,
     "useExcludeToolflowzBar": true,
-    "useThemeStore": true
+    "useThemeStore": true,
+    "useReloadAllTabsStore": true,
+    "useElementSelector": true,
+    "useHideElementStore": true
   }
 }

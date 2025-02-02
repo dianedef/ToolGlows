@@ -39,7 +39,11 @@
         <Button 
           v-if="toolflowzStore.activeTools.includes(tool.id)"
           class="p-button-rounded p-button-text"
-          @click="isVisible[tool.id] = !isVisible[tool.id]"
+          @click="() => {
+            console.log('[INFO] Tool button clicked:', tool.id)
+            isVisible[tool.id] = !isVisible[tool.id]
+            console.log('[INFO] Tool visibility updated:', tool.id, isVisible[tool.id])
+          }"
           :aria-label="tool.name"
         >
           <span class="toolflowz-tool-emoji">{{ tool.emoji }}</span>
@@ -160,6 +164,8 @@ import QuickActionsControl from './QuickActionsControl.vue'
 import AutoCopyControl from './AutoCopyControl.vue'
 import LinksExplorerControl from './LinksExplorerControl.vue'
 import SocialAnalysisControl from './SocialAnalysisControl.vue'
+import ReloadAllTabsControl from './ReloadAllTabsControl.vue'
+import HideElementControl from './HideElementControl.vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
@@ -318,6 +324,22 @@ const initialTools: Tool[] = [
     icon: 'pi pi-users',
     emoji: '👥',
     category: 'social'
+  },
+  {
+    id: 'reloadAllTabs',
+    name: 'Recharger les onglets',
+    component: markRaw(ReloadAllTabsControl),
+    icon: 'pi pi-refresh',
+    emoji: '🔄',
+    category: 'navigation'
+  },
+  {
+    id: 'hideElement',
+    name: 'Masquer des éléments',
+    component: markRaw(HideElementControl),
+    icon: 'pi pi-eye-slash',
+    emoji: '👁️',
+    category: 'appearance'
   }
 ]
 

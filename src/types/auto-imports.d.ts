@@ -200,6 +200,7 @@ declare global {
   const useElementBounding: typeof import('@vueuse/core')['useElementBounding']
   const useElementByPoint: typeof import('@vueuse/core')['useElementByPoint']
   const useElementHover: typeof import('@vueuse/core')['useElementHover']
+  const useElementSelector: typeof import('../composables/useElementSelector')['useElementSelector']
   const useElementSize: typeof import('@vueuse/core')['useElementSize']
   const useElementVisibility: typeof import('@vueuse/core')['useElementVisibility']
   const useErrorHandling: typeof import('../composables/useErrorHandling')['useErrorHandling']
@@ -220,6 +221,7 @@ declare global {
   const useFullscreen: typeof import('@vueuse/core')['useFullscreen']
   const useGamepad: typeof import('@vueuse/core')['useGamepad']
   const useGeolocation: typeof import('@vueuse/core')['useGeolocation']
+  const useHideElementStore: typeof import('../stores/hideElement')['useHideElementStore']
   const useI18n: typeof import('vue-i18n')['useI18n']
   const useId: typeof import('vue')['useId']
   const useIdle: typeof import('@vueuse/core')['useIdle']
@@ -280,6 +282,7 @@ declare global {
   const useReaderMode: typeof import('../composables/useReaderMode')['useReaderMode']
   const useReaderModeStore: typeof import('../stores/readerMode')['useReaderModeStore']
   const useRefHistory: typeof import('@vueuse/core')['useRefHistory']
+  const useReloadAllTabsStore: typeof import('../stores/reloadAllTabs')['useReloadAllTabsStore']
   const useResizeObserver: typeof import('@vueuse/core')['useResizeObserver']
   const useRichCopy: typeof import('../composables/useRichCopy')['useRichCopy']
   const useRichCopyStore: typeof import('../stores/richCopy')['useRichCopyStore']
@@ -581,6 +584,7 @@ declare module 'vue' {
     readonly useElementBounding: UnwrapRef<typeof import('@vueuse/core')['useElementBounding']>
     readonly useElementByPoint: UnwrapRef<typeof import('@vueuse/core')['useElementByPoint']>
     readonly useElementHover: UnwrapRef<typeof import('@vueuse/core')['useElementHover']>
+    readonly useElementSelector: UnwrapRef<typeof import('../composables/useElementSelector')['useElementSelector']>
     readonly useElementSize: UnwrapRef<typeof import('@vueuse/core')['useElementSize']>
     readonly useElementVisibility: UnwrapRef<typeof import('@vueuse/core')['useElementVisibility']>
     readonly useErrorHandling: UnwrapRef<typeof import('../composables/useErrorHandling')['useErrorHandling']>
@@ -601,6 +605,7 @@ declare module 'vue' {
     readonly useFullscreen: UnwrapRef<typeof import('@vueuse/core')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('@vueuse/core')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('@vueuse/core')['useGeolocation']>
+    readonly useHideElementStore: UnwrapRef<typeof import('../stores/hideElement')['useHideElementStore']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useIdle: UnwrapRef<typeof import('@vueuse/core')['useIdle']>
@@ -661,6 +666,7 @@ declare module 'vue' {
     readonly useReaderMode: UnwrapRef<typeof import('../composables/useReaderMode')['useReaderMode']>
     readonly useReaderModeStore: UnwrapRef<typeof import('../stores/readerMode')['useReaderModeStore']>
     readonly useRefHistory: UnwrapRef<typeof import('@vueuse/core')['useRefHistory']>
+    readonly useReloadAllTabsStore: UnwrapRef<typeof import('../stores/reloadAllTabs')['useReloadAllTabsStore']>
     readonly useResizeObserver: UnwrapRef<typeof import('@vueuse/core')['useResizeObserver']>
     readonly useRichCopy: UnwrapRef<typeof import('../composables/useRichCopy')['useRichCopy']>
     readonly useRichCopyStore: UnwrapRef<typeof import('../stores/richCopy')['useRichCopyStore']>
