@@ -11,7 +11,7 @@
     >
       <div class="copy-options">
         <div class="field mb-3">
-          <h4>Format actif</h4>
+          <h4>Active Format</h4>
           <div class="formats-list">
             <div
               v-for="format in copyStore.settings.formats"
@@ -43,13 +43,13 @@
                 copyStore.saveSettings();
                 toast.add({ 
                   severity: 'success', 
-                  summary: 'Mise en forme', 
-                  detail: copyStore.settings.preserveFormatting ? 'Mise en forme activée' : 'Mise en forme désactivée',
+                  summary: 'Formatting', 
+                  detail: copyStore.settings.preserveFormatting ? 'Formatting enabled' : 'Formatting disabled',
                   life: 3000 
                 });
               }"
             />
-            <label>Conserver la mise en forme</label>
+            <label>Preserve Formatting</label>
           </div>
 
           <div class="field-checkbox mb-2">
@@ -61,12 +61,12 @@
                 toast.add({ 
                   severity: 'success', 
                   summary: 'Source', 
-                  detail: copyStore.settings.includeSource ? 'Source incluse' : 'Source non incluse',
+                  detail: copyStore.settings.includeSource ? 'Source included' : 'Source not included',
                   life: 3000 
                 });
               }"
             />
-            <label>Inclure la source</label>
+            <label>Include Source</label>
           </div>
 
           <div class="field-checkbox mb-2">
@@ -78,12 +78,12 @@
                 toast.add({ 
                   severity: 'success', 
                   summary: 'Notifications', 
-                  detail: copyStore.settings.showNotifications ? 'Notifications activées' : 'Notifications désactivées',
+                  detail: copyStore.settings.showNotifications ? 'Notifications enabled' : 'Notifications disabled',
                   life: 3000 
                 });
               }"
             />
-            <label>Afficher les notifications</label>
+            <label>Show Notifications</label>
           </div>
 
           <div class="field-checkbox mb-2">
@@ -94,13 +94,13 @@
                 copyStore.saveSettings();
                 toast.add({ 
                   severity: 'success', 
-                  summary: 'Sélection ALT', 
-                  detail: copyStore.settings.enableAltSelection ? 'Sélection ALT activée' : 'Sélection ALT désactivée',
+                  summary: 'Alt Selection', 
+                  detail: copyStore.settings.enableAltSelection ? 'Alt Selection enabled' : 'Alt Selection disabled',
                   life: 3000 
                 });
               }"
             />
-            <label>Activer la sélection avec ALT</label>
+            <label>Enable Alt Selection</label>
           </div>
         </div>
       </div>
@@ -120,22 +120,22 @@ import { useExcludeToolflowzBar } from '@/composables/excludeToolflowzBar'
 const copyStore = useAutoCopyStore()
 const toast = useToast()
 
-// Initialiser le composable
+// Initialize the composable
 useAutoCopy()
 
-// Exclure du mode sombre
+// Exclude from dark mode
 useExcludeToolflowzBar()
 
 onMounted(async () => {
-  console.log('[DEBUG] Avant loadSettings - formats:', copyStore.settings.formats)
+  console.log('[DEBUG] Before loadSettings - formats:', copyStore.settings.formats)
   await copyStore.loadSettings()
-  console.log('[DEBUG] Après loadSettings - formats:', copyStore.settings.formats)
+  console.log('[DEBUG] After loadSettings - formats:', copyStore.settings.formats)
 })
 
 const closeDialog = () => {
   copyStore.setActive(false)
-  console.log('[DEBUG] Fermeture dialog - formats:', copyStore.settings.formats)
-  toast.add({ severity: 'info', summary: 'Auto Copy', detail: 'Paramètres sauvegardés', life: 3000 })
+  console.log('[DEBUG] Dialog closure - formats:', copyStore.settings.formats)
+  toast.add({ severity: 'info', summary: 'Auto Copy', detail: 'Settings saved', life: 3000 })
 }
 </script>
 

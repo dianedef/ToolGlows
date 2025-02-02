@@ -10,6 +10,9 @@ export function useAutoCopy() {
   const isCopying = ref(false)
   const isAltMode = ref(false)
   const highlightedElements = ref<HTMLElement[]>([])
+  const altKeyTimer = ref<number | null>(null)
+  const ALT_DELAY = 200 // Délai en millisecondes avant d'activer le mode ALT
+  const isAltCombination = ref(false) // Pour détecter si ALT est utilisé avec une autre touche
 
   // Function to apply the template to the text
   const applyTemplate = (text: string, format: string): string => {
@@ -190,45 +193,60 @@ export function useAutoCopy() {
     }
   }
 
-  // Function to enable ALT mode
+  // Function to enable ALT mode with delay
   const enableAltMode = () => {
     if (!store.settings.enableAltSelection) return
     
-    isAltMode.value = true
-    document.body.style.cursor = 'pointer'
-    // Select all text elements except those of our extension
-    const selector = 'div, p, article, section, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, code, table, tr, td, th'
-    const elements = document.querySelectorAll(selector)
-    elements.forEach((el) => {
-      if (el instanceof HTMLElement && !isElementExcluded(el)) {
-        el.dataset.originalOutline = el.style.outline
-        el.dataset.originalTransition = el.style.transition
-        el.dataset.originalBackground = el.style.backgroundColor
-        el.style.outline = '2px dashed #007bff'
-        el.style.transition = 'all 0.2s ease-in-out'
-        
-        // Add hover handlers
-        el.addEventListener('mouseenter', () => {
-          if (isAltMode.value) {
-            el.style.outline = '2px dashed #00ff00'
-            el.style.backgroundColor = 'rgba(0, 255, 0, 0.1)'
-          }
-        })
-        el.addEventListener('mouseleave', () => {
-          if (isAltMode.value) {
-            el.style.outline = '2px dashed #007bff'
-            el.style.backgroundColor = el.dataset.originalBackground || ''
-          }
-        })
-        
-        highlightedElements.value.push(el)
-      }
-    })
+    // Nettoyer le timer existant si présent
+    if (altKeyTimer.value !== null) {
+      clearTimeout(altKeyTimer.value)
+    }
+
+    // Définir un nouveau timer
+    altKeyTimer.value = window.setTimeout(() => {
+      isAltMode.value = true
+      document.body.style.cursor = 'pointer'
+      // Select all text elements except those of our extension
+      const selector = 'div, p, article, section, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, code, table, tr, td, th'
+      const elements = document.querySelectorAll(selector)
+      elements.forEach((el) => {
+        if (el instanceof HTMLElement && !isElementExcluded(el)) {
+          el.dataset.originalOutline = el.style.outline
+          el.dataset.originalTransition = el.style.transition
+          el.dataset.originalBackground = el.style.backgroundColor
+          el.style.outline = '2px dashed #007bff'
+          el.style.transition = 'all 0.2s ease-in-out'
+          
+          // Add hover handlers
+          el.addEventListener('mouseenter', () => {
+            if (isAltMode.value) {
+              el.style.outline = '2px dashed #00ff00'
+              el.style.backgroundColor = 'rgba(0, 255, 0, 0.1)'
+            }
+          })
+          el.addEventListener('mouseleave', () => {
+            if (isAltMode.value) {
+              el.style.outline = '2px dashed #007bff'
+              el.style.backgroundColor = el.dataset.originalBackground || ''
+            }
+          })
+          
+          highlightedElements.value.push(el)
+        }
+      })
+    }, ALT_DELAY)
   }
 
   // Function to disable ALT mode
   const disableAltMode = () => {
+    // Nettoyer le timer si présent
+    if (altKeyTimer.value !== null) {
+      clearTimeout(altKeyTimer.value)
+      altKeyTimer.value = null
+    }
+
     isAltMode.value = false
+    isAltCombination.value = false
     document.body.style.cursor = 'default'
     highlightedElements.value.forEach((el) => {
       el.style.outline = el.dataset.originalOutline || ''
@@ -249,33 +267,58 @@ export function useAutoCopy() {
   const handleAltClick = (event: MouseEvent) => {
     if (!isAltMode.value || !store.settings.enableAltSelection) return
     
-    event.preventDefault()
-    const element = event.target as HTMLElement
-    if (!element) return
+    const target = event.target as HTMLElement
+    if (!target || isElementExcluded(target)) return
 
-    if (!isElementExcluded(element)) {
-      const text = element.innerText || element.textContent
-      if (text) {
-        copyToClipboard(formatText(text))
-        if (store.settings.showNotifications) {
-          sendNotification('Text copied', 'The element has been copied to the clipboard')
-        }
+    const range = document.createRange()
+    range.selectNodeContents(target)
+    
+    const selection = window.getSelection()
+    if (!selection) return
+    
+    selection.removeAllRanges()
+    selection.addRange(range)
+    
+    copySelection()
+    event.preventDefault()
+  }
+
+  // Gestionnaire de touche ALT enfoncée
+  const handleAltKeyDown = (event: KeyboardEvent) => {
+    // Si une autre touche est déjà pressée avec ALT, on considère que c'est un raccourci
+    if (event.key === 'Alt' && !event.ctrlKey && !event.shiftKey && !event.metaKey) {
+      if (!store.settings.enableAltSelection || isAltMode.value) return
+      enableAltMode()
+    } else if (event.altKey) {
+      // Si ALT est pressé avec une autre touche, on désactive le mode
+      isAltCombination.value = true
+      disableAltMode()
+    }
+  }
+
+  // Gestionnaire de touche ALT relâchée
+  const handleAltKeyUp = (event: KeyboardEvent) => {
+    if (event.key === 'Alt') {
+      if (isAltCombination.value) {
+        isAltCombination.value = false
+      } else {
+        disableAltMode()
       }
     }
-    disableAltMode()
   }
 
-  // ALT mode keydown handler
-  const handleAltKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Alt' && !isAltMode.value) {
-      event.preventDefault()
-      enableAltMode()
+  // Gestionnaire global des touches
+  const handleKeyDown = (event: KeyboardEvent) => {
+    // Si une autre touche est pressée pendant que ALT est maintenu
+    if (event.altKey && event.key !== 'Alt') {
+      isAltCombination.value = true
+      disableAltMode()
     }
   }
 
-  const handleAltKeyUp = (event: KeyboardEvent) => {
-    if (event.key === 'Alt' && isAltMode.value) {
-      event.preventDefault()
+  // Gestionnaire de touche Échap
+  const handleEscapeKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && isAltMode.value) {
       disableAltMode()
     }
   }
@@ -287,6 +330,8 @@ export function useAutoCopy() {
     document.addEventListener('keydown', handleShortcut)
     document.addEventListener('keydown', handleAltKeyDown)
     document.addEventListener('keyup', handleAltKeyUp)
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('keydown', handleEscapeKey)
     document.addEventListener('click', handleAltClick)
   })
 
@@ -296,6 +341,8 @@ export function useAutoCopy() {
     document.removeEventListener('keydown', handleShortcut)
     document.removeEventListener('keydown', handleAltKeyDown)
     document.removeEventListener('keyup', handleAltKeyUp)
+    document.removeEventListener('keydown', handleKeyDown)
+    document.removeEventListener('keydown', handleEscapeKey)
     document.removeEventListener('click', handleAltClick)
     // Ensure styles are cleaned up
     disableAltMode()

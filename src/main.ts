@@ -2,9 +2,9 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 
-console.log('INFO: Démarrage de l\'application')
+console.log('INFO: Starting application')
 
-// Composants PrimeVue
+// PrimeVue components
 import Button from 'primevue/button'
 import Sidebar from 'primevue/sidebar'
 import Checkbox from 'primevue/checkbox'
@@ -12,12 +12,12 @@ import Dropdown from 'primevue/dropdown'
 import Panel from 'primevue/panel'
 import ThemeSwatch from './components/ThemeSwatch.vue'
 
-// Styles PrimeVue
+// PrimeVue styles
 import 'primevue/resources/themes/lara-light-blue/theme.css'
 import 'primevue/resources/primevue.min.css'
 import 'primeicons/primeicons.css'
 
-// Style global
+// Global style
 import './assets/main.css'
 
 import App from './App.vue'
@@ -38,7 +38,7 @@ app.use(PrimeVue, {
   }
 })
 
-// Enregistrement des composants PrimeVue
+// Registering PrimeVue components
 app.component('Button', Button)
 app.component('Sidebar', Sidebar)
 app.component('Checkbox', Checkbox)
@@ -46,7 +46,7 @@ app.component('Dropdown', Dropdown)
 app.component('Panel', Panel)
 app.component('ThemeSwatch', ThemeSwatch)
 
-// S'assurer que le DOM est prêt avant le montage
+// Ensuring the DOM is ready before mounting
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     console.log('INFO: DOM loaded, mounting application')
@@ -57,5 +57,5 @@ if (document.readyState === 'loading') {
   app.mount('#app')
 }
 
-// Exporter pinia pour une utilisation dans d'autres parties de l'extension
+// Exporting pinia for use in other parts of the extension
 export { pinia } 
