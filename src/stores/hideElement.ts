@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
+import { useSettingsStore } from './settings'
 
 interface HiddenElement {
   selector: string
@@ -8,7 +9,7 @@ interface HiddenElement {
   name?: string // Nom lisible de l'élément pour l'affichage
 }
 
-interface HideElementSettings {
+export interface HideElementSettings {
   hiddenElements: HiddenElement[]
   isSelectingElement: boolean
   shortcut: string
@@ -23,6 +24,7 @@ const defaultSettings: HideElementSettings = {
 }
 
 export const useHideElementStore = defineStore('hideElement', () => {
+  const settingsStore = useSettingsStore()
   const isActive = ref(false)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -34,6 +36,19 @@ export const useHideElementStore = defineStore('hideElement', () => {
     if (!newValue) {
       settings.value.isSelectingElement = false
     }
+  })
+
+  // Surveiller uniquement les changements qui nécessitent une sauvegarde
+  watch(() => settings.value.hiddenElements, async () => {
+    await saveSettings()
+  }, { deep: true })
+
+  watch(() => settings.value.shortcut, async () => {
+    await saveSettings()
+  })
+
+  watch(() => settings.value.enableShortcut, async () => {
+    await saveSettings()
   })
 
   const setActive = (value: boolean) => {
@@ -59,7 +74,6 @@ export const useHideElementStore = defineStore('hideElement', () => {
       }
       
       settings.value.hiddenElements.push(hiddenElement)
-      await saveSettings()
       
       // Masquer l'élément
       element.style.display = 'none'
@@ -113,23 +127,25 @@ export const useHideElementStore = defineStore('hideElement', () => {
     const index = settings.value.hiddenElements.findIndex(el => el.selector === selector)
     if (index > -1) {
       settings.value.hiddenElements.splice(index, 1)
-      await saveSettings()
     }
   }
 
   const updateShortcut = async (shortcut: string) => {
     settings.value.shortcut = shortcut
-    await saveSettings()
   }
 
   const toggleShortcut = async (enabled: boolean) => {
     settings.value.enableShortcut = enabled
-    await saveSettings()
   }
 
   const saveSettings = async () => {
     try {
-      await chrome.storage.sync.set({ hideElementSettings: settings.value })
+      await settingsStore.updateSettings({
+        hideElement: {
+          ...settings.value,
+          isSelectingElement: false // Ne pas sauvegarder l'état de sélection
+        }
+      })
     } catch (err) {
       console.error('[ERROR] Failed to save hide element settings:', err)
       throw err
@@ -138,12 +154,14 @@ export const useHideElementStore = defineStore('hideElement', () => {
 
   const loadSettings = async () => {
     try {
-      const data = await chrome.storage.sync.get('hideElementSettings')
-      if (data.hideElementSettings) {
+      const storedSettings = settingsStore.settings.hideElement
+      if (storedSettings) {
         settings.value = {
           ...defaultSettings,
-          ...data.hideElementSettings
+          ...storedSettings
         }
+        // Appliquer les masquages pour le domaine actuel
+        applyHiddenElements()
       } else {
         settings.value = defaultSettings
       }
@@ -151,6 +169,39 @@ export const useHideElementStore = defineStore('hideElement', () => {
       console.error('[ERROR] Failed to load hide element settings:', err)
       settings.value = defaultSettings
     }
+  }
+
+  // Fonction pour appliquer les masquages
+  const applyHiddenElements = () => {
+    const currentDomain = window.location.hostname
+    const elementsToHide = settings.value.hiddenElements.filter(
+      el => el.domain === currentDomain
+    )
+
+    elementsToHide.forEach(({ selector }) => {
+      try {
+        const element = document.querySelector(selector)
+        if (element) {
+          (element as HTMLElement).style.display = 'none'
+        }
+      } catch (err) {
+        console.error(`[ERROR] Failed to hide element with selector "${selector}":`, err)
+      }
+    })
+  }
+
+  // Fonction pour observer les mutations du DOM et réappliquer les masquages
+  const setupMutationObserver = () => {
+    const observer = new MutationObserver(() => {
+      applyHiddenElements()
+    })
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    })
+
+    return observer
   }
 
   // Gestionnaire de raccourci clavier
@@ -193,6 +244,8 @@ export const useHideElementStore = defineStore('hideElement', () => {
     loadSettings,
     updateShortcut,
     toggleShortcut,
-    handleShortcut
+    handleShortcut,
+    applyHiddenElements,
+    setupMutationObserver
   }
 }) 

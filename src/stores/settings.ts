@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { bridgeApi, initBridgeListeners } from '@/bridge'
 import { useToolflowzStore } from '@/stores/toolflowz'
 import { useBrowserSyncStorage } from '@/composables/useBrowserStorage'
+import type { HideElementSettings } from './hideElement'
 
 export interface ToolflowzSettings {
   expanded: boolean
@@ -14,6 +15,7 @@ export interface ToolflowzSettings {
   isPinned: boolean
   toolbarColor?: string
   toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  hideElement?: HideElementSettings
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -37,7 +39,9 @@ export const useSettingsStore = defineStore('settings', () => {
   watch(() => ({
     position: settings.value.position,
     activeTools: settings.value.activeTools,
-    toolbarColor: settings.value.toolbarColor
+    toolbarColor: settings.value.toolbarColor,
+    expanded: settings.value.expanded,
+    isPinned: settings.value.isPinned
   }), (newSettings) => {
     applySettings(settings.value)
   }, { deep: true })
