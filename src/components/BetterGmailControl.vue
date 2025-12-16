@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="gmailStore.isActive"
     :modal="true"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     :header="'Gmail amélioré'"
     position="right"
     :style="{ width: '350px' }"
@@ -25,7 +25,10 @@
               />
               <div class="toolflowz-label-details">
                 <span class="toolflowz-label-name">{{ label.name }}</span>
-                <small v-if="label.shortcut" class="toolflowz-label-shortcut">
+                <small
+                  v-if="label.shortcut"
+                  class="toolflowz-label-shortcut"
+                >
                   {{ label.shortcut }}
                 </small>
               </div>
@@ -100,8 +103,8 @@
           <Dropdown
             v-model="gmailStore.options.previewPosition"
             :options="previewPositions"
-            optionLabel="label"
-            optionValue="value"
+            option-label="label"
+            option-value="value"
             class="w-full"
             @change="gmailStore.saveOptions()"
           />
@@ -155,7 +158,11 @@
             <div class="toolflowz-filter-info">
               <span class="toolflowz-filter-name">{{ filter.name }}</span>
               <div class="toolflowz-filter-conditions">
-                <small v-for="(condition, index) in filter.conditions" :key="index" class="toolflowz-filter-condition">
+                <small
+                  v-for="(condition, index) in filter.conditions"
+                  :key="index"
+                  class="toolflowz-filter-condition"
+                >
                   {{ condition.field }} {{ condition.operator }} "{{ condition.value }}"
                 </small>
               </div>
@@ -240,10 +247,10 @@
       v-model:visible="showAddLabelDialog"
       :header="editingLabel ? 'Modifier le label' : 'Ajouter un label'"
       :modal="true"
-      :dismissableMask="true"
+      :dismissable-mask="true"
       :maximizable="true"
       class="p-fluid"
-      appendTo="body"
+      append-to="body"
       @hide="showAddLabelDialog = false"
     >
       <div class="field mb-3">
@@ -256,7 +263,10 @@
       </div>
       <div class="field mb-3">
         <label>Raccourci (optionnel)</label>
-        <InputText v-model="newLabel.shortcut" placeholder="Alt+L" />
+        <InputText
+          v-model="newLabel.shortcut"
+          placeholder="Alt+L"
+        />
       </div>
       <template #footer>
         <Button
@@ -277,10 +287,10 @@
       v-model:visible="showAddShortcutDialog"
       :header="editingShortcut ? 'Modifier le raccourci' : 'Ajouter un raccourci'"
       :modal="true"
-      :dismissableMask="true"
+      :dismissable-mask="true"
       :maximizable="true"
       class="p-fluid"
-      appendTo="body"
+      append-to="body"
       @hide="showAddShortcutDialog = false"
     >
       <div class="field mb-3">
@@ -289,7 +299,10 @@
       </div>
       <div class="field mb-3">
         <label>Touche</label>
-        <InputText v-model="newShortcut.key" placeholder="Alt+X" />
+        <InputText
+          v-model="newShortcut.key"
+          placeholder="Alt+X"
+        />
       </div>
       <div class="field mb-3">
         <label>Action</label>
@@ -314,10 +327,10 @@
       v-model:visible="showAddFilterDialog"
       :header="editingFilter ? 'Modifier le filtre' : 'Ajouter un filtre'"
       :modal="true"
-      :dismissableMask="true"
+      :dismissable-mask="true"
       :maximizable="true"
       class="p-fluid"
-      appendTo="body"
+      append-to="body"
       @hide="showAddFilterDialog = false"
     >
       <div class="field mb-3">
@@ -334,15 +347,15 @@
           <Dropdown
             v-model="condition.field"
             :options="filterFields"
-            optionLabel="label"
-            optionValue="value"
+            option-label="label"
+            option-value="value"
             class="w-4"
           />
           <Dropdown
             v-model="condition.operator"
             :options="filterOperators"
-            optionLabel="label"
-            optionValue="value"
+            option-label="label"
+            option-value="value"
             class="w-4"
           />
           <InputText
@@ -360,8 +373,8 @@
         <Button
           label="Ajouter une condition"
           icon="pi pi-plus"
-          @click="addCondition"
           class="mt-2"
+          @click="addCondition"
         />
       </div>
       <div class="field mb-3">
@@ -374,8 +387,8 @@
           <Dropdown
             v-model="action.type"
             :options="filterActions"
-            optionLabel="label"
-            optionValue="value"
+            option-label="label"
+            option-value="value"
             class="w-6"
           />
           <InputText
@@ -393,8 +406,8 @@
         <Button
           label="Ajouter une action"
           icon="pi pi-plus"
-          @click="addAction"
           class="mt-2"
+          @click="addAction"
         />
       </div>
       <template #footer>

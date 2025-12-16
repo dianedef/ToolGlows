@@ -2,17 +2,21 @@
   <Dialog
     v-model:visible="dialogVisible"
     :modal="true"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     :header="'Actions rapides'"
     position="right"
     :style="{ width: '350px' }"
+    append-to="body"
     @hide="closeDialog"
-    appendTo="body"
   >
     <div class="quick-actions-content">
       <div class="shortcuts-section">
         <h3>🎯 Raccourcis clavier</h3>
-        <div v-for="shortcut in shortcuts" :key="shortcut.id" class="shortcut-item">
+        <div
+          v-for="shortcut in shortcuts"
+          :key="shortcut.id"
+          class="shortcut-item"
+        >
           <span class="shortcut-key">{{ shortcut.key }}</span>
           <span class="shortcut-description">{{ shortcut.description }}</span>
         </div>
@@ -20,17 +24,23 @@
       
       <div class="actions-section">
         <h3>⚡ Actions disponibles</h3>
-        <div v-for="category in actions" :key="category.category">
+        <div
+          v-for="category in actions"
+          :key="category.category"
+        >
           <h4>{{ category.category }}</h4>
           <div 
             v-for="action in category.actions" 
             :key="action.id" 
             class="action-item"
-            @click="executeAction(action.id)"
             role="button"
             tabindex="0"
+            @click="executeAction(action.id)"
           >
-            <i :class="action.icon" class="action-icon"></i>
+            <i
+              :class="action.icon"
+              class="action-icon"
+            ></i>
             <span class="action-name">{{ action.name }}</span>
             <span class="action-description">{{ action.description }}</span>
           </div>

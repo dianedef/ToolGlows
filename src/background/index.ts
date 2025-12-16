@@ -47,7 +47,7 @@ interface MessageData {
  * Global state maintained by the background script
  * This serves as a source of truth that survives individual tab closures
  */
-let globalState = {
+const globalState = {
   settings: null as Settings | null
 }
 

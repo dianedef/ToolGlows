@@ -3,12 +3,12 @@
     v-if="!isLoading"
     v-model:visible="darkModeStore.isActive"
     :modal="true"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     :header="'Mode sombre'"
     position="right"
     :style="{ width: '350px' }"
+    append-to="body"
     @hide="closeDialog"
-    appendTo="body"
   >
     <div class="toolflowz-dark-mode-options">
       <div class="toolflowz-field mb-3">
@@ -17,11 +17,14 @@
           <Checkbox
             v-model="darkModeStore.isActive"
             :binary="true"
-            @update:modelValue="darkModeStore.setActive($event)"
-            inputId="dark-mode-toggle"
+            input-id="dark-mode-toggle"
             name="dark-mode-toggle"
+            @update:model-value="darkModeStore.setActive($event)"
           />
-          <label class="p-checkbox-label" for="dark-mode-toggle">Activer le mode sombre</label>
+          <label
+            class="p-checkbox-label"
+            for="dark-mode-toggle"
+          >Activer le mode sombre</label>
         </div>
       </div>
 
@@ -31,21 +34,21 @@
           <label>Arrière-plan</label>
           <ColorPicker
             v-model="darkModeStore.options.backgroundColor"
-            @update:modelValue="darkModeStore.saveOptions()"
+            @update:model-value="darkModeStore.saveOptions()"
           />
         </div>
         <div class="toolflowz-color-picker mb-2">
           <label>Texte</label>
           <ColorPicker
             v-model="darkModeStore.options.textColor"
-            @update:modelValue="darkModeStore.saveOptions()"
+            @update:model-value="darkModeStore.saveOptions()"
           />
         </div>
         <div class="toolflowz-color-picker mb-2">
           <label>Liens</label>
           <ColorPicker
             v-model="darkModeStore.options.linkColor"
-            @update:modelValue="darkModeStore.saveOptions()"
+            @update:model-value="darkModeStore.saveOptions()"
           />
         </div>
       </div>
@@ -59,7 +62,7 @@
             :min="0.5"
             :max="2"
             :step="0.1"
-            @update:modelValue="darkModeStore.saveOptions()"
+            @update:model-value="darkModeStore.saveOptions()"
           />
         </div>
         <div class="toolflowz-field-slider mb-2">
@@ -69,18 +72,21 @@
             :min="0"
             :max="1000"
             :step="50"
-            @update:modelValue="darkModeStore.saveOptions()"
+            @update:model-value="darkModeStore.saveOptions()"
           />
         </div>
         <div class="toolflowz-field-checkbox mb-2">
           <Checkbox
             v-model="darkModeStore.options.invertImages"
             :binary="true"
-            @update:modelValue="darkModeStore.saveOptions()"
-            inputId="invert-images"
+            input-id="invert-images"
             name="invert-images"
+            @update:model-value="darkModeStore.saveOptions()"
           />
-          <label class="p-checkbox-label" for="invert-images">Inverser les images</label>
+          <label
+            class="p-checkbox-label"
+            for="invert-images"
+          >Inverser les images</label>
         </div>
       </div>
 
@@ -92,37 +98,46 @@
           <Checkbox
             v-model="darkModeStore.options.syncWithSystem"
             :binary="true"
-            @update:modelValue="darkModeStore.saveOptions()"
-            inputId="sync-system"
+            input-id="sync-system"
             name="sync-system"
+            @update:model-value="darkModeStore.saveOptions()"
           />
-          <label class="p-checkbox-label" for="sync-system">Synchroniser avec le système</label>
+          <label
+            class="p-checkbox-label"
+            for="sync-system"
+          >Synchroniser avec le système</label>
         </div>
         
         <div class="toolflowz-field-checkbox mb-2">
           <Checkbox
             v-model="darkModeStore.options.autoEnable"
             :binary="true"
-            @update:modelValue="darkModeStore.saveOptions()"
-            inputId="auto-enable"
+            input-id="auto-enable"
             name="auto-enable"
+            @update:model-value="darkModeStore.saveOptions()"
           />
-          <label class="p-checkbox-label" for="auto-enable">Activer automatiquement</label>
+          <label
+            class="p-checkbox-label"
+            for="auto-enable"
+          >Activer automatiquement</label>
         </div>
         
-        <div v-if="darkModeStore.options.autoEnable" class="toolflowz-schedule">
+        <div
+          v-if="darkModeStore.options.autoEnable"
+          class="toolflowz-schedule"
+        >
           <div class="toolflowz-time-picker mb-2">
             <label>Début</label>
             <TimeSelector
               v-model="darkModeStore.options.scheduleStart"
-              @update:modelValue="darkModeStore.saveOptions()"
+              @update:model-value="darkModeStore.saveOptions()"
             />
           </div>
           <div class="toolflowz-time-picker">
             <label>Fin</label>
             <TimeSelector
               v-model="darkModeStore.options.scheduleEnd"
-              @update:modelValue="darkModeStore.saveOptions()"
+              @update:model-value="darkModeStore.saveOptions()"
             />
           </div>
         </div>
@@ -133,11 +148,18 @@
       <div class="toolflowz-field mb-3">
         <h4>Sites exclus</h4>
         <div class="toolflowz-excluded-domains">
-          <div v-if="darkModeStore.options.excludedDomains.length === 0" class="text-muted">
+          <div
+            v-if="darkModeStore.options.excludedDomains.length === 0"
+            class="text-muted"
+          >
             Aucun site exclu
           </div>
           <ul v-else>
-            <li v-for="domain in darkModeStore.options.excludedDomains" :key="domain" class="mb-2">
+            <li
+              v-for="domain in darkModeStore.options.excludedDomains"
+              :key="domain"
+              class="mb-2"
+            >
               {{ domain }}
               <Button
                 icon="pi pi-times"
@@ -147,13 +169,16 @@
               />
             </li>
           </ul>
-          <div class="toolflowz-add-domain mt-2" v-if="darkModeStore.currentDomain">
+          <div
+            v-if="darkModeStore.currentDomain"
+            class="toolflowz-add-domain mt-2"
+          >
             <Button
               :label="'Exclure ' + darkModeStore.currentDomain"
               icon="pi pi-plus"
               severity="secondary"
-              @click="darkModeStore.excludeDomain(darkModeStore.currentDomain)"
               :disabled="darkModeStore.isDomainExcluded"
+              @click="darkModeStore.excludeDomain(darkModeStore.currentDomain)"
             />
           </div>
         </div>

@@ -2,16 +2,22 @@
   <Dialog
     v-model:visible="ocrStore.isActive"
     :modal="true"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     :header="'OCR instantané'"
     position="right"
     :style="{ width: '350px' }"
+    append-to="body"
     @hide="closeDialog"
-    appendTo="body"
   >
     <div class="ocr-options">
-      <div v-if="isLoading" class="loading-state">
-        <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+      <div
+        v-if="isLoading"
+        class="loading-state"
+      >
+        <i
+          class="pi pi-spin pi-spinner"
+          style="font-size: 2rem"
+        ></i>
         <p>Chargement des options...</p>
       </div>
       
@@ -31,10 +37,10 @@
             v-if="!ocrStore.options.autoDetectLanguage"
             v-model="ocrStore.options.language"
             :options="languageOptions"
-            optionLabel="name"
-            optionValue="code"
-            @change="ocrStore.saveOptions()"
+            option-label="name"
+            option-value="code"
             class="w-full"
+            @change="ocrStore.saveOptions()"
           />
         </div>
 

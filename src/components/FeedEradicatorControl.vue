@@ -5,15 +5,19 @@
     :header="'Éradicateur de flux'"
     position="right"
     :style="{ width: '350px' }"
-    :dismissableMask="true"
-    appendTo="body"
+    :dismissable-mask="true"
+    append-to="body"
     @hide="closeDialog"
   >
     <div class="feed-options">
       <div class="field mb-3">
         <h4>Sites à bloquer</h4>
         <div class="sites-list">
-          <div v-for="site in feedStore.options.blockedSites" :key="site" class="site-item">
+          <div
+            v-for="site in feedStore.options.blockedSites"
+            :key="site"
+            class="site-item"
+          >
             <span>{{ site }}</span>
             <Button
               icon="pi pi-times"
@@ -79,7 +83,10 @@
           <label>Afficher les notifications de blocage</label>
         </div>
 
-        <div v-if="feedStore.options.showNotifications" class="notification-options">
+        <div
+          v-if="feedStore.options.showNotifications"
+          class="notification-options"
+        >
           <div class="field-checkbox mb-2">
             <Checkbox
               v-model="feedStore.options.soundNotifications"

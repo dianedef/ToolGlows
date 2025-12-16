@@ -5,8 +5,8 @@
     :modal="true"
     position="right"
     :style="{ width: '450px' }"
-    :dismissableMask="true"
-    appendTo="body"
+    :dismissable-mask="true"
+    append-to="body"
     @hide="closeDialog"
   >
     <div class="drag-options">
@@ -136,7 +136,7 @@
       v-model:visible="showAddFileTypeDialog"
       header="Ajouter un type de fichier"
       :modal="true"
-      :dismissableMask="true"
+      :dismissable-mask="true"
       class="p-fluid"
       @hide="showAddFileTypeDialog = false"
     >
@@ -163,7 +163,7 @@
       v-model:visible="showAddActionDialog"
       :header="editingAction ? 'Modifier l\'action' : 'Ajouter une action'"
       :modal="true"
-      :dismissableMask="true"
+      :dismissable-mask="true"
       class="p-fluid"
       @hide="showAddActionDialog = false"
     >
@@ -180,12 +180,15 @@
         <Dropdown
           v-model="newAction.action"
           :options="actionTypes"
-          optionLabel="label"
-          optionValue="value"
+          option-label="label"
+          option-value="value"
           class="w-full"
         />
       </div>
-      <div v-if="newAction.action === 'custom'" class="field mb-3">
+      <div
+        v-if="newAction.action === 'custom'"
+        class="field mb-3"
+      >
         <label>Script personnalisé</label>
         <Textarea
           v-model="newAction.customScript"

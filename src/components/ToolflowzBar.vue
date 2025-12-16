@@ -14,37 +14,43 @@
     <Button 
       class="toolflowz-main-button p-button-rounded"
       :icon="isExpanded || settingsStore.settings.isPinned ? 'pi pi-times' : 'pi pi-bars'"
-      @click.stop="handleMainButtonClick"
       text
       raised
       aria-label="Toolflowz"
+      @click.stop="handleMainButtonClick"
     >
       <span class="toolflowz-tool-emoji">🔧</span>
     </Button>
 
     <!-- Barre d'outils -->
-    <div v-if="isExpanded" class="toolflowz-tools-container">
+    <div
+      v-if="isExpanded"
+      class="toolflowz-tools-container"
+    >
       <!-- Bouton paramètres -->
       <Button 
         class="p-button-rounded p-button-text"
-        @click="showSettings = !showSettings"
         severity="secondary"
         aria-label="Paramètres"
+        @click="showSettings = !showSettings"
       >
         <span class="toolflowz-tool-emoji">⚙️</span>
       </Button>
 
       <!-- Boutons des outils actifs -->
-      <template v-for="tool in toolflowzStore.tools" :key="tool.id">
+      <template
+        v-for="tool in toolflowzStore.tools"
+        :key="tool.id"
+      >
         <Button 
           v-if="toolflowzStore.activeTools.includes(tool.id)"
           class="p-button-rounded p-button-text"
+          :aria-label="tool.name"
           @click="() => {
             console.log('[INFO] Tool button clicked:', tool.id)
             isVisible[tool.id] = !isVisible[tool.id]
             console.log('[INFO] Tool visibility updated:', tool.id, isVisible[tool.id])
           }"
-          :aria-label="tool.name"
         >
           <span class="toolflowz-tool-emoji">{{ tool.emoji }}</span>
         </Button>
@@ -52,18 +58,24 @@
     </div>
 
     <!-- Composants des outils actifs -->
-    <template v-for="tool in toolflowzStore.tools" :key="tool.id">
+    <template
+      v-for="tool in toolflowzStore.tools"
+      :key="tool.id"
+    >
       <component
-        v-if="toolflowzStore.activeTools.includes(tool.id)"
         :is="tool.component"
+        v-if="toolflowzStore.activeTools.includes(tool.id)"
         v-model="isVisible[tool.id]"
         :visible="isVisible[tool.id]"
-        @update:visible="(val: boolean) => isVisible[tool.id] = val"
         data-component="toolflowz-tool"
+        @update:visible="(val: boolean) => isVisible[tool.id] = val"
       />
     </template>
   </div>
-  <div v-else class="toolflowz-loading">
+  <div
+    v-else
+    class="toolflowz-loading"
+  >
     ⌛ Chargement...
   </div>
 
@@ -71,14 +83,14 @@
   <Dialog
     v-model:visible="showSettings"
     modal
-    :dismissableMask="true"
+    :dismissable-mask="true"
     :maximizable="true"
     header="⚙️ Paramètres"
     :style="{ width: '50vw' }"
     :breakpoints="{ '960px': '75vw', '641px': '100vw' }"
-    @hide="closeSettings"
     class="toolflowz-settings-dialog"
-    appendTo="body"
+    append-to="body"
+    @hide="closeSettings"
   >
     <div class="toolflowz-settings-content">
       <!-- Paramètres généraux -->
@@ -90,7 +102,7 @@
         <Checkbox
           v-model="autoHide"
           :binary="true"
-          inputId="autoHide"
+          input-id="autoHide"
         />
         <label for="autoHide">Masquer automatiquement</label>
       </div>
@@ -98,7 +110,7 @@
         <Checkbox 
           v-model="settingsStore.settings.isPinned"
           :binary="true"
-          inputId="pinBar"
+          input-id="pinBar"
         />
         <label for="pinBar">Épingler la barre d'outils</label>
       </div>
@@ -114,8 +126,8 @@
             { label: 'Grande', value: 'lg' },
             { label: 'Très grande', value: 'xl' }
           ]"
-          optionLabel="label"
-          optionValue="value"
+          option-label="label"
+          option-value="value"
           class="w-full md:w-14rem"
         />
       </div>
@@ -123,16 +135,23 @@
       <!-- Gestion des outils -->
       <h3>🛠️ Outils actifs</h3>
       <div class="toolflowz-tools-grid">
-        <div v-for="tool in toolflowzStore.tools" :key="tool.id" class="toolflowz-tool-item">
+        <div
+          v-for="tool in toolflowzStore.tools"
+          :key="tool.id"
+          class="toolflowz-tool-item"
+        >
           <Checkbox
-            :modelValue="toolflowzStore.activeTools.includes(tool.id)"
-            @update:modelValue="() => toolflowzStore.toggleTool(tool.id)"
+            :model-value="toolflowzStore.activeTools.includes(tool.id)"
             :binary="true"
-            :inputId="'tool-' + tool.id"
+            :input-id="'tool-' + tool.id"
+            @update:model-value="() => toolflowzStore.toggleTool(tool.id)"
           />
           <div class="toolflowz-tool-header">
             <span class="toolflowz-tool-emoji">{{ tool.emoji }}</span>
-            <label :for="'tool-' + tool.id" class="toolflowz-tool-name">{{ tool.name }}</label>
+            <label
+              :for="'tool-' + tool.id"
+              class="toolflowz-tool-name"
+            >{{ tool.name }}</label>
           </div>
         </div>
       </div>

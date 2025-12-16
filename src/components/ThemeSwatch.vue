@@ -10,10 +10,10 @@
       v-model="color"
       v-model:visible="showColorPicker"
       format="hex"
-      appendTo="body"
+      append-to="body"
       :inline="false"
-      @hide="onHide"
       class="p-colorpicker-overlay"
+      @hide="onHide"
     />
   </div>
 </template>

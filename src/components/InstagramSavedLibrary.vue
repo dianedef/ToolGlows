@@ -5,8 +5,8 @@
     :modal="true"
     position="right"
     :style="{ width: '350px' }"
-    :dismissableMask="true"
-    appendTo="body"
+    :dismissable-mask="true"
+    append-to="body"
     @hide="closeDialog"
   >
     <div class="instagram-options">
@@ -22,7 +22,10 @@
               <span class="collection-icon">{{ collection.icon || '📁' }}</span>
               <div class="collection-details">
                 <span class="collection-name">{{ collection.name }}</span>
-                <small v-if="collection.description" class="collection-description">
+                <small
+                  v-if="collection.description"
+                  class="collection-description"
+                >
                   {{ collection.description }}
                 </small>
               </div>
@@ -100,8 +103,8 @@
           <Dropdown
             v-model="igStore.options.downloadFormat"
             :options="downloadFormats"
-            optionLabel="label"
-            optionValue="value"
+            option-label="label"
+            option-value="value"
             class="w-full"
             @change="igStore.saveOptions()"
           />
@@ -142,8 +145,8 @@
           <Dropdown
             v-model="igStore.options.backupFrequency"
             :options="backupFrequencies"
-            optionLabel="label"
-            optionValue="value"
+            option-label="label"
+            option-value="value"
             class="w-full"
             @change="igStore.saveOptions()"
           />
@@ -167,7 +170,7 @@
       v-model:visible="showAddCollectionDialog"
       :header="editingCollection ? 'Modifier la collection' : 'Ajouter une collection'"
       :modal="true"
-      :dismissableMask="true"
+      :dismissable-mask="true"
       class="p-fluid"
       @hide="showAddCollectionDialog = false"
     >

@@ -2,12 +2,12 @@
   <Dialog
     v-model:visible="speedBrowsingStore.isActive"
     :modal="true"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     :header="'Navigation rapide'"
     position="right"
     :style="{ width: '350px' }"
+    append-to="body"
     @hide="closeDialog"
-    appendTo="body"
   >
     <div class="speed-options">
       <!-- Vitesse de défilement -->
@@ -32,8 +32,8 @@
         <h4>Défilement fluide</h4>
         <ToggleButton
           v-model="speedBrowsingStore.options.smoothScroll"
-          onLabel="Activé"
-          offLabel="Désactivé"
+          on-label="Activé"
+          off-label="Désactivé"
           class="w-full"
           @change="speedBrowsingStore.saveOptions()"
         />

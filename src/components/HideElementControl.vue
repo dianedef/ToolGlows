@@ -2,18 +2,23 @@
   <Dialog
     v-model:visible="isDialogVisible"
     :modal="true"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     header="Hide Elements"
     position="right"
     :style="{ width: '450px' }"
+    append-to="body"
     @hide="closeDialog"
-    appendTo="body"
   >
     <div class="toolflowz-hide-element-options">
       <div class="toolflowz-field mb-3">
         <p>This tool allows you to hide elements on the page.</p>
         
-        <Message v-if="hideElementStore.error" severity="error" :closable="false" class="mb-3">
+        <Message
+          v-if="hideElementStore.error"
+          severity="error"
+          :closable="false"
+          class="mb-3"
+        >
           {{ hideElementStore.error }}
         </Message>
 
@@ -22,9 +27,9 @@
           <Button
             :label="elementSelector.isActive ? 'Stop Selection' : 'Select an Element'"
             :icon="elementSelector.isActive ? 'pi pi-times' : 'pi pi-eye-slash'"
-            @click="toggleSelection"
             class="w-full"
             :severity="elementSelector.isActive ? 'danger' : 'primary'"
+            @click="toggleSelection"
           />
         </div>
 
@@ -39,7 +44,10 @@
             <label>Enable Shortcut</label>
           </div>
           
-          <div class="shortcut-input" v-if="hideElementStore.settings.enableShortcut">
+          <div
+            v-if="hideElementStore.settings.enableShortcut"
+            class="shortcut-input"
+          >
             <span class="p-input-icon-left w-full">
               <i class="pi pi-key" />
               <InputText
@@ -56,7 +64,10 @@
         </div>
 
         <!-- List of hidden elements -->
-        <div v-if="domainElements.length > 0" class="hidden-elements mb-3">
+        <div
+          v-if="domainElements.length > 0"
+          class="hidden-elements mb-3"
+        >
           <h4>Elements Hidden on this Site</h4>
           <div
             v-for="element in domainElements"
@@ -73,21 +84,24 @@
                 text
                 rounded
                 severity="secondary"
-                @click="previewElement(element.selector)"
                 title="Preview"
+                @click="previewElement(element.selector)"
               />
               <Button
                 icon="pi pi-undo"
                 text
                 rounded
                 severity="danger"
-                @click="removeElement(element.selector)"
                 title="Restore"
+                @click="removeElement(element.selector)"
               />
             </div>
           </div>
         </div>
-        <div v-else class="no-elements">
+        <div
+          v-else
+          class="no-elements"
+        >
           <p>No elements hidden on this site.</p>
           <small>Use the button above or the shortcut {{ hideElementStore.settings.shortcut }} to start hiding elements.</small>
         </div>
