@@ -1,3 +1,26 @@
+/**
+ * Settings Store - Persistent Configuration Management
+ * 
+ * Central store for all extension settings with automatic persistence
+ * and cross-tab synchronization. This store:
+ * 
+ * 1. Uses chrome.storage.sync for cloud-synced persistence
+ * 2. Broadcasts changes to all tabs via webext-bridge
+ * 3. Validates and sanitizes incoming settings
+ * 4. Applies settings changes to the live UI
+ * 5. Provides boundary checking for position coordinates
+ * 
+ * Architecture:
+ * - Uses useBrowserSyncStorage for reactive chrome.storage integration
+ * - Watches settings changes to trigger UI updates
+ * - Coordinates with toolflowz store for tool activation
+ * - Implements optimistic updates with background sync
+ * 
+ * Data flow:
+ * User interaction → Update settings locally → Send to background →
+ * Background saves to storage → Background broadcasts to all tabs →
+ * Each tab receives update → Apply to local UI
+ */
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { bridgeApi, initBridgeListeners } from '@/bridge'
@@ -5,6 +28,12 @@ import { useToolflowzStore } from '@/stores/toolflowz'
 import { useBrowserSyncStorage } from '@/composables/useBrowserStorage'
 import type { HideElementSettings } from './hideElement'
 
+/**
+ * Settings Data Structure
+ * 
+ * All fields must be JSON-serializable for chrome.storage and
+ * webext-bridge compatibility. Avoid functions, Symbols, or circular refs.
+ */
 export interface ToolflowzSettings {
   expanded: boolean
   position: {
@@ -35,7 +64,15 @@ export const useSettingsStore = defineStore('settings', () => {
     toolbarSize: 'md'
   } as ToolflowzSettings)
 
-  // Surveille uniquement les changements qui affectent l'UI
+  /**
+   * Reactive Settings Watcher
+   * 
+   * Monitors UI-affecting settings and triggers live updates when they change.
+   * Uses a computed object to track only relevant properties, avoiding
+   * unnecessary re-renders for non-UI settings.
+   * 
+   * Deep watch is necessary because position is a nested object.
+   */
   watch(() => ({
     position: settings.value.position,
     activeTools: settings.value.activeTools,
@@ -46,23 +83,36 @@ export const useSettingsStore = defineStore('settings', () => {
     applySettings(settings.value)
   }, { deep: true })
 
-  // Applique les settings à l'UI
+  /**
+   * Apply Settings to Live UI
+   * 
+   * Translates settings data structure into DOM changes.
+   * Called when:
+   * - Settings are loaded from storage
+   * - Settings are synced from another tab
+   * - User changes settings in current tab
+   * 
+   * Implementation notes:
+   * - Validates/normalizes activeTools format (handles legacy object format)
+   * - Directly manipulates toolbar styles for immediate visual feedback
+   * - Coordinates with toolflowz store to update tool activation
+   * - Uses JSON comparison to avoid unnecessary updates
+   */
   const applySettings = (newSettings: ToolflowzSettings) => {
     console.log('[INFO] Applying settings:', newSettings)
     
-    // Validation des données
+    // Legacy format handling: convert object to array
     if (!Array.isArray(newSettings.activeTools)) {
-      // Conversion silencieuse sans warning
       newSettings.activeTools = Object.values(newSettings.activeTools || {})
     }
     
-    // Applique les styles à la barre d'outils
+    // Direct style manipulation for instant feedback
     const toolbar = document.querySelector('.toolflowz-bar') as HTMLElement
     if (toolbar) {
       toolbar.style.backgroundColor = newSettings.toolbarColor || '#ffffff'
     }
 
-    // Outils actifs - seulement si différents des outils actuels
+    // Update active tools if changed (avoid redundant updates)
     const toolflowzStore = useToolflowzStore()
     if (newSettings.activeTools && 
         JSON.stringify(toolflowzStore.activeTools) !== JSON.stringify(newSettings.activeTools)) {
@@ -113,21 +163,37 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
+  /**
+   * Update Toolbar Position with Boundary Constraints
+   * 
+   * Ensures the toolbar stays within visible viewport bounds even on:
+   * - Window resize
+   * - Zoom changes
+   * - Multi-monitor setups
+   * 
+   * Boundary logic:
+   * - Minimum 20px from edges (prevents cutoff)
+   * - Maximum allows 100px margin (keeps toolbar grabbable)
+   * 
+   * This prevents the common UX issue where draggable elements get
+   * "lost" off-screen and become unreachable without resetting settings.
+   */
   const updatePosition = async (x: number, y: number) => {
     console.log('[INFO] Updating position:', { x, y })
     
-    // S'assure que la position reste dans les limites de la fenêtre
-    const maxX = window.innerWidth - 100 // Garde une marge de 100px pour la barre
+    // Calculate safe boundaries
+    const maxX = window.innerWidth - 100  // Reserve 100px for toolbar width
     const maxY = window.innerHeight - 100
     
+    // Clamp to boundaries
     const boundedX = Math.max(20, Math.min(x, maxX))
     const boundedY = Math.max(20, Math.min(y, maxY))
     
-    // Met à jour localement
+    // Optimistic local update
     settings.value.position = { x: boundedX, y: boundedY }
     
     try {
-      // Envoie au background
+      // Persist and sync
       await bridgeApi.updateSettings(settings.value)
       console.log('[SUCCESS] Position update sent to background')
     } catch (error) {
@@ -153,7 +219,18 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  // Initialise les listeners pour les mises à jour depuis d'autres onglets
+  /**
+   * Cross-Tab Synchronization Listener
+   * 
+   * Receives settings updates broadcast from other tabs via the background
+   * script. This enables real-time synchronization when user changes settings
+   * in one tab and sees immediate updates in all other tabs.
+   * 
+   * Critical for UX: Without this, users would need to reload tabs to see
+   * settings changes, leading to confusion and perceived bugs.
+   * 
+   * Flow: Other tab → Background → This tab → Update local state → Apply to UI
+   */
   initBridgeListeners({
     onSettingsUpdate: (newSettings) => {
       if (newSettings) {
