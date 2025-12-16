@@ -5,6 +5,18 @@
 
 A [Vite](https://vitejs.dev/) powered WebExtension ([Chrome](https://developer.chrome.com/docs/extensions/reference/), [FireFox](https://addons.mozilla.org/en-US/developers/), etc.) starter template based on `manifest 3`, `vue3` and `vite` and alot more preconfigured.
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](./docs) folder, organized using the **BMAD (Breakthrough Method for Agile AI-Driven Development)** methodology:
+
+- **[Documentation Index](./docs/README.md)** - Start here for documentation overview
+- **[Project Brief](./docs/project-brief.md)** - Project overview and business context
+- **[Product Requirements (PRD)](./docs/prd.md)** - Detailed product requirements and specifications
+- **[Architecture Guide](./docs/architecture.md)** - Technical architecture and system design
+- **[Developer Guide](./docs/developer-guide.md)** - Complete development handbook
+
+> 💡 **New to the project?** Start with the [Developer Guide](./docs/developer-guide.md) for setup instructions and development workflow.
+
 ## Screenshots
 
 <p align="center">
