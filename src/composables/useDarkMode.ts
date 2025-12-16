@@ -1,16 +1,47 @@
+/**
+ * Dark Mode Composable
+ * 
+ * Applies system-wide dark mode to any website with intelligent automation.
+ * Goes beyond simple CSS filters - provides multiple sync strategies and
+ * per-site exclusions for optimal user experience.
+ * 
+ * Sync strategies:
+ * 1. Manual toggle - User control via toolbar
+ * 2. System preference - Follows OS dark mode setting
+ * 3. Location-based - Auto-enables at sunset, disables at sunrise
+ * 4. Schedule-based - Custom time ranges (e.g., "19:00" to "07:00")
+ * 
+ * Features:
+ * - Per-domain exclusion list (e.g., already-dark sites)
+ * - Customizable colors (background, text, links)
+ * - Image/video brightness adjustment
+ * - Form element styling
+ * - MutationObserver for dynamic content
+ * 
+ * Implementation approach:
+ * - CSS injection with !important for override
+ * - Filter adjustments for media
+ * - Re-applies styles when DOM mutates (for SPAs)
+ * 
+ * Use cases:
+ * - Reducing eye strain during night browsing
+ * - Battery saving on OLED displays
+ * - Accessibility for light-sensitive users
+ * - Preference for dark aesthetics
+ */
 import { ref, watch } from 'vue'
 
 interface DarkModeOptions {
-  excludedDomains?: string[]
-  syncWithSystem?: boolean
-  syncWithLocation?: boolean
+  excludedDomains?: string[]  // Sites that already have good dark modes
+  syncWithSystem?: boolean     // Follow OS preference
+  syncWithLocation?: boolean   // Auto-enable at sunset based on GPS
   customStyles?: {
     backgroundColor?: string
     textColor?: string
     linkColor?: string
   }
-  autoSunsetTime?: string // ex: "19:00"
-  autoSunriseTime?: string // ex: "07:00"
+  autoSunsetTime?: string  // Fallback time (HH:MM format)
+  autoSunriseTime?: string // Fallback time (HH:MM format)
 }
 
 export function useDarkMode(options: DarkModeOptions = {}) {
@@ -75,9 +106,25 @@ export function useDarkMode(options: DarkModeOptions = {}) {
     })
   }
 
-  // Calculer les heures de lever et coucher du soleil
+  /**
+   * Calculate Astronomical Sunrise/Sunset Times
+   * 
+   * Uses public API to get precise sun times for user's location.
+   * This provides more accurate dark mode timing than fixed schedules.
+   * 
+   * Why astronomical times: Simply using "7 PM" fails to account for:
+   * - Seasonal variations (summer light until 9 PM, winter dark at 5 PM)
+   * - Latitude differences (Nordic vs tropical day lengths)
+   * - User travel across time zones
+   * 
+   * API: sunrise-sunset.org provides free, no-auth astronomical data
+   * Fallback: If API fails or user denies location, uses configured times
+   * 
+   * @param latitude - GPS latitude
+   * @param longitude - GPS longitude
+   * @returns Sunrise and sunset Date objects for current day
+   */
   const calculateSunTimes = async (latitude: number, longitude: number) => {
-    // Utiliser une API pour obtenir les heures précises
     try {
       const response = await fetch(
         `https://api.sunrise-sunset.org/json?lat=${latitude}&lng=${longitude}&formatted=0`
@@ -89,7 +136,7 @@ export function useDarkMode(options: DarkModeOptions = {}) {
       }
     } catch (error) {
       console.error('Erreur lors du calcul des heures solaires:', error)
-      // Fallback sur des heures par défaut
+      // Fallback to default times
       const today = new Date()
       return {
         sunrise: new Date(today.setHours(7, 0, 0)),
@@ -168,10 +215,32 @@ export function useDarkMode(options: DarkModeOptions = {}) {
     }
   }
 
-  // Initialisation
+  /**
+   * Initialize Dark Mode System
+   * 
+   * Sets up all sync strategies and observers based on config.
+   * 
+   * Initialization sequence:
+   * 1. Check if current domain is excluded
+   * 2. Setup system preference listener (if enabled)
+   * 3. Calculate and schedule location-based times (if enabled)
+   * 4. Create MutationObserver for dynamic content
+   * 
+   * MutationObserver necessity: Many modern sites (SPAs) dynamically
+   * inject content after page load. Without observer, dark mode styles
+   * would only apply to initial DOM, leaving new content light.
+   * 
+   * Performance consideration: Observer on entire body could be expensive,
+   * but dark mode is opt-in feature so acceptable tradeoff for UX.
+   * 
+   * Hourly location check: Recalculates sun times every hour to handle:
+   * - Long browsing sessions spanning sunset/sunrise
+   * - User movement across locations (road trips, flights)
+   */
   const init = async () => {
     checkCurrentDomain()
 
+    // System preference sync
     if (options.syncWithSystem) {
       isDarkMode.value = prefersDark.matches
       prefersDark.addEventListener('change', (e) => {
@@ -179,13 +248,14 @@ export function useDarkMode(options: DarkModeOptions = {}) {
       })
     }
 
+    // Location-based auto-enable
     if (options.syncWithLocation) {
       await checkLocationAndTime()
-      // Vérifier toutes les heures
+      // Recheck every hour for accuracy
       setInterval(checkLocationAndTime, 3600000)
     }
 
-    // Observer les changements de DOM pour réappliquer le mode sombre
+    // Watch for dynamic content changes (SPAs, infinite scroll, etc.)
     const observer = new MutationObserver(() => {
       if (isDarkMode.value) {
         applyDarkMode()
@@ -197,7 +267,7 @@ export function useDarkMode(options: DarkModeOptions = {}) {
       subtree: true
     })
 
-    // Nettoyer l'observer quand le composant est démonté
+    // Cleanup on unmount
     onUnmounted(() => {
       observer.disconnect()
     })
