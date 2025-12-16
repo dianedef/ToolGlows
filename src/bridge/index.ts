@@ -1,10 +1,32 @@
+/**
+ * Cross-Context Communication Bridge
+ * 
+ * Provides type-safe message passing between extension contexts using webext-bridge:
+ * - Content scripts <-> Background script
+ * - Popup <-> Background script
+ * - Multiple content script instances (via background relay)
+ * 
+ * Key features:
+ * - Namespace isolation to prevent message conflicts with other extensions
+ * - JSON serialization safety checks (content scripts can't send functions/symbols)
+ * - Type validation for all message payloads
+ * - Settings synchronization across all tabs
+ * 
+ * Security considerations:
+ * - Uses unique namespace to prevent message spoofing from malicious extensions
+ * - Validates all incoming data types to prevent injection attacks
+ * - Never sends sensitive data like user credentials through bridge
+ */
 import { sendMessage, onMessage, allowWindowMessaging } from 'webext-bridge/content-script'
 import type { Tool } from '@/types/tools'
 
-// Namespace unique pour notre extension
+// Unique namespace prevents conflicts with other extensions using webext-bridge
 const EXTENSION_NAMESPACE = 'com.toolflowz.extension'
 
-// Types pour la communication
+/**
+ * Settings structure shared across all extension contexts
+ * Must remain JSON-serializable (no functions, Symbols, or circular refs)
+ */
 export interface Settings {
   expanded: boolean
   position: { x: number; y: number }
@@ -31,7 +53,12 @@ export interface Settings {
   }
 }
 
-// Type pour assurer la compatibilité JSON
+/**
+ * JSON Compatibility Type Helper
+ * 
+ * Ensures types can be safely serialized for message passing.
+ * TypeScript compile-time check to prevent sending non-serializable data.
+ */
 type JsonCompatible<T> = {
   [P in keyof T]: T[P] extends object ? JsonCompatible<T[P]> : T[P]
 } & { [key: string]: any }
@@ -41,7 +68,17 @@ interface MessageData {
   tools?: SerializableTool[]
 }
 
-// Configuration sécurisée du bridge
+/**
+ * Secure Bridge Initialization
+ * 
+ * Must be called before any message passing occurs. Registers the extension's
+ * namespace with webext-bridge to enable secure cross-context communication.
+ * 
+ * Why needed: webext-bridge requires explicit namespace registration to
+ * prevent message conflicts and ensure only authorized contexts can communicate.
+ * 
+ * Critical: Call this once at content script startup, before Vue initialization.
+ */
 export const setupSecureBridge = () => {
   console.log('[BRIDGE] 🔒 Setting up secure bridge with namespace:', EXTENSION_NAMESPACE)
   try {

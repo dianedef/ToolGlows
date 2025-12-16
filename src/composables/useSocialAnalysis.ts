@@ -1,3 +1,28 @@
+/**
+ * Social Media Analysis Composable
+ * 
+ * Provides sentiment and demographic analysis for social media comments.
+ * Extracts comments from platforms like Instagram, Twitter, Facebook, etc.
+ * and performs statistical analysis on:
+ * - Gender distribution (based on profile analysis)
+ * - Sentiment analysis (positive/negative/neutral)
+ * - Engagement metrics (likes, timestamps)
+ * 
+ * Features:
+ * - Multi-platform detection and parsing
+ * - Statistical aggregation and percentage calculations
+ * - CSV export for external analysis
+ * - Real-time chart data for visualization
+ * 
+ * Use cases:
+ * - Market research and audience understanding
+ * - Content performance analysis
+ * - Community sentiment tracking
+ * - Demographic targeting insights
+ * 
+ * Note: Gender inference is based on publicly available profile data
+ * and should be used for aggregate statistics only, not individual profiling.
+ */
 import { useSocialAnalysisStore } from '@/stores/socialAnalysis'
 import { storeToRefs } from 'pinia'
 import { onMounted, onUnmounted, computed } from 'vue'
@@ -6,7 +31,10 @@ export function useSocialAnalysis() {
   const store = useSocialAnalysisStore()
   const { comments, isLoading, stats, platform } = storeToRefs(store)
 
-  // Calcul des pourcentages pour les graphiques
+  /**
+   * Compute percentage distribution of genders
+   * Returns values 0-100 for easy chart rendering
+   */
   const genderPercentages = computed(() => {
     const total = stats.value.totalComments
     if (total === 0) return { male: 0, female: 0, unknown: 0 }
@@ -55,10 +83,24 @@ export function useSocialAnalysis() {
     store.clearAnalysis()
   })
 
+  /**
+   * Export analysis data to CSV format
+   * 
+   * Generates a CSV file with all comment data for external analysis
+   * in tools like Excel, Google Sheets, or statistical software.
+   * 
+   * CSV format choices:
+   * - UTF-8 BOM for Excel compatibility
+   * - Double-quote escaping for text with commas/quotes
+   * - ISO timestamp in filename for easy sorting
+   * 
+   * Why CSV over JSON: Widely supported, opens directly in spreadsheet
+   * apps, and is human-readable in text editors.
+   */
   const exportToCSV = () => {
     const headers = ['Texte', 'Genre', 'Sentiment', 'URL du profil', 'Horodatage', 'Likes']
     const rows = comments.value.map(comment => [
-      `"${comment.text.replace(/"/g, '""')}"`,
+      `"${comment.text.replace(/"/g, '""')}"`,  // RFC 4180: escape quotes by doubling
       comment.gender,
       comment.sentiment,
       comment.profileUrl,

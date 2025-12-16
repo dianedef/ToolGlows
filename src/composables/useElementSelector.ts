@@ -1,9 +1,30 @@
+/**
+ * Element Selector Composable
+ * 
+ * Provides a point-and-click interface for selecting DOM elements on a page.
+ * Similar to browser DevTools element picker, used for features like:
+ * - Element hiding tool
+ * - Custom CSS injection targets
+ * - Data scraping selectors
+ * 
+ * User experience:
+ * 1. Call startSelecting() to enable selection mode
+ * 2. Hover over elements to see visual highlight
+ * 3. Click to select an element
+ * 4. Press Escape to cancel
+ * 
+ * Key features:
+ * - Visual feedback with hover and selection states
+ * - Excludes extension's own UI elements to prevent conflicts
+ * - Preserves and restores original element styles
+ * - Non-blocking: Uses event capture to intercept before page handlers
+ */
 import { ref, onMounted, onUnmounted } from 'vue'
 
 interface ElementSelectorOptions {
   highlightColor?: string
   hoverColor?: string
-  excludeSelector?: string
+  excludeSelector?: string  // CSS selector for elements to exclude (e.g., extension UI)
   onElementSelect?: (element: HTMLElement) => void
   onElementHover?: (element: HTMLElement | null) => void
 }
@@ -21,13 +42,24 @@ export function useElementSelector(options: ElementSelectorOptions = {}) {
   const hoveredElement = ref<HTMLElement | null>(null)
   const highlightedElements = ref<HTMLElement[]>([])
 
-  // Fonction pour vérifier si un élément doit être exclu
+  /**
+   * Checks if element should be excluded from selection
+   * Uses both direct match and ancestor check via closest()
+   * to prevent selecting extension UI or nested elements within it.
+   */
   const isElementExcluded = (element: HTMLElement): boolean => {
     return element.matches(excludeSelector) || 
            element.closest(excludeSelector) !== null
   }
 
-  // Fonction pour restaurer les styles originaux d'un élément
+  /**
+   * Restores element's original inline styles
+   * 
+   * Why use data attributes: We modify element.style (inline styles) for
+   * immediate visual feedback. Must restore original values to avoid
+   * permanently breaking page styling. Data attributes provide reliable
+   * storage that survives style changes.
+   */
   const restoreElementStyle = (element: HTMLElement) => {
     element.style.outline = element.dataset.originalOutline || ''
     element.style.transition = element.dataset.originalTransition || ''
@@ -39,7 +71,10 @@ export function useElementSelector(options: ElementSelectorOptions = {}) {
     delete element.dataset.originalCursor
   }
 
-  // Fonction pour sauvegarder les styles originaux d'un élément
+  /**
+   * Saves element's current inline styles before modification
+   * Stores in data attributes for later restoration
+   */
   const saveElementStyle = (element: HTMLElement) => {
     element.dataset.originalOutline = element.style.outline
     element.dataset.originalTransition = element.style.transition

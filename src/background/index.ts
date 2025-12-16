@@ -1,3 +1,16 @@
+/**
+ * Background Script - Extension Service Worker
+ * 
+ * This is the persistent background service worker that manages:
+ * - Cross-tab communication and settings synchronization
+ * - Extension lifecycle events (install/update)
+ * - Dark mode CSS injection across all tabs
+ * - Global state management for the extension
+ * 
+ * Architecture Note: Uses webext-bridge for type-safe message passing
+ * between background, content scripts, and popup contexts.
+ */
+
 // Sample code if using extensionpay.com
 // import { extPay } from '@/utils/payment/extPay'
 // extPay.startBackground()
@@ -11,6 +24,10 @@ interface ErrorDetails {
   error?: Error
 }
 
+/**
+ * Settings structure that defines the toolbar state and appearance
+ * These settings are synchronized across all tabs via chrome.storage.sync
+ */
 interface Settings {
   expanded: boolean
   position: { x: number; y: number }
@@ -26,21 +43,39 @@ interface MessageData {
   tools?: string[]
 }
 
-// État global géré par le background script
+/**
+ * Global state maintained by the background script
+ * This serves as a source of truth that survives individual tab closures
+ */
 let globalState = {
   settings: null as Settings | null
 }
 
 console.log('[BACKGROUND] 🚀 Background script started', { globalState })
 
-// Keep alive pour Chrome
+/**
+ * Chrome Keep-Alive Mechanism
+ * 
+ * In Manifest V3, service workers can be terminated after 30 seconds of inactivity.
+ * This listener keeps the background script alive by maintaining port connections.
+ * Critical for extensions that need to maintain state or respond quickly to events.
+ */
 if (typeof chrome !== 'undefined' && chrome.runtime?.onConnect) {
   chrome.runtime.onConnect.addListener(port => {
     console.log('[BACKGROUND] 🔌 New connection established:', port.name)
   })
 }
 
-// Installation listener
+/**
+ * Extension Lifecycle Event Handler
+ * 
+ * Handles onboarding and update flows:
+ * - On first install: Clears any stale data and shows welcome page
+ * - On update: Shows changelog/update notes to user
+ * 
+ * Why clear storage on install: Ensures clean state if extension was
+ * previously installed, avoiding conflicts from old data structures.
+ */
 chrome.runtime.onInstalled.addListener(async (opt) => {
   console.log('[INFO] Extension installed/updated:', opt.reason)
   try {
@@ -64,11 +99,26 @@ chrome.runtime.onInstalled.addListener(async (opt) => {
   }
 })
 
-// Fonction utilitaire pour broadcaster aux autres onglets
+/**
+ * Cross-Tab Settings Synchronization
+ * 
+ * Broadcasts settings changes to all open tabs except the source tab.
+ * This ensures that when a user changes settings in one tab, all other
+ * tabs with the extension toolbar immediately reflect those changes.
+ * 
+ * @param type - Message type identifier for webext-bridge routing
+ * @param data - Payload containing settings or tools data
+ * @param sourceTabId - Tab that initiated the change (excluded from broadcast)
+ * 
+ * Design decisions:
+ * - Uses Promise.allSettled to avoid one tab failure blocking others
+ * - Filters out chrome:// and extension:// URLs (handled by query pattern)
+ * - Parallel execution for better performance across many tabs
+ */
 const broadcastToOtherTabs = async (type: string, data: MessageData, sourceTabId?: number) => {
   console.log(`[BACKGROUND] 📢 Broadcasting ${type} to other tabs, source:`, sourceTabId)
   try {
-    // Récupère tous les onglets actifs avec l'URL de l'extension
+    // Query only http(s) URLs where content scripts can run
     const tabs = await chrome.tabs.query({
       url: [
         "http://*/*",
@@ -77,7 +127,7 @@ const broadcastToOtherTabs = async (type: string, data: MessageData, sourceTabId
     })
     console.log('[BACKGROUND] 📋 Found active tabs:', tabs.length)
 
-    // Broadcast en parallèle à tous les onglets
+    // Send messages in parallel to all tabs except source
     const promises = tabs
       .filter(tab => tab.id && tab.id !== sourceTabId)
       .map(async tab => {
@@ -100,7 +150,21 @@ const broadcastToOtherTabs = async (type: string, data: MessageData, sourceTabId
   }
 }
 
-// Gestionnaire de messages
+/**
+ * SETTINGS_UPDATED Message Handler
+ * 
+ * Central handler for settings changes from any content script.
+ * Implements the complete settings synchronization flow:
+ * 
+ * 1. Validates and normalizes incoming settings data
+ * 2. Updates background script's in-memory state
+ * 3. Persists to chrome.storage.sync (auto-syncs across devices)
+ * 4. Broadcasts to all other tabs twice for reliability
+ * 
+ * Why double broadcast: Content scripts may not be fully initialized
+ * when the first broadcast arrives. The delayed second broadcast catches
+ * any tabs that were in the process of loading their content scripts.
+ */
 onMessage('SETTINGS_UPDATED', async ({ data, sender }) => {
   try {
     const messageData = data as MessageData
@@ -108,28 +172,28 @@ onMessage('SETTINGS_UPDATED', async ({ data, sender }) => {
 
     const sourceTabId = sender.tabId
     
-    // Validation des données
+    // Normalize activeTools to array if received as object (compatibility fix)
     const settings = messageData.settings
     if (!Array.isArray(settings.activeTools)) {
       settings.activeTools = Object.values(settings.activeTools || {})
     }
     
-    // Mise à jour de l'état global
+    // Update global state for immediate availability
     globalState.settings = settings
 
-    // Sauvegarder dans le storage
+    // Persist to sync storage (survives browser restarts, syncs across devices)
     await chrome.storage.sync.set({ 
       toolflowzSettings: settings 
     })
 
     console.log('[BACKGROUND] 💾 Settings saved:', settings)
 
-    // Broadcast immédiat aux autres onglets
+    // Immediate broadcast to responsive tabs
     await broadcastToOtherTabs('SETTINGS_SYNC', { 
       settings: settings 
     }, sourceTabId)
 
-    // Re-broadcast après un court délai pour s'assurer que tous les onglets sont prêts
+    // Delayed broadcast to catch tabs that were loading
     setTimeout(async () => {
       await broadcastToOtherTabs('SETTINGS_SYNC', { 
         settings: settings 
@@ -222,7 +286,18 @@ onMessage('APPLY_DARK_MODE', async ({ data }) => {
   }
 })
 
-// Vérifier si on peut injecter des styles dans cet onglet
+/**
+ * URL Permission Check for Style Injection
+ * 
+ * Determines if the extension can inject CSS into a given tab.
+ * Browser internal pages (chrome://, about:, extension pages) are
+ * protected and will throw permission errors if we attempt injection.
+ * 
+ * @returns true if styles can be safely injected, false otherwise
+ * 
+ * Security note: Attempting to inject into protected pages will cause
+ * console errors and may impact extension performance or user experience.
+ */
 function canInjectStyles(url: string): boolean {
   try {
     const urlObj = new URL(url)

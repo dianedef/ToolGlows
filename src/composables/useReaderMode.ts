@@ -1,3 +1,30 @@
+/**
+ * Reader Mode Composable
+ * 
+ * Converts cluttered web pages into clean, readable articles similar to
+ * Safari Reader View or Firefox Reading Mode. Uses Mozilla's Readability
+ * algorithm to extract main content and strip ads, sidebars, and navigation.
+ * 
+ * Key features:
+ * - Content extraction: Identifies and isolates main article text
+ * - Customizable typography: Font size, family, line height, alignment
+ * - Theme support: Light, dark, and sepia color schemes
+ * - Bionic reading: Bolds first half of words for faster reading
+ * - Responsive layout: Adjustable width and column count
+ * - Link visibility: Option to display full URLs for accessibility
+ * 
+ * Technical approach:
+ * - Uses Mozilla's Readability library (same as Firefox Reader Mode)
+ * - Fallback parsing for sites where Readability fails
+ * - Replaces entire page content with cleaned version
+ * - Stores original HTML for restoration
+ * 
+ * Use cases:
+ * - Reading articles without distractions
+ * - Improving readability on poorly designed sites
+ * - Accessibility for users with reading difficulties
+ * - Printing clean versions of web articles
+ */
 import { ref, computed } from 'vue'
 import { Readability } from '@mozilla/readability'
 import type { ParseResult } from '@mozilla/readability'
@@ -9,10 +36,10 @@ interface ReaderSettings {
   textAlign: 'left' | 'justify' | 'center'
   theme: 'light' | 'dark' | 'sepia'
   columnCount: 1 | 2
-  bionicReading: boolean
+  bionicReading: boolean  // Bold first half of words for faster reading
   imageSize: 'normal' | 'small' | 'hidden'
   width: 'narrow' | 'medium' | 'wide'
-  showLinks: boolean
+  showLinks: boolean  // Display full URLs after link text
 }
 
 interface ReaderModeOptions {
@@ -20,8 +47,8 @@ interface ReaderModeOptions {
   preserveLinks?: boolean
   maxImageWidth?: number
   customParsing?: {
-    selectors?: string[]
-    excludeSelectors?: string[]
+    selectors?: string[]  // Target specific elements as content source
+    excludeSelectors?: string[]  // Remove elements before parsing
   }
 }
 
@@ -162,7 +189,23 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
     }
   }
 
-  // Appliquer le Bionic Reading
+  /**
+   * Apply Bionic Reading Enhancement
+   * 
+   * Bolds the first half of each word to guide eye movement and increase
+   * reading speed. Based on research showing that the brain processes the
+   * beginning of words more heavily than the end.
+   * 
+   * Algorithm:
+   * 1. Find all text nodes in document using XPath
+   * 2. Skip code blocks (pre, code) to preserve formatting
+   * 3. Split text into words
+   * 4. Bold first half of each word (rounded up for odd lengths)
+   * 5. Replace original text node with formatted version
+   * 
+   * Performance note: XPath evaluation is fast for this use case and
+   * provides cleaner results than TreeWalker or manual recursion.
+   */
   const applyBionicReading = () => {
     const textNodes = document.evaluate(
       '//text()',
