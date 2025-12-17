@@ -6,7 +6,7 @@
     :style="{ width: '70vw' }"
     :breakpoints="{ '960px': '85vw', '641px': '100vw' }"
     :maximizable="true"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     class="toolflowz-social-analysis-dialog"
   >
     <div class="toolflowz-social-analysis-content">
@@ -14,7 +14,10 @@
       <div class="toolflowz-platform-header">
         <h3>
           {{ platformEmoji }} {{ platformName }}
-          <span v-if="platform === 'unknown'" class="toolflowz-platform-warning">
+          <span
+            v-if="platform === 'unknown'"
+            class="toolflowz-platform-warning"
+          >
             (Plateforme non supportée)
           </span>
         </h3>
@@ -23,24 +26,27 @@
       <!-- Actions -->
       <div class="toolflowz-social-analysis-actions">
         <Button
-          @click="analyzeComments"
           icon="pi pi-search"
           label="Analyser les commentaires"
           :loading="isLoading"
           :disabled="platform === 'unknown'"
           class="toolflowz-action-button"
+          @click="analyzeComments"
         />
         <Button
-          @click="exportToCSV"
           icon="pi pi-download"
           label="Exporter en CSV"
           :disabled="!comments.length"
           class="toolflowz-action-button"
+          @click="exportToCSV"
         />
       </div>
 
       <!-- Statistiques -->
-      <div v-if="comments.length" class="toolflowz-stats-container">
+      <div
+        v-if="comments.length"
+        class="toolflowz-stats-container"
+      >
         <!-- Distribution par genre -->
         <div class="toolflowz-stats-card">
           <h4>📊 Distribution par genre</h4>
@@ -151,38 +157,70 @@
       </div>
 
       <!-- Liste des commentaires -->
-      <div class="toolflowz-comments-list" v-if="comments.length">
+      <div
+        v-if="comments.length"
+        class="toolflowz-comments-list"
+      >
         <h4>💬 Commentaires ({{ comments.length }})</h4>
-        <DataTable :value="comments" :scrollable="true" scrollHeight="300px">
-          <Column field="text" header="Commentaire">
+        <DataTable
+          :value="comments"
+          :scrollable="true"
+          scroll-height="300px"
+        >
+          <Column
+            field="text"
+            header="Commentaire"
+          >
             <template #body="{ data }">
               <div class="toolflowz-comment-text">{{ data.text }}</div>
             </template>
           </Column>
-          <Column field="gender" header="Genre">
+          <Column
+            field="gender"
+            header="Genre"
+          >
             <template #body="{ data }">
-              <span class="toolflowz-gender-badge" :class="data.gender">
+              <span
+                class="toolflowz-gender-badge"
+                :class="data.gender"
+              >
                 {{ genderEmoji[data.gender] }} {{ genderLabel[data.gender] }}
               </span>
             </template>
           </Column>
-          <Column field="sentiment" header="Sentiment">
+          <Column
+            field="sentiment"
+            header="Sentiment"
+          >
             <template #body="{ data }">
-              <span class="toolflowz-sentiment-badge" :class="data.sentiment">
+              <span
+                class="toolflowz-sentiment-badge"
+                :class="data.sentiment"
+              >
                 {{ sentimentEmoji[data.sentiment] }}
               </span>
             </template>
           </Column>
-          <Column field="profileUrl" header="Profil">
+          <Column
+            field="profileUrl"
+            header="Profil"
+          >
             <template #body="{ data }">
-              <a :href="data.profileUrl" target="_blank" class="toolflowz-profile-link">
+              <a
+                :href="data.profileUrl"
+                target="_blank"
+                class="toolflowz-profile-link"
+              >
                 Voir le profil
               </a>
             </template>
           </Column>
         </DataTable>
       </div>
-      <div v-else-if="!isLoading" class="toolflowz-no-data">
+      <div
+        v-else-if="!isLoading"
+        class="toolflowz-no-data"
+      >
         Cliquez sur "Analyser les commentaires" pour commencer l'analyse.
       </div>
     </div>

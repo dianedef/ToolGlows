@@ -5,19 +5,31 @@
       <Panel header="Options de base">
         <div class="option-group">
           <div class="field-checkbox">
-            <Checkbox v-model="searchOptions.exactPhrase" :binary="true" />
+            <Checkbox
+              v-model="searchOptions.exactPhrase"
+              :binary="true"
+            />
             <label>Phrase exacte</label>
           </div>
           <div class="field-checkbox">
-            <Checkbox v-model="searchOptions.inTitle" :binary="true" />
+            <Checkbox
+              v-model="searchOptions.inTitle"
+              :binary="true"
+            />
             <label>Rechercher dans le titre</label>
           </div>
           <div class="field-checkbox">
-            <Checkbox v-model="searchOptions.inUrl" :binary="true" />
+            <Checkbox
+              v-model="searchOptions.inUrl"
+              :binary="true"
+            />
             <label>Rechercher dans l'URL</label>
           </div>
           <div class="field-checkbox">
-            <Checkbox v-model="searchOptions.inText" :binary="true" />
+            <Checkbox
+              v-model="searchOptions.inText"
+              :binary="true"
+            />
             <label>Rechercher dans le texte</label>
           </div>
         </div>
@@ -28,8 +40,8 @@
         <Dropdown
           v-model="searchOptions.fileType"
           :options="fileTypes"
-          optionLabel="label"
-          optionValue="value"
+          option-label="label"
+          option-value="value"
           placeholder="Tous les types"
           class="w-full"
         />
@@ -40,16 +52,16 @@
         <div class="flex flex-col gap-2">
           <span class="p-float-label">
             <InputText
-              v-model="searchOptions.site"
               id="site"
+              v-model="searchOptions.site"
               class="w-full"
             />
             <label for="site">ex: wikipedia.org</label>
           </span>
           <span class="p-float-label">
             <InputText
-              v-model="searchOptions.excludeSite"
               id="excludeSite"
+              v-model="searchOptions.excludeSite"
               class="w-full"
             />
             <label for="excludeSite">Domaine à exclure</label>
@@ -62,8 +74,8 @@
         <Dropdown
           v-model="searchOptions.dateRange"
           :options="dateRanges"
-          optionLabel="label"
-          optionValue="value"
+          option-label="label"
+          option-value="value"
           placeholder="Toutes les dates"
           class="w-full"
         />
@@ -74,8 +86,8 @@
         <Dropdown
           v-model="searchOptions.language"
           :options="languages"
-          optionLabel="label"
-          optionValue="value"
+          option-label="label"
+          option-value="value"
           placeholder="Toutes les langues"
           class="w-full"
         />
@@ -87,16 +99,16 @@
           <span class="p-input-icon-right w-full">
             <InputText
               v-model="newExcludedWord"
-              @keyup.enter="addExcludedWord"
               placeholder="Ajouter un mot à exclure"
               class="w-full"
+              @keyup.enter="addExcludedWord"
             />
             <Button
               icon="pi pi-plus"
-              @click="addExcludedWord"
               severity="secondary"
               text
               rounded
+              @click="addExcludedWord"
             />
           </span>
         </div>
@@ -134,18 +146,27 @@
       <Panel header="Options avancées">
         <div class="option-group">
           <div class="field-checkbox">
-            <Checkbox v-model="searchOptions.cache" :binary="true" />
+            <Checkbox
+              v-model="searchOptions.cache"
+              :binary="true"
+            />
             <label>Version en cache</label>
           </div>
           <div class="field-checkbox">
-            <Checkbox v-model="searchOptions.related" :binary="true" />
+            <Checkbox
+              v-model="searchOptions.related"
+              :binary="true"
+            />
             <label>Sites similaires</label>
           </div>
         </div>
       </Panel>
     </div>
 
-    <Panel header="Aperçu de la requête" class="mt-4">
+    <Panel
+      header="Aperçu de la requête"
+      class="mt-4"
+    >
       <code>{{ previewQuery }}</code>
     </Panel>
   </div>

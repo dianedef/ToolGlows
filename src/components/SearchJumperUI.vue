@@ -5,22 +5,40 @@
     :modal="true"
     position="right"
     :style="{ width: '450px' }"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     @hide="closeDialog"
   >
     <div class="toolflowz-search-options">
       <div class="toolflowz-field mb-3">
         <h4>Moteurs de recherche</h4>
         <div class="toolflowz-engines-list">
-          <div v-for="engine in searchStore.options.engines" :key="engine.id" class="toolflowz-engine-item">
+          <div
+            v-for="engine in searchStore.options.engines"
+            :key="engine.id"
+            class="toolflowz-engine-item"
+          >
             <span class="toolflowz-engine-icon">{{ engine.icon }}</span>
             <span class="toolflowz-engine-name">{{ engine.name }}</span>
             <div class="toolflowz-engine-actions">
-              <Button icon="pi pi-pencil" text severity="secondary" @click="editEngine(engine)" />
-              <Button icon="pi pi-trash" text severity="danger" @click="searchStore.removeEngine(engine.id)" />
+              <Button
+                icon="pi pi-pencil"
+                text
+                severity="secondary"
+                @click="editEngine(engine)"
+              />
+              <Button
+                icon="pi pi-trash"
+                text
+                severity="danger"
+                @click="searchStore.removeEngine(engine.id)"
+              />
             </div>
           </div>
-          <Button label="Ajouter un moteur" icon="pi pi-plus" @click="showAddEngineDialog = true" />
+          <Button
+            label="Ajouter un moteur"
+            icon="pi pi-plus"
+            @click="showAddEngineDialog = true"
+          />
         </div>
       </div>
 
@@ -110,7 +128,12 @@
         <InputText v-model="newEngine.icon" />
       </div>
       <template #footer>
-        <Button label="Annuler" icon="pi pi-times" text @click="showAddEngineDialog = false" />
+        <Button
+          label="Annuler"
+          icon="pi pi-times"
+          text
+          @click="showAddEngineDialog = false"
+        />
         <Button
           :label="editingEngine ? 'Modifier' : 'Ajouter'"
           icon="pi pi-check"

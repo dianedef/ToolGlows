@@ -1,9 +1,35 @@
+/**
+ * Search Jumper Composable
+ * 
+ * Provides quick multi-search functionality from selected text, images, or links.
+ * Similar to browser extensions like "Context Menu Search" or "Search All".
+ * 
+ * Key features:
+ * - Text selection → search across multiple engines simultaneously
+ * - Right-click context menu for images and links
+ * - Keyboard shortcuts for quick access to favorite engines
+ * - Drag-and-drop search initiation
+ * - Customizable search engines and categories
+ * - Background/foreground/incognito tab options
+ * 
+ * Use cases:
+ * - Quick fact-checking across multiple sources
+ * - Shopping price comparisons
+ * - Image reverse search (Google, TinEye, Yandex)
+ * - Academic research across databases
+ * 
+ * Architecture:
+ * - Merges default and user-custom search engines
+ * - Groups engines by category for organized UI
+ * - Context-aware: shows relevant engines based on selection type
+ * - Supports URL templating with placeholders (%s, %u, %h)
+ */
 import { ref, computed } from 'vue'
 import { defaultSearchEngines, type SearchEngine } from './searchEngines'
 
 interface SearchSite {
   name: string
-  url: string
+  url: string  // Template with %s for search term
   icon?: string
   shortcut?: string
   category?: string
@@ -13,7 +39,7 @@ interface SearchCategory {
   name: string
   sites: SearchSite[]
   icon?: string
-  showOn?: RegExp // Règle pour afficher la catégorie sur certains sites
+  showOn?: RegExp  // Pattern to show category only on specific domains
 }
 
 export function useSearchJumper() {
@@ -148,7 +174,18 @@ export function useSearchJumper() {
     }
   }
 
-  // Préparer l'URL de recherche en remplaçant les paramètres
+  /**
+   * Prepare Search URL with Template Substitution
+   * 
+   * Replaces placeholders in search engine URLs with actual values:
+   * - %s: Selected text/search term (URI encoded for safety)
+   * - %u: Current page URL (for "search similar pages" features)
+   * - %h: Current hostname (for site-specific searches)
+   * 
+   * Example: "https://google.com/search?q=%s" → "https://google.com/search?q=vue%20composition%20api"
+   * 
+   * URI encoding prevents injection attacks and handles special characters.
+   */
   const prepareSearchUrl = (url: string): string => {
     return url
       .replace('%s', encodeURIComponent(selectedText.value))

@@ -3,12 +3,12 @@
     v-if="!isLoading"
     v-model:visible="readerModeStore.isActive"
     :modal="true"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     :header="'Mode lecture'"
     position="right"
     :style="{ width: '350px' }"
+    append-to="body"
     @hide="closeDialog"
-    appendTo="body"
   >
     <div class="toolflowz-reader-options">
       <h4>Apparence</h4>

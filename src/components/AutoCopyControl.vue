@@ -6,7 +6,7 @@
       :modal="true"
       position="right"
       :style="{ width: '500px' }"
-      :dismissableMask="true"
+      :dismissable-mask="true"
       @hide="closeDialog"
     >
       <div class="copy-options">
@@ -24,7 +24,10 @@
                 <span class="format-icon">{{ format.icon }}</span>
                 <div class="format-details">
                   <span class="format-name">{{ format.name }}</span>
-                  <small v-if="format.shortcut" class="format-shortcut">
+                  <small
+                    v-if="format.shortcut"
+                    class="format-shortcut"
+                  >
                     {{ format.shortcut }}
                   </small>
                 </div>

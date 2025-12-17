@@ -1,10 +1,31 @@
 /**
- * Injects an external stylesheet via URL
+ * Style Injection Utilities
+ * 
+ * Provides safe CSS injection for content scripts. Content scripts share
+ * the page's DOM but have isolated JavaScript contexts. These utilities
+ * inject styles into the shared DOM while preventing conflicts.
+ */
+
+/**
+ * Injects External Stylesheet from CDN or URL
+ * 
+ * Used for loading third-party libraries (PrimeVue, PrimeIcons) without
+ * bundling them. This reduces extension package size and leverages browser
+ * caching if the user has visited other sites using these libraries.
+ * 
+ * @param url - Full URL to the stylesheet
+ * @param id - Unique identifier to prevent duplicate injection
+ * @returns Promise that resolves when stylesheet loads
+ * 
+ * Design decisions:
+ * - Uses <link> tag for proper browser caching and parallel loading
+ * - Idempotent: Safe to call multiple times with same id
+ * - Promise-based: Caller can wait for styles before rendering UI
  */
 export function injectStylesheet(url: string, id: string): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
-      // Check if style already exists
+      // Idempotency check: avoid duplicate injections
       if (document.getElementById(id)) {
         resolve()
         return
@@ -26,11 +47,24 @@ export function injectStylesheet(url: string, id: string): Promise<void> {
 }
 
 /**
- * Injects inline CSS styles
+ * Injects Inline CSS Styles
+ * 
+ * Used for bundled extension styles (Vite processed with ?inline import).
+ * Inline styles provide:
+ * - Instant availability (no network request)
+ * - Guaranteed presence even if CDN fails
+ * - Version lock with extension code
+ * 
+ * @param styles - CSS content as string
+ * @param id - Unique identifier to prevent duplicate injection
+ * 
+ * Why inline over <link>: Extension styles are small and must be
+ * immediately available for proper UI rendering. Network delays for
+ * external files would cause visible layout shifts.
  */
 export function injectStyles(styles: string, id: string): void {
   try {
-    // Check if style already exists
+    // Idempotency check
     if (document.getElementById(id)) {
       return
     }

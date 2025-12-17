@@ -6,15 +6,24 @@
     position="right"
     :style="{ width: '350px' }"
     :closable="true"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     @hide="closeDialog"
   >
-    <div v-if="isLoading" class="loading-state">
-      <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <div
+      v-if="isLoading"
+      class="loading-state"
+    >
+      <i
+        class="pi pi-spin pi-spinner"
+        style="font-size: 2rem"
+      ></i>
       <p>Chargement des options...</p>
     </div>
     
-    <div v-else class="stats-container">
+    <div
+      v-else
+      class="stats-container"
+    >
       <!-- Statistiques principales -->
       <div class="stats-group">
         <div class="stat-item">
@@ -34,7 +43,10 @@
       <Divider />
 
       <!-- Temps de lecture -->
-      <div v-if="wordCounterStore.options.showReadingTime" class="reading-time">
+      <div
+        v-if="wordCounterStore.options.showReadingTime"
+        class="reading-time"
+      >
         <h4>Temps de lecture estimé</h4>
         <div class="time-details">
           <i class="pi pi-clock" />
@@ -51,8 +63,8 @@
         <div class="option-row">
           <Checkbox
             v-model="wordCounterStore.options.countSpaces"
+            input-id="count-spaces"
             @change="wordCounterStore.saveOptions"
-            inputId="count-spaces"
           />
           <label for="count-spaces">Compter les espaces</label>
         </div>
@@ -60,8 +72,8 @@
         <div class="option-row">
           <Checkbox
             v-model="wordCounterStore.options.countPunctuation"
+            input-id="count-punctuation"
             @change="wordCounterStore.saveOptions"
-            inputId="count-punctuation"
           />
           <label for="count-punctuation">Compter la ponctuation</label>
         </div>
@@ -70,7 +82,10 @@
       <Divider />
 
       <!-- Mots fréquents -->
-      <div v-if="wordCounterStore.options.showFrequentWords" class="frequent-words">
+      <div
+        v-if="wordCounterStore.options.showFrequentWords"
+        class="frequent-words"
+      >
         <h4>Mots les plus fréquents</h4>
         <div class="words-list">
           <Chip
@@ -87,14 +102,14 @@
         <Button
           label="Fermer"
           icon="pi pi-times"
-          @click="close"
           text
+          @click="close"
         />
         <Button
           label="Copier les statistiques"
           icon="pi pi-copy"
-          @click="copyStats"
           severity="secondary"
+          @click="copyStats"
         />
       </div>
     </template>

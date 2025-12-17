@@ -2,14 +2,17 @@
   <div class="control-wrapper">
     <Button
       class="control-button"
-      @click="togglePanel"
       :class="{ active: isEnabled }"
       icon="🐦"
       text
       rounded
+      @click="togglePanel"
     />
 
-    <div v-if="showPanel" class="settings-panel">
+    <div
+      v-if="showPanel"
+      class="settings-panel"
+    >
       <h3>Twitter Minimal</h3>
 
       <Card>
@@ -20,7 +23,7 @@
           <div class="option-row">
             <Checkbox
               v-model="options.hideExplore"
-              inputId="hide-explore"
+              input-id="hide-explore"
             />
             <label for="hide-explore">Explorer</label>
           </div>
@@ -28,7 +31,7 @@
           <div class="option-row">
             <Checkbox
               v-model="options.hideNotifications"
-              inputId="hide-notifications"
+              input-id="hide-notifications"
             />
             <label for="hide-notifications">Notifications</label>
           </div>
@@ -36,7 +39,7 @@
           <div class="option-row">
             <Checkbox
               v-model="options.hideTrends"
-              inputId="hide-trends"
+              input-id="hide-trends"
             />
             <label for="hide-trends">Tendances</label>
           </div>
@@ -44,7 +47,7 @@
           <div class="option-row">
             <Checkbox
               v-model="options.hideWhoToFollow"
-              inputId="hide-who-to-follow"
+              input-id="hide-who-to-follow"
             />
             <label for="hide-who-to-follow">Suggestions d'abonnement</label>
           </div>
@@ -59,7 +62,7 @@
           <div class="option-row">
             <Checkbox
               v-model="options.centerTimeline"
-              inputId="center-timeline"
+              input-id="center-timeline"
             />
             <label for="center-timeline">Centrer le fil d'actualité</label>
           </div>
@@ -67,7 +70,7 @@
           <div class="option-row">
             <Checkbox
               v-model="options.hideMetrics"
-              inputId="hide-metrics"
+              input-id="hide-metrics"
             />
             <label for="hide-metrics">Masquer les métriques (likes, retweets)</label>
           </div>
@@ -79,7 +82,7 @@
               :min="500"
               :max="1200"
               :step="50"
-              inputId="timeline-width"
+              input-id="timeline-width"
             />
             <span class="width-value">{{ options.timelineWidth }}px</span>
           </div>

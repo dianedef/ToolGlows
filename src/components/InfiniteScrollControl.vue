@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="scrollStore.isActive"
     :modal="true"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     :header="'Défilement Infini'"
     position="right"
     :style="{ width: '350px' }"
@@ -50,8 +50,8 @@
           v-model="scrollStore.options.maxPages"
           :min="1"
           :max="50"
-          @change="scrollStore.saveOptions()"
           class="w-full"
+          @change="scrollStore.saveOptions()"
         />
         <small class="toolflowz-small">Nombre maximum de pages à charger</small>
       </div>

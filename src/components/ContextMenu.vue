@@ -1,9 +1,9 @@
 <template>
   <Menu
     ref="menu"
+    v-model:visible="visible"
     :model="items"
     :popup="true"
-    v-model:visible="visible"
     :style="{
       left: position.x + 'px',
       top: position.y + 'px'

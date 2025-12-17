@@ -82,8 +82,8 @@ async function saveSettings(newSettings: any) {
     <h1>⚙️ Paramètres Toolflowz</h1>
     
     <FormKit 
-      type="form"
       v-model="settings"
+      type="form"
       :actions="false"
       :config="{
         classes: {

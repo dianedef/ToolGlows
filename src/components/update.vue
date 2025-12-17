@@ -14,10 +14,16 @@ const version = __VERSION__
       <template #title>
         <div class="update-header">
           <h1 class="text-4xl font-bold text-center">🎉 Mise à jour ! 🎉</h1>
-          <Message severity="success" :closable="false">
+          <Message
+            severity="success"
+            :closable="false"
+          >
             {{ displayName }} a été mis à jour vers la dernière version.
           </Message>
-          <Message severity="info" :closable="false">
+          <Message
+            severity="info"
+            :closable="false"
+          >
             Version : {{ version }}
           </Message>
         </div>

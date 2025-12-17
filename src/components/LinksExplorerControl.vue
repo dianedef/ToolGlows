@@ -6,7 +6,7 @@
     :style="{ width: '50vw' }"
     :breakpoints="{ '960px': '75vw', '641px': '100vw' }"
     :maximizable="true"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     class="toolflowz-links-explorer-dialog"
   >
     <div class="toolflowz-links-explorer-content">
@@ -19,7 +19,7 @@
               <Checkbox
                 v-model="settings.includeInternal"
                 :binary="true"
-                inputId="includeInternal"
+                input-id="includeInternal"
               />
               <label for="includeInternal">Liens internes</label>
             </div>
@@ -28,7 +28,7 @@
               <Checkbox
                 v-model="settings.includeExternal"
                 :binary="true"
-                inputId="includeExternal"
+                input-id="includeExternal"
               />
               <label for="includeExternal">Liens externes</label>
             </div>
@@ -44,7 +44,7 @@
                 v-model="settings.maxDepth"
                 :min="1"
                 :max="5"
-                inputId="maxDepth"
+                input-id="maxDepth"
                 class="toolflowz-depth-input"
               />
             </div>
@@ -53,7 +53,7 @@
               <Checkbox
                 v-model="settings.useMarkdown"
                 :binary="true"
-                inputId="useMarkdown"
+                input-id="useMarkdown"
               />
               <div class="toolflowz-label-with-hint">
                 <label for="useMarkdown">Format Markdown</label>
@@ -67,54 +67,80 @@
       <!-- Actions -->
       <div class="toolflowz-links-explorer-actions">
         <Button
-          @click="exploreLinks"
           icon="pi pi-search"
           label="Explorer"
           :loading="isLoading"
           class="toolflowz-action-button"
+          @click="exploreLinks"
         />
         <Button
-          @click="exploreDeeper"
           icon="pi pi-arrow-down"
           label="Explorer plus profond"
           :disabled="settings.currentDepth >= settings.maxDepth || isLoading"
           class="toolflowz-action-button"
+          @click="exploreDeeper"
         />
         <Button
-          @click="handleCopy"
           icon="pi pi-copy"
           label="Copier tous"
           :disabled="!links.length"
           class="toolflowz-action-button"
+          @click="handleCopy"
         />
       </div>
 
       <!-- Liste des liens -->
-      <div class="toolflowz-links-list" v-if="links.length">
-        <DataTable :value="links" :scrollable="true" scrollHeight="400px">
-          <Column field="title" header="Titre">
+      <div
+        v-if="links.length"
+        class="toolflowz-links-list"
+      >
+        <DataTable
+          :value="links"
+          :scrollable="true"
+          scroll-height="400px"
+        >
+          <Column
+            field="title"
+            header="Titre"
+          >
             <template #body="{ data }">
               {{ data.title || 'Sans titre' }}
             </template>
           </Column>
-          <Column field="url" header="URL">
+          <Column
+            field="url"
+            header="URL"
+          >
             <template #body="{ data }">
-              <a :href="data.url" target="_blank">{{ data.url }}</a>
+              <a
+                :href="data.url"
+                target="_blank"
+              >{{ data.url }}</a>
             </template>
           </Column>
-          <Column field="isExternal" header="Type">
+          <Column
+            field="isExternal"
+            header="Type"
+          >
             <template #body="{ data }">
               {{ data.isExternal ? 'Externe' : 'Interne' }}
             </template>
           </Column>
-          <Column field="depth" header="Profondeur" class="toolflowz-text-center">
+          <Column
+            field="depth"
+            header="Profondeur"
+            class="toolflowz-text-center"
+          >
             <template #body="{ data }">
               <div class="toolflowz-text-center">{{ data.depth }}</div>
             </template>
           </Column>
         </DataTable>
       </div>
-      <div v-else class="toolflowz-no-links">
+      <div
+        v-else
+        class="toolflowz-no-links"
+      >
         Aucun lien trouvé. Lancez l'exploration pour commencer !
       </div>
     </div>

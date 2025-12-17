@@ -1,3 +1,22 @@
+/**
+ * Content Script - Main Entry Point
+ * 
+ * This script runs in every web page and injects the ToolFlowz toolbar UI.
+ * It operates in an isolated context separate from the page's JavaScript
+ * but shares the same DOM, allowing safe UI injection without page interference.
+ * 
+ * Architecture:
+ * - Creates a complete Vue 3 app instance with Pinia stores
+ * - Injects PrimeVue UI framework and required stylesheets
+ * - Establishes webext-bridge communication with background script
+ * - Handles graceful cleanup on page unload and context invalidation
+ * 
+ * Key challenges solved:
+ * - CSS isolation: Uses scoped styles to prevent page CSS conflicts
+ * - Bridge initialization order: Must setup bridge before Vue to enable messaging
+ * - Context invalidation: Cleans up when extension is reloaded
+ */
+
 // Import des styles
 import "./index.scss"
 import { createApp, h, defineComponent, provide } from 'vue'
@@ -27,7 +46,17 @@ interface StorageData {
 let app: ReturnType<typeof createApp> | null = null
 let bridgeInitialized = false
 
-// Création de l'élément racine pour l'app Vue
+/**
+ * Creates Vue App Mount Point in Page DOM
+ * 
+ * Injects a container element for the Vue app at the beginning of <html>.
+ * This placement strategy ensures:
+ * - Toolbar appears above all page content (z-index control)
+ * - Survives even aggressive page DOM manipulations
+ * - Doesn't interfere with page's body content
+ * 
+ * Idempotent: Safe to call multiple times, reuses existing element.
+ */
 function createRootElement() {
   const rootId = 'toolflowz-root'
   let rootElement = document.getElementById(rootId)
@@ -35,7 +64,7 @@ function createRootElement() {
   if (!rootElement) {
     rootElement = document.createElement('div')
     rootElement.id = rootId
-    // Insertion en premier dans le html
+    // Insert as first child of <html> for maximum DOM stability
     const htmlElement = document.documentElement
     htmlElement.insertBefore(rootElement, htmlElement.firstChild)
   }
@@ -43,14 +72,34 @@ function createRootElement() {
   return rootElement
 }
 
-// Initialisation de Vue
+/**
+ * Vue Application Initialization in Content Script Context
+ * 
+ * Sets up a complete Vue 3 application with:
+ * - Pinia stores for state management (settings, tools, OCR, etc.)
+ * - PrimeVue component library with custom configuration
+ * - External CDN stylesheets (with fallback error handling)
+ * - Inline styles for extension UI
+ * 
+ * Critical initialization order:
+ * 1. Create Pinia and set as active (required for store instantiation)
+ * 2. Create all stores (some may depend on each other)
+ * 3. Setup root component with store injection
+ * 4. Configure PrimeVue with custom theme
+ * 5. Load external styles (parallel for performance)
+ * 6. Inject inline styles
+ * 7. Mount to DOM
+ * 
+ * Why provide stores explicitly: While Pinia's useStore() works, explicit
+ * injection gives better TypeScript support and makes dependencies clear.
+ */
 async function initVueApp() {
   try {
-    // Création de Pinia
+    // Initialize Pinia store system
     const pinia = createPinia()
     setActivePinia(pinia)
 
-    // Création des stores
+    // Create all stores upfront for cross-store dependencies
     const stores = {
       settings: useSettingsStore(),
       toolflowz: useToolflowzStore(),
@@ -59,11 +108,11 @@ async function initVueApp() {
       quickActions: useQuickActionsStore()
     }
 
-    // Composant racine
+    // Root component with store injection
     const RootComponent = defineComponent({
       name: 'RootComponent',
       setup() {
-        // Injection des stores
+        // Provide stores to child components via Vue's injection system
         Object.entries(stores).forEach(([key, store]) => {
           provide(key + 'Store', store)
         })

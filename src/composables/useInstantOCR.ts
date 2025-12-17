@@ -1,14 +1,37 @@
+/**
+ * Instant OCR Composable
+ * 
+ * Provides real-time optical character recognition for images on web pages.
+ * Uses Tesseract.js to extract text from images near the cursor for instant
+ * copy/paste functionality.
+ * 
+ * Key features:
+ * - Predictive preloading: OCRs images near mouse cursor before click
+ * - Caching: Avoids re-processing same images
+ * - Selectable overlays: Makes recognized text directly selectable on page
+ * - Multi-language support: Can detect multiple languages simultaneously
+ * 
+ * Performance considerations:
+ * - Tesseract.js runs in WebAssembly for near-native speed
+ * - Worker-based to avoid blocking UI thread
+ * - Configurable preload radius and delay to balance speed vs resources
+ * 
+ * Use cases:
+ * - Copying text from screenshots or scanned documents
+ * - Extracting text from image-based PDFs
+ * - Making memes and infographics searchable/copyable
+ */
 import { ref, onMounted, onUnmounted } from 'vue'
 import { createWorker } from 'tesseract.js'
 import type { Worker } from 'tesseract.js'
 
 interface OCROptions {
   enabled: boolean
-  preloadRadius: number // Rayon de préchargement autour de la souris
-  preloadDelay: number // Délai avant le préchargement (ms)
-  languages: string[] // Langues à détecter
-  confidence: number // Seuil de confiance minimum
-  showOverlay: boolean // Afficher le texte détecté en overlay
+  preloadRadius: number // Pixels around cursor to trigger preload
+  preloadDelay: number // Debounce delay before starting OCR (ms)
+  languages: string[] // Tesseract language codes (e.g., 'eng', 'fra')
+  confidence: number // Minimum confidence threshold (0-100)
+  showOverlay: boolean // Display selectable text overlay on images
 }
 
 interface OCRResult {
@@ -43,6 +66,16 @@ export function useInstantOCR() {
   const error = ref<string | null>(null)
   const mousePosition = ref({ x: 0, y: 0 })
 
+  /**
+   * Initialize Tesseract.js Worker
+   * 
+   * Creates and configures a WebAssembly-based OCR worker.
+   * Worker initialization is expensive (downloads ~2MB of language data)
+   * so this should only be called once and the worker reused.
+   * 
+   * Language format: Use + to combine languages (e.g., 'fra+eng' for French and English)
+   * This enables better accuracy for multilingual content.
+   */
   const initWorker = async () => {
     try {
       const newWorker = await createWorker()
@@ -59,7 +92,15 @@ export function useInstantOCR() {
     }
   }
 
-  // Vérifier si une image est dans le rayon de préchargement
+  /**
+   * Proximity Check for Predictive Preloading
+   * 
+   * Calculates Euclidean distance between cursor and image center.
+   * If within configured radius, triggers OCR preloading.
+   * 
+   * Why center-based: User typically clicks near image center,
+   * so this provides best prediction of interaction likelihood.
+   */
   const isImageInRadius = (img: HTMLImageElement): boolean => {
     const rect = img.getBoundingClientRect()
     const imgCenter = {

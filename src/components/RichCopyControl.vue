@@ -5,7 +5,7 @@
     :modal="true"
     position="right"
     :style="{ width: '500px' }"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     @hide="closeDialog"
   >
     <div class="copy-options">
@@ -21,7 +21,10 @@
               <span class="format-icon">{{ format.icon }}</span>
               <div class="format-details">
                 <span class="format-name">{{ format.name }}</span>
-                <small v-if="format.shortcut" class="format-shortcut">
+                <small
+                  v-if="format.shortcut"
+                  class="format-shortcut"
+                >
                   {{ format.shortcut }}
                 </small>
               </div>
@@ -56,8 +59,8 @@
         <Dropdown
           v-model="copyStore.options.defaultFormat"
           :options="copyStore.options.formats"
-          optionLabel="name"
-          optionValue="id"
+          option-label="name"
+          option-value="id"
           class="w-full"
           @change="copyStore.saveOptions()"
         />
@@ -162,8 +165,8 @@
             </div>
             <Button
               class="p-button-text p-button-rounded"
-              @click="addReplacement"
               :disabled="!newReplacement.search || !newReplacement.replace"
+              @click="addReplacement"
             >
               <i class="pi pi-plus"></i>
             </Button>
@@ -176,7 +179,7 @@
       v-model:visible="showAddFormatDialog"
       :header="editingFormat ? 'Modifier le format' : 'Ajouter un format'"
       :modal="true"
-      :dismissableMask="true"
+      :dismissable-mask="true"
       class="p-fluid"
       @hide="showAddFormatDialog = false"
     >
@@ -195,11 +198,17 @@
       </div>
       <div class="field mb-3">
         <label>Raccourci (optionnel)</label>
-        <InputText v-model="newFormat.shortcut" placeholder="Alt+X" />
+        <InputText
+          v-model="newFormat.shortcut"
+          placeholder="Alt+X"
+        />
       </div>
       <div class="field mb-3">
         <label>Icône (optionnel)</label>
-        <InputText v-model="newFormat.icon" placeholder="📝" />
+        <InputText
+          v-model="newFormat.icon"
+          placeholder="📝"
+        />
       </div>
       <template #footer>
         <Button

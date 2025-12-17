@@ -2,18 +2,23 @@
   <Dialog
     v-model:visible="isDialogVisible"
     :modal="true"
-    :dismissableMask="true"
+    :dismissable-mask="true"
     header="Recharger tous les onglets"
     position="right"
     :style="{ width: '350px' }"
+    append-to="body"
     @hide="closeDialog"
-    appendTo="body"
   >
     <div class="toolflowz-reload-tabs-options">
       <div class="toolflowz-field mb-3">
         <p>Cette action va recharger tous les onglets ouverts dans votre navigateur.</p>
         
-        <Message v-if="reloadAllTabsStore.error" severity="error" :closable="false" class="mb-3">
+        <Message
+          v-if="reloadAllTabsStore.error"
+          severity="error"
+          :closable="false"
+          class="mb-3"
+        >
           {{ reloadAllTabsStore.error }}
         </Message>
 
@@ -28,7 +33,10 @@
             <label>Activer le raccourci</label>
           </div>
           
-          <div class="shortcut-input" v-if="isShortcutEnabled">
+          <div
+            v-if="isShortcutEnabled"
+            class="shortcut-input"
+          >
             <span class="p-input-icon-left w-full">
               <i class="pi pi-key" />
               <InputText
@@ -47,9 +55,9 @@
         <Button
           label="Recharger tous les onglets"
           icon="pi pi-refresh"
-          @click="handleReloadAllTabs"
           :loading="reloadAllTabsStore.isLoading"
           class="w-full"
+          @click="handleReloadAllTabs"
         />
       </div>
     </div>
