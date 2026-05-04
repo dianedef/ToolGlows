@@ -1,11 +1,8 @@
 {
   "dependencies": {
-    "@formkit/themes": "^1.6.9",
-    "@formkit/vue": "^1.6.9",
     "@mozilla/readability": "^0.6.0",
     "@primevue/core": "^4.2.5",
     "@primevue/icons": "^4.2.5",
-    "marked": "^15.0.6",
     "notivue": "^2.4.5",
     "pinia": "^2.3.0",
     "primeicons": "^7.0.0",

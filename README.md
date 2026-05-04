@@ -125,14 +125,11 @@ _Please create an issue if you feel some feature is missing or could be improved
 - [Notivue](https://github.com/smastrom/notivue) - Powerful toast notification system for Vue and Nuxt.
 - [Vue-i18n](https://kazupon.github.io/vue-i18n/) - Internationalization plugin for Vue.js
 
-### Plugins
-
-- [Marked](https://github.com/markedjs/marked) - A markdown parser and compiler. Used for CHANGELOG.md to show in Update page
-
 ### UI Frameworks
 
 - [tailwindcss](https://tailwindcss.com) - A utility-first CSS framework
 - [daisyUI](https://daisyui.com/) - The most popular component library for Tailwind CSS
+- [PrimeVue](https://primevue.org/) - Vue component library used by extension UI surfaces
 
 _Tailwind css `forms` and `typography` plugins are enabled for default styling of form controls._
 
@@ -182,10 +179,18 @@ pnpm i
 - `pnpm build` - Build extension
 - `pnpm lint` - Lint files
 - `pnpm lint:manifest` - Lint the built Firefox manifest in `dist/firefox`
+- `pnpm exec vitest run` - Run unit and store-review policy tests
+- `rg -n "cdn\\.jsdelivr|https://cdn" src manifest*.ts dist/chrome dist/firefox` - Check source and built packages for remote CDN references before store upload
 
 _You can also use pnpm dev:chrome, pnpm dev:firefox, pnpm build:chrome, pnpm build:firefox, pnpm lint:fix_
 
 _Then load extension in browser with the `dist/` folder_
+
+### Store Review Baseline
+
+The base manifest currently declares only `storage` and `tabs` API permissions, plus the static content-script match needed for the toolbar surface. Do not reintroduce `host_permissions`, `scripting`, `activeTab`, or `webNavigation` without a feature-specific reason and validation.
+
+Firefox builds must keep the no-data declaration in `manifest.firefox.config.ts` unless product behavior changes to collect or transmit data. Manifest icons should point to the size-specific PNG files in `src/assets/icons/`.
 
 **Note**: Pack files under `dist/chrome` or `dist/firefox`, you can upload to appropriate extension store.
 

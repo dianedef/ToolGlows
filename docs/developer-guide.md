@@ -1,8 +1,8 @@
 # Developer Guide
 # ToolFlowz Browser Extension Framework
 
-**Version**: 1.0  
-**Date**: 2025-12-16  
+**Version**: 1.0
+**Date**: 2025-12-16
 **Audience**: Developers building with ToolFlowz
 
 ---
@@ -53,7 +53,7 @@ pnpm dev:firefox  # Firefox only
 
 After starting the dev server:
 
-1. **Chrome**: 
+1. **Chrome**:
    - Navigate to `chrome://extensions`
    - Enable "Developer mode"
    - Click "Load unpacked"
@@ -450,7 +450,7 @@ DaisyUI provides pre-styled components:
   <button class="btn btn-primary">Primary</button>
   <button class="btn btn-secondary">Secondary</button>
   <button class="btn btn-accent">Accent</button>
-  
+
   <!-- Card -->
   <div class="card bg-base-100 shadow-xl">
     <div class="card-body">
@@ -458,7 +458,7 @@ DaisyUI provides pre-styled components:
       <p>Card content goes here</p>
     </div>
   </div>
-  
+
   <!-- Modal -->
   <dialog class="modal">
     <div class="modal-box">
@@ -520,7 +520,7 @@ const changeLanguage = (lang: string) => {
   <div>
     <h1>{{ t('common.welcome') }}</h1>
     <p>{{ t('errors.generic') }}</p>
-    
+
     <button @click="changeLanguage('fr')">
       Français
     </button>
@@ -545,7 +545,7 @@ describe('MyComponent', () => {
     const wrapper = mount(MyComponent, {
       props: { title: 'Test', count: 5 }
     })
-    
+
     expect(wrapper.text()).toContain('Test: 5')
   })
 
@@ -553,7 +553,7 @@ describe('MyComponent', () => {
     const wrapper = mount(MyComponent, {
       props: { title: 'Test', count: 0 }
     })
-    
+
     await wrapper.find('button').trigger('click')
     expect(wrapper.emitted('update')).toBeTruthy()
     expect(wrapper.emitted('update')?.[0]).toEqual([1])
@@ -569,9 +569,9 @@ import { test, expect } from '@playwright/test'
 
 test('popup loads correctly', async ({ page }) => {
   await page.goto('chrome-extension://[extension-id]/popup.html')
-  
+
   await expect(page.locator('h1')).toContainText('Welcome')
-  
+
   await page.click('text=Settings')
   await expect(page).toHaveURL(/.*settings/)
 })
@@ -607,6 +607,22 @@ dist/
 ```
 
 ### Submitting to Stores
+
+Before uploading either store package, run the local store-review checks:
+
+```bash
+pnpm run typecheck
+pnpm exec eslint .
+pnpm exec vitest run
+pnpm audit --audit-level high
+pnpm run build
+pnpm run lint:manifest
+rg -n "cdn\\.jsdelivr|https://cdn" src manifest*.ts dist/chrome dist/firefox
+```
+
+The expected manifest permission baseline is `storage` and `tabs`, plus the static content-script match for the toolbar surface. Do not reintroduce `host_permissions`, `scripting`, `activeTab`, or `webNavigation` without a feature-specific justification and validation. Dark-mode CSS should be applied by content-script messaging, not by `chrome.scripting`.
+
+The packaged extension should not contain CDN fallback URLs. Options pages use native Vue controls so FormKit is not part of the runtime bundle. Firefox builds must keep `browser_specific_settings.gecko.data_collection_permissions.required: ["none"]` unless product behavior changes to collect or transmit data.
 
 #### Chrome Web Store
 1. Go to [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole)
@@ -671,6 +687,7 @@ dist/
 
 ### Storage Issues
 - Check permissions in manifest
+- Verify manifest icon paths point to real 16, 24, 32, and 128 pixel PNG files
 - Verify storage API usage
 - Check storage quotas
 - Use browser DevTools → Application → Storage
@@ -689,6 +706,6 @@ dist/
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: 2025-12-16  
+**Document Version**: 1.0
+**Last Updated**: 2026-05-04
 **For Issues**: Open a GitHub issue

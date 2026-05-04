@@ -39,11 +39,11 @@ app.use(PrimeVue, {
 })
 
 // Registering PrimeVue components
-app.component('Button', Button)
-app.component('Sidebar', Sidebar)
-app.component('Checkbox', Checkbox)
-app.component('Dropdown', Dropdown)
-app.component('Panel', Panel)
+app.component('PrimeButton', Button)
+app.component('PrimeSidebar', Sidebar)
+app.component('PrimeCheckbox', Checkbox)
+app.component('PrimeDropdown', Dropdown)
+app.component('PrimePanel', Panel)
 app.component('ThemeSwatch', ThemeSwatch)
 
 // Ensuring the DOM is ready before mounting
@@ -58,4 +58,4 @@ if (document.readyState === 'loading') {
 }
 
 // Exporting pinia for use in other parts of the extension
-export { pinia } 
+export { pinia }

@@ -1,9 +1,9 @@
 # System Architecture Document
 # ToolFlowz Browser Extension Framework
 
-**Version**: 1.0  
-**Date**: 2025-12-16  
-**Status**: Active  
+**Version**: 1.0
+**Date**: 2025-12-16
+**Status**: Active
 **Owner**: Architecture Team
 
 ---
@@ -346,16 +346,21 @@ dist/
 ```json
 {
   "permissions": [
-    "storage",        // Browser storage access
-    "activeTab",      // Current tab access
-    "tabs"            // Tab information
+    "storage",
+    "tabs"
   ],
-  "optional_permissions": [
-    "history",        // Browsing history
-    "bookmarks"       // Bookmark access
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "all_frames": true
+    }
   ]
 }
 ```
+
+The base manifest intentionally keeps the content script available on ordinary pages because the toolbar is the product's primary surface. Store-review hardening now avoids redundant `host_permissions`, `scripting`, `activeTab`, and `webNavigation` declarations. Runtime dark-mode styling is relayed through existing content scripts instead of `chrome.scripting`, so broad host access is not needed for style injection.
+
+Firefox builds declare `browser_specific_settings.gecko.data_collection_permissions.required: ["none"]` while the extension remains local-only for data collection. Manifest icons use explicit 16, 24, 32, and 128 pixel PNG files under `src/assets/icons/`.
 
 ### 6.3 Security Best Practices
 
@@ -364,6 +369,7 @@ dist/
 3. **Validate Messages**: Check message sources
 4. **HTTPS Only**: External requests must be HTTPS
 5. **Minimal Permissions**: Request only needed permissions
+6. **No packaged CDN fallback**: Extension bundles must not include runtime fallbacks to remote CDN code or SVG assets.
 
 ---
 
@@ -492,6 +498,7 @@ Store    Store
 - **Tailwind CSS 3.4**: Utility CSS
 - **DaisyUI 4.12**: Component library
 - **PrimeVue 3.53**: Additional components
+- **Native Vue forms**: Options pages avoid FormKit to keep the extension bundle free of remote icon/theme fallback code
 
 ### Browser Extension
 - **webextension-polyfill 0.12**: Cross-browser APIs
@@ -501,36 +508,36 @@ Store    Store
 ### Developer Tools
 - **ESLint 9**: Code linting
 - **Prettier 3.4**: Code formatting
-- **Vitest 0.34**: Unit testing
-- **Playwright 1.50**: E2E testing
+- **Vitest 4.1**: Unit testing
+- **Playwright 1.59**: E2E testing
 
 ---
 
 ## 11. Architecture Decision Records (ADRs)
 
 ### ADR-001: Vue 3 Composition API
-**Decision**: Use Composition API exclusively  
-**Rationale**: Better TypeScript support, improved code organization, better reusability  
+**Decision**: Use Composition API exclusively
+**Rationale**: Better TypeScript support, improved code organization, better reusability
 **Status**: Accepted
 
 ### ADR-002: Pinia Over Vuex
-**Decision**: Use Pinia for state management  
-**Rationale**: Official recommendation, better TypeScript support, simpler API  
+**Decision**: Use Pinia for state management
+**Rationale**: Official recommendation, better TypeScript support, simpler API
 **Status**: Accepted
 
 ### ADR-003: File-Based Routing
-**Decision**: Use unplugin-vue-router for automatic routing  
-**Rationale**: Reduces boilerplate, convention over configuration  
+**Decision**: Use unplugin-vue-router for automatic routing
+**Rationale**: Reduces boilerplate, convention over configuration
 **Status**: Accepted
 
 ### ADR-004: Manifest V3
-**Decision**: Target Manifest V3 for Chrome  
-**Rationale**: Required by Chrome, future-proof  
+**Decision**: Target Manifest V3 for Chrome
+**Rationale**: Required by Chrome, future-proof
 **Status**: Accepted
 
 ### ADR-005: Monorepo vs Multi-repo
-**Decision**: Single repository with browser-specific configs  
-**Rationale**: Easier maintenance, shared code, simpler CI/CD  
+**Decision**: Single repository with browser-specific configs
+**Rationale**: Easier maintenance, shared code, simpler CI/CD
 **Status**: Accepted
 
 ---
@@ -552,9 +559,9 @@ Store    Store
 
 ---
 
-**Document Control**  
-**Version**: 1.0  
-**Last Updated**: 2025-12-16  
-**Next Review**: 2025-02-16  
-**Author**: Architecture Team  
+**Document Control**
+**Version**: 1.0
+**Last Updated**: 2026-05-04
+**Next Review**: 2025-02-16
+**Author**: Architecture Team
 **Approved By**: [Pending]

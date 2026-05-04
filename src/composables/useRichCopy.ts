@@ -119,10 +119,11 @@ export function useRichCopy() {
       let tabs: chrome.tabs.Tab[] = []
 
       switch (options.scope) {
-        case 'current':
+        case 'current': {
           const currentTab = await chrome.tabs.query({ active: true, currentWindow: true })
           tabs = currentTab
           break
+        }
         case 'window':
           tabs = await chrome.tabs.query({ currentWindow: true })
           break

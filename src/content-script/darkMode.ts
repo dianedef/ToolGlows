@@ -3,12 +3,6 @@ import { onMessage } from 'webext-bridge/content-script'
 interface DarkModeMessage {
   styles: string
   isActive: boolean
-  backgroundColor: string
-  textColor: string
-  linkColor: string
-  invertImages: boolean
-  contrastLevel: number
-  transitionDuration: number
 }
 
 // Gestionnaire des styles du mode sombre
@@ -117,13 +111,7 @@ function isDarkModeMessage(data: unknown): data is DarkModeMessage {
   const msg = data as Partial<DarkModeMessage>
   return (
     typeof msg.styles === 'string' &&
-    typeof msg.isActive === 'boolean' &&
-    typeof msg.backgroundColor === 'string' &&
-    typeof msg.textColor === 'string' &&
-    typeof msg.linkColor === 'string' &&
-    typeof msg.invertImages === 'boolean' &&
-    typeof msg.contrastLevel === 'number' &&
-    typeof msg.transitionDuration === 'number'
+    typeof msg.isActive === 'boolean'
   )
 }
 
@@ -159,4 +147,4 @@ export {
   applyDarkModeStyles,
   removeDarkModeStyles,
   isDarkModeActive
-} 
+}

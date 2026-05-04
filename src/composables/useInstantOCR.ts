@@ -1,21 +1,21 @@
 /**
  * Instant OCR Composable
- * 
+ *
  * Provides real-time optical character recognition for images on web pages.
  * Uses Tesseract.js to extract text from images near the cursor for instant
  * copy/paste functionality.
- * 
+ *
  * Key features:
  * - Predictive preloading: OCRs images near mouse cursor before click
  * - Caching: Avoids re-processing same images
  * - Selectable overlays: Makes recognized text directly selectable on page
  * - Multi-language support: Can detect multiple languages simultaneously
- * 
+ *
  * Performance considerations:
  * - Tesseract.js runs in WebAssembly for near-native speed
  * - Worker-based to avoid blocking UI thread
  * - Configurable preload radius and delay to balance speed vs resources
- * 
+ *
  * Use cases:
  * - Copying text from screenshots or scanned documents
  * - Extracting text from image-based PDFs
@@ -68,23 +68,23 @@ export function useInstantOCR() {
 
   /**
    * Initialize Tesseract.js Worker
-   * 
+   *
    * Creates and configures a WebAssembly-based OCR worker.
    * Worker initialization is expensive (downloads ~2MB of language data)
    * so this should only be called once and the worker reused.
-   * 
+   *
    * Language format: Use + to combine languages (e.g., 'fra+eng' for French and English)
    * This enables better accuracy for multilingual content.
    */
   const initWorker = async () => {
     try {
       const newWorker = await createWorker()
-      
-      // @ts-ignore - Les types de Tesseract.js sont incomplets
+
+      // @ts-expect-error - Les types de Tesseract.js sont incomplets
       await newWorker.loadLanguage('fra+eng')
-      // @ts-ignore - Les types de Tesseract.js sont incomplets
+      // @ts-expect-error - Les types de Tesseract.js sont incomplets
       await newWorker.initialize('fra+eng')
-      
+
       worker.value = newWorker
     } catch (e) {
       console.error('ERROR: Error during OCR worker initialization:', e)
@@ -94,10 +94,10 @@ export function useInstantOCR() {
 
   /**
    * Proximity Check for Predictive Preloading
-   * 
+   *
    * Calculates Euclidean distance between cursor and image center.
    * If within configured radius, triggers OCR preloading.
-   * 
+   *
    * Why center-based: User typically clicks near image center,
    * so this provides best prediction of interaction likelihood.
    */
@@ -132,16 +132,15 @@ export function useInstantOCR() {
     try {
       isProcessing.value = true
 
-      // @ts-ignore - Les types de Tesseract.js sont incomplets
       const result = await worker.value.recognize(img)
-      
+
       if (!result?.data?.text) {
         throw new Error('Aucun texte détecté')
       }
 
       const text = result.data.text
       const confidence = result.data.confidence || 0
-      
+
       // Simplifier la détection des boîtes
       const boxes = text.split('\n')
         .filter(line => line.trim().length > 0)
@@ -253,4 +252,4 @@ export function useInstantOCR() {
     error,
     init
   }
-} 
+}

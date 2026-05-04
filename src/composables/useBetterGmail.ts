@@ -204,15 +204,30 @@ export function useBetterGmail() {
   const createBundle = (key: string, emails: Element[]) => {
     const bundle = document.createElement('div')
     bundle.className = 'better-gmail-bundle'
-    bundle.innerHTML = `
-      <div class="bundle-header">
-        <span>${key} (${emails.length})</span>
-        <button class="bundle-toggle">▼</button>
-      </div>
-      <div class="bundle-content" ${bundleOptions.value.collapseByDefault ? 'style="display: none;"' : ''}>
-        ${emails.slice(0, bundleOptions.value.maxGroupSize).map(email => email.outerHTML).join('')}
-      </div>
-    `
+
+    const header = document.createElement('div')
+    header.className = 'bundle-header'
+
+    const title = document.createElement('span')
+    title.textContent = `${key} (${emails.length})`
+
+    const toggleButton = document.createElement('button')
+    toggleButton.className = 'bundle-toggle'
+    toggleButton.type = 'button'
+    toggleButton.textContent = '▼'
+
+    const content = document.createElement('div')
+    content.className = 'bundle-content'
+    if (bundleOptions.value.collapseByDefault) {
+      content.style.display = 'none'
+    }
+
+    emails
+      .slice(0, bundleOptions.value.maxGroupSize)
+      .forEach(email => content.appendChild(email.cloneNode(true)))
+
+    header.append(title, toggleButton)
+    bundle.append(header, content)
 
     emails[0].parentNode?.insertBefore(bundle, emails[0])
     emails.forEach(email => {
@@ -300,7 +315,7 @@ export function useBetterGmail() {
     if (!quoteButton) {
       quoteButton = document.createElement('button')
       quoteButton.id = 'gmail-quote-button'
-      quoteButton.innerHTML = '💬'
+      quoteButton.textContent = '💬'
       quoteButton.className = 'gmail-quote-button'
       document.body.appendChild(quoteButton)
     }
@@ -342,16 +357,8 @@ export function useBetterGmail() {
         break
 
       case 'html':
-        quotedText = `<blockquote>${text}`
-        if (quoteOptions.value.includeAuthor) {
-          quotedText += `<br><em>— ${author}`
-          if (quoteOptions.value.includeTimestamp) {
-            quotedText += ` (${timestamp})`
-          }
-          quotedText += '</em>'
-        }
-        quotedText += '</blockquote>'
-        break
+        appendHtmlQuote(composeBox, text, author, timestamp)
+        return
 
       default: // gmail style
         quotedText = `On ${timestamp}, ${author} wrote:\n`
@@ -359,8 +366,29 @@ export function useBetterGmail() {
         quotedText += '\n\n'
     }
 
-    // Insérer la citation
-    composeBox.innerHTML += quotedText
+    // Insérer la citation sous forme de texte pour éviter de parser du HTML issu de la page.
+    composeBox.appendChild(document.createTextNode(quotedText))
+  }
+
+  const appendHtmlQuote = (composeBox: Element, text: string, author: string, timestamp: string) => {
+    const blockquote = document.createElement('blockquote')
+    blockquote.appendChild(document.createTextNode(text))
+
+    if (quoteOptions.value.includeAuthor) {
+      blockquote.appendChild(document.createElement('br'))
+
+      const attribution = document.createElement('em')
+      let attributionText = author
+
+      if (quoteOptions.value.includeTimestamp) {
+        attributionText += ` (${timestamp})`
+      }
+
+      attribution.textContent = attributionText
+      blockquote.appendChild(attribution)
+    }
+
+    composeBox.appendChild(blockquote)
   }
 
   // Ajouter les styles pour le bouton de citation

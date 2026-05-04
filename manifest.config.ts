@@ -41,13 +41,9 @@ export default {
   devtools_page: "src/devtools/index.html",
   options_page: "src/ui/options-page/index.html",
   offline_enabled: true,
-  host_permissions: ["<all_urls>"],
   permissions: [
     "storage",
-    "scripting",
-    "activeTab",
-    "tabs",
-    "webNavigation"
+    "tabs"
   ],
   web_accessible_resources: [
     {
@@ -60,9 +56,9 @@ export default {
     }
   ],
   icons: {
-    16: "src/assets/logo.png",
-    24: "src/assets/logo.png",
-    32: "src/assets/logo.png",
-    128: "src/assets/logo.png",
+    16: "src/assets/icons/logo-16.png",
+    24: "src/assets/icons/logo-24.png",
+    32: "src/assets/icons/logo-32.png",
+    128: "src/assets/icons/logo-128.png",
   },
 } as ManifestV3Export

@@ -61,18 +61,18 @@ export const useDarkModeStore = defineStore('darkMode', () => {
   const currentDomain = ref('')
 
   const isDomainExcluded = computed(() => {
-    return Array.isArray(options.value.excludedDomains) && 
+    return Array.isArray(options.value.excludedDomains) &&
            options.value.excludedDomains.includes(currentDomain.value)
   })
 
   const shouldActivateDarkMode = computed(() => {
     if (!options.value.autoEnable) return isActive.value
-    
+
     const now = new Date()
     const currentTime = now.getHours() * 100 + now.getMinutes()
     const startTime = parseInt(options.value.scheduleStart.replace(':', ''))
     const endTime = parseInt(options.value.scheduleEnd.replace(':', ''))
-    
+
     return currentTime >= startTime || currentTime <= endTime
   })
 
@@ -90,25 +90,25 @@ export const useDarkModeStore = defineStore('darkMode', () => {
       const result = await chrome.storage.sync.get('darkModeOptions')
       if (result.darkModeOptions) {
         const savedOptions = result.darkModeOptions
-        savedOptions.excludedDomains = Array.isArray(savedOptions.excludedDomains) 
-          ? savedOptions.excludedDomains 
+        savedOptions.excludedDomains = Array.isArray(savedOptions.excludedDomains)
+          ? savedOptions.excludedDomains
           : []
-          
+
         options.value = { ...defaultOptions, ...savedOptions }
       }
-      
+
       const activeState = await chrome.storage.local.get('darkModeActive')
       if (activeState.darkModeActive !== undefined) {
         isActive.value = activeState.darkModeActive
       }
-      
+
       try {
         currentDomain.value = window.location.hostname
       } catch (error) {
         console.warn('[WARN] Unable to detect current domain:', error)
         currentDomain.value = ''
       }
-      
+
       if (options.value.syncWithSystem) {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
         isActive.value = prefersDark.matches
@@ -135,7 +135,7 @@ export const useDarkModeStore = defineStore('darkMode', () => {
         chrome.storage.sync.set({ darkModeOptions: options.value }),
         chrome.storage.local.set({ darkModeActive: isActive.value })
       ])
-      
+
       console.log('[SUCCESS] Dark mode options saved and synced')
     } catch (error) {
       console.error('[ERROR] Failed to save dark mode options:', error)
@@ -155,19 +155,19 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     isActive.value = value
     saveOptions()
   }
-  
+
   function toggleDarkMode() {
     isActive.value = !isActive.value
     saveOptions()
   }
-  
+
   function excludeDomain(domain: string) {
     if (!options.value.excludedDomains.includes(domain)) {
       options.value.excludedDomains.push(domain)
       saveOptions()
     }
   }
-  
+
   function includeDomain(domain: string) {
     const index = options.value.excludedDomains.indexOf(domain)
     if (index > -1) {
@@ -175,7 +175,7 @@ export const useDarkModeStore = defineStore('darkMode', () => {
       saveOptions()
     }
   }
-  
+
   async function applyDarkMode() {
     console.log('[DARK MODE STORE] 🎨 Applying dark mode with options:', options.value)
 
@@ -185,7 +185,7 @@ export const useDarkModeStore = defineStore('darkMode', () => {
         background-color: ${options.value.backgroundColor} !important;
         color: ${options.value.textColor} !important;
       }
-      
+
       /* Styles des scrollbars pour Webkit (Chrome, Safari, etc.) */
       ::-webkit-scrollbar {
         width: 12px !important;
@@ -227,7 +227,7 @@ export const useDarkModeStore = defineStore('darkMode', () => {
         background: ${options.value.backgroundColor} !important;
         margin-color: ${options.value.backgroundColor} !important;
       }
-      
+
       * {
         transition: background-color ${options.value.transitionDuration}ms ease,
                     color ${options.value.transitionDuration}ms ease !important;
@@ -273,7 +273,7 @@ export const useDarkModeStore = defineStore('darkMode', () => {
       table, th, td {
         border-color: #444 !important;
       }
-      
+
       /* Bordures des conteneurs */
       div, section, article, aside, nav, header, footer, main,
       .container, .content, .wrapper, .main,
@@ -295,18 +295,18 @@ export const useDarkModeStore = defineStore('darkMode', () => {
         background: ${options.value.backgroundColor} !important;
         background-color: ${options.value.backgroundColor} !important;
       }
-      
+
       /* Liens */
       a, a:visited, a:hover, a:active {
         color: ${options.value.linkColor} !important;
       }
-      
+
       /* Images et vidéos */
       img, video, picture, svg {
-        filter: ${options.value.invertImages ? 'invert(1)' : 'none'} 
+        filter: ${options.value.invertImages ? 'invert(1)' : 'none'}
                brightness(${options.value.contrastLevel}) !important;
       }
-      
+
       /* Formulaires et contrôles */
       input, textarea, select, button,
       [type="text"], [type="password"], [type="email"], [type="number"],
@@ -332,7 +332,7 @@ export const useDarkModeStore = defineStore('darkMode', () => {
       iframe {
         border-color: #444 !important;
       }
-      
+
       /* Gestion des éléments avec des ombres */
       [class*="shadow"],
       [class*="card"],
@@ -362,12 +362,12 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     `
 
     try {
-      // Envoyer au background script pour injection via chrome.scripting
+      // Envoyer au background script pour diffusion via les content scripts.
       await sendMessage('INJECT_DARK_MODE', {
         styles,
         isActive: isActive.value
       }, 'background')
-      
+
       console.log('[DARK MODE STORE] ✅ Dark mode update sent to background')
     } catch (error) {
       console.error('[DARK MODE STORE] ❌ Failed to send dark mode update:', error)
@@ -404,4 +404,4 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     includeDomain,
     applyDarkMode
   }
-}) 
+})

@@ -46,8 +46,9 @@ This map tells implementation and verification agents which documentation surfac
 | --- | --- | --- | --- |
 | `package.json`, `pnpm-lock.yaml`, `.npmrc` | `README.md`, `docs/developer-guide.md`, `docs/architecture.md` | `pnpm install --lockfile-only`, `pnpm audit --audit-level high`, `pnpm audit --prod --audit-level high` | Dependency versions, Node/pnpm engines, overrides, or package-manager policy changes |
 | `vite.config.ts`, `vite.chrome.config.ts`, `vite.firefox.config.ts` | `docs/architecture.md`, `docs/developer-guide.md` | `pnpm run build:chrome`, `pnpm run build:firefox`, `pnpm run build` | Build plugin, dev server, output, manifest, or zip packaging changes |
-| `manifest*.config.ts`, `scripts/launch.ts`, `scripts/getInstalledBrowsers.ts` | `README.md`, `docs/developer-guide.md` | `pnpm run lint:manifest`, targeted launch command inspection | Extension lint, browser launch, manifest, or packaging command changes |
-| `src/ui/options*/**`, FormKit usage | `docs/architecture.md`, `docs/developer-guide.md` | `pnpm run build`, `pnpm run typecheck` | FormKit migration or options-page behavior changes |
+| `manifest*.config.ts`, `scripts/launch.ts`, `scripts/getInstalledBrowsers.ts`, `src/assets/icons/*` | `README.md`, `docs/developer-guide.md` | `pnpm run lint:manifest`, targeted launch command inspection | Extension lint, browser launch, manifest, icons, permissions, or packaging command changes |
+| `src/background/index.ts`, `src/content-script/**`, `src/stores/darkMode.ts` | `docs/architecture.md`, `docs/developer-guide.md` | `pnpm run typecheck`, `pnpm run build`, `pnpm run lint:manifest` | Content-script bridge behavior, dark-mode injection, or permission model changes |
+| `src/ui/options*/**` | `docs/architecture.md`, `docs/developer-guide.md` | `pnpm run build`, `pnpm run typecheck` | Options-page settings behavior or form dependency changes |
 | `src/assets/base.scss`, `tailwind.config.cjs`, `postcss.config.cjs` | `docs/architecture.md`, `docs/developer-guide.md` | `pnpm run build` | Tailwind, PostCSS, DaisyUI, or global style pipeline changes |
 
 ## Documentation Update Plan Format

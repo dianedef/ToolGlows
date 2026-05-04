@@ -72,17 +72,27 @@ export function useFeedEradicator() {
   const createReplacementElement = () => {
     const container = document.createElement('div')
     container.className = 'feed-eradicator'
-    container.innerHTML = `
-      <div class="quote-container">
-        <blockquote>
-          <p>${currentQuote.value.text}</p>
-          <footer>— ${currentQuote.value.author}</footer>
-        </blockquote>
-        <button class="new-quote-btn">Nouvelle citation</button>
-      </div>
-    `
 
-    container.querySelector('.new-quote-btn')?.addEventListener('click', changeQuote)
+    const quoteContainer = document.createElement('div')
+    quoteContainer.className = 'quote-container'
+
+    const blockquote = document.createElement('blockquote')
+    const quoteText = document.createElement('p')
+    quoteText.textContent = currentQuote.value.text
+
+    const footer = document.createElement('footer')
+    footer.textContent = `- ${currentQuote.value.author}`
+
+    const quoteButton = document.createElement('button')
+    quoteButton.className = 'new-quote-btn'
+    quoteButton.type = 'button'
+    quoteButton.textContent = 'Nouvelle citation'
+    quoteButton.addEventListener('click', changeQuote)
+
+    blockquote.append(quoteText, footer)
+    quoteContainer.append(blockquote, quoteButton)
+    container.appendChild(quoteContainer)
+
     return container
   }
 

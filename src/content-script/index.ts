@@ -22,9 +22,12 @@ import "./index.scss"
 import { createApp, h, defineComponent, provide } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import PrimeVue from 'primevue/config'
+import primeVueThemeStyles from 'primevue/resources/themes/lara-light-blue/theme.css?inline'
+import primeVueCoreStyles from 'primevue/resources/primevue.min.css?inline'
+import primeIconsStyles from 'primeicons/primeicons.css?inline'
 import ToolflowzBar from '../components/ToolflowzBar.vue'
 import { setupPrimeVue } from '../utils/setupPrimeVue'
-import { injectStyles, injectStylesheet } from '../utils/styleInjection'
+import { injectStyles } from '../utils/styleInjection'
 import mainStyles from '@/assets/main.css?inline'
 import contentStyles from '@/content-script/index.scss?inline'
 import { setupSecureBridge } from '@/bridge'
@@ -141,16 +144,10 @@ async function initVueApp() {
     // Configuration des composants PrimeVue
     setupPrimeVue(app)
 
-    // Injection des styles
-    await Promise.all([
-      injectStylesheet('https://cdn.jsdelivr.net/npm/primevue@3.49.1/resources/themes/lara-light-blue/theme.min.css', 'toolflowz-primevue-theme'),
-      injectStylesheet('https://cdn.jsdelivr.net/npm/primevue@3.49.1/resources/primevue.min.css', 'toolflowz-primevue-core'),
-      injectStylesheet('https://cdn.jsdelivr.net/npm/primeicons@7.0.0/primeicons.css', 'toolflowz-prime-icons')
-    ]).catch(error => {
-      console.error('[ERROR] External styles loading error:', error)
-    })
-
-    // Injection des styles locaux
+    // Injection des styles locaux et dépendances packagées.
+    injectStyles(primeVueThemeStyles, 'toolflowz-primevue-theme')
+    injectStyles(primeVueCoreStyles, 'toolflowz-primevue-core')
+    injectStyles(primeIconsStyles, 'toolflowz-prime-icons')
     injectStyles(mainStyles, 'toolflowz-main-styles')
     injectStyles(contentStyles, 'toolflowz-content-styles')
 
@@ -242,4 +239,3 @@ window.addEventListener("unload", () => {
 console.log("[CONTENT] ✨ Content script loaded successfully")
 
 export {}
-

@@ -46,7 +46,7 @@ This file routes public and maintainer-facing content updates for ToolFlowz.
 
 ## Current Chantier Impact
 
-The dependency security chantier may update README and technical docs for package-manager, Node, build, test, and dependency version changes. No pricing, marketing, legal, or support copy is in scope.
+The permission and store-review hardening chantier may update README, developer, architecture, and technical docs for manifest permissions, icon packaging, no-CDN bundle checks, and options-page dependency removal. No pricing, marketing, legal, or support copy is in scope.
 
 ## Maintenance Rule
 

@@ -62,7 +62,7 @@ interface ParsedReaderContent {
 
 export function useReaderMode(options: ReaderModeOptions = {}) {
   const isEnabled = ref(false)
-  const originalContent = ref<string>('')
+  const originalBodyContent = ref<DocumentFragment | null>(null)
   const parsedContent = ref<ParsedReaderContent | null>(null)
   const settings = ref<ReaderSettings>({
     fontSize: 18,
@@ -161,6 +161,122 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
     }
   }
 
+  const allowedTags = new Set([
+    'A',
+    'ABBR',
+    'ARTICLE',
+    'ASIDE',
+    'B',
+    'BLOCKQUOTE',
+    'BR',
+    'CAPTION',
+    'CODE',
+    'DD',
+    'DIV',
+    'DL',
+    'DT',
+    'EM',
+    'FIGCAPTION',
+    'FIGURE',
+    'H1',
+    'H2',
+    'H3',
+    'H4',
+    'H5',
+    'H6',
+    'HR',
+    'I',
+    'IMG',
+    'LI',
+    'OL',
+    'P',
+    'PRE',
+    'SECTION',
+    'SPAN',
+    'STRONG',
+    'SUB',
+    'SUP',
+    'TABLE',
+    'TBODY',
+    'TD',
+    'TFOOT',
+    'TH',
+    'THEAD',
+    'TR',
+    'UL',
+  ])
+
+  const allowedAttributes = new Set(['alt', 'class', 'dir', 'href', 'lang', 'src', 'title'])
+
+  const isSafeUrl = (value: string) => {
+    try {
+      const url = new URL(value, window.location.href)
+      return ['http:', 'https:', 'mailto:'].includes(url.protocol) ||
+        (url.protocol === 'data:' && value.startsWith('data:image/'))
+    } catch {
+      return false
+    }
+  }
+
+  const sanitizeNode = (sourceNode: Node, ownerDocument: Document): Node | null => {
+    if (sourceNode.nodeType === Node.TEXT_NODE) {
+      return ownerDocument.createTextNode(sourceNode.textContent ?? '')
+    }
+
+    if (!(sourceNode instanceof Element)) {
+      return null
+    }
+
+    const tagName = sourceNode.tagName.toUpperCase()
+    if (!allowedTags.has(tagName)) {
+      const fragment = ownerDocument.createDocumentFragment()
+      sourceNode.childNodes.forEach(child => {
+        const sanitizedChild = sanitizeNode(child, ownerDocument)
+        if (sanitizedChild) {
+          fragment.appendChild(sanitizedChild)
+        }
+      })
+      return fragment
+    }
+
+    const element = ownerDocument.createElement(tagName.toLowerCase())
+    Array.from(sourceNode.attributes).forEach(attribute => {
+      const attributeName = attribute.name.toLowerCase()
+      if (!allowedAttributes.has(attributeName) || attributeName.startsWith('on')) {
+        return
+      }
+
+      if ((attributeName === 'href' || attributeName === 'src') && !isSafeUrl(attribute.value)) {
+        return
+      }
+
+      element.setAttribute(attributeName, attribute.value)
+    })
+
+    sourceNode.childNodes.forEach(child => {
+      const sanitizedChild = sanitizeNode(child, ownerDocument)
+      if (sanitizedChild) {
+        element.appendChild(sanitizedChild)
+      }
+    })
+
+    return element
+  }
+
+  const buildSafeContentFragment = (html: string) => {
+    const parsedDocument = new DOMParser().parseFromString(html, 'text/html')
+    const fragment = document.createDocumentFragment()
+
+    parsedDocument.body.childNodes.forEach(child => {
+      const sanitizedChild = sanitizeNode(child, document)
+      if (sanitizedChild) {
+        fragment.appendChild(sanitizedChild)
+      }
+    })
+
+    return fragment
+  }
+
   // Appliquer le mode lecture
   const applyReaderMode = () => {
     if (!parsedContent.value) return
@@ -172,18 +288,25 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
     // Appliquer les styles de base
     applyReaderStyles(readerContent)
 
-    // Injecter le contenu parsé
-    readerContent.innerHTML = `
-      <article class="reader-content">
-        <h1>${parsedContent.value.title}</h1>
-        ${parsedContent.value.byline ? `<p class="byline">${parsedContent.value.byline}</p>` : ''}
-        ${parsedContent.value.content}
-      </article>
-    `
+    const article = document.createElement('article')
+    article.className = 'reader-content'
+
+    const title = document.createElement('h1')
+    title.textContent = parsedContent.value.title
+    article.appendChild(title)
+
+    if (parsedContent.value.byline) {
+      const byline = document.createElement('p')
+      byline.className = 'byline'
+      byline.textContent = parsedContent.value.byline
+      article.appendChild(byline)
+    }
+
+    article.appendChild(buildSafeContentFragment(parsedContent.value.content))
+    readerContent.appendChild(article)
 
     // Remplacer le contenu de la page
-    document.body.innerHTML = ''
-    document.body.appendChild(readerContent)
+    document.body.replaceChildren(readerContent)
 
     // Appliquer le Bionic Reading si activé
     if (settings.value.bionicReading) {
@@ -238,11 +361,23 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
       const words = node.textContent?.split(/\s+/) || []
       const bionicWords = words.map(word => {
         const midpoint = Math.ceil(word.length / 2)
-        return `<strong>${word.slice(0, midpoint)}</strong>${word.slice(midpoint)}`
+        return {
+          strongPart: word.slice(0, midpoint),
+          rest: word.slice(midpoint)
+        }
       })
 
       const span = document.createElement('span')
-      span.innerHTML = bionicWords.join(' ')
+      bionicWords.forEach((word, index) => {
+        if (index > 0) {
+          span.appendChild(document.createTextNode(' '))
+        }
+
+        const strong = document.createElement('strong')
+        strong.textContent = word.strongPart
+        span.appendChild(strong)
+        span.appendChild(document.createTextNode(word.rest))
+      })
       node.parentNode?.replaceChild(span, node)
     }
   }
@@ -325,14 +460,22 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
   // Activer/désactiver le mode lecture
   const toggleReaderMode = async () => {
     if (!isEnabled.value) {
-      originalContent.value = document.documentElement.innerHTML
       parsedContent.value = await parseContent()
       if (!parsedContent.value) return
+
+      const bodyContent = document.createDocumentFragment()
+      while (document.body.firstChild) {
+        bodyContent.appendChild(document.body.firstChild)
+      }
+      originalBodyContent.value = bodyContent
 
       applyReaderMode()
       isEnabled.value = true
     } else {
-      document.documentElement.innerHTML = originalContent.value
+      if (originalBodyContent.value) {
+        document.body.replaceChildren(originalBodyContent.value)
+        originalBodyContent.value = null
+      }
       isEnabled.value = false
     }
   }

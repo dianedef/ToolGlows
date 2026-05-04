@@ -1,17 +1,17 @@
 /**
  * Cross-Context Communication Bridge
- * 
+ *
  * Provides type-safe message passing between extension contexts using webext-bridge:
  * - Content scripts <-> Background script
  * - Popup <-> Background script
  * - Multiple content script instances (via background relay)
- * 
+ *
  * Key features:
  * - Namespace isolation to prevent message conflicts with other extensions
  * - JSON serialization safety checks (content scripts can't send functions/symbols)
  * - Type validation for all message payloads
  * - Settings synchronization across all tabs
- * 
+ *
  * Security considerations:
  * - Uses unique namespace to prevent message spoofing from malicious extensions
  * - Validates all incoming data types to prevent injection attacks
@@ -53,30 +53,46 @@ export interface Settings {
   }
 }
 
-/**
- * JSON Compatibility Type Helper
- * 
- * Ensures types can be safely serialized for message passing.
- * TypeScript compile-time check to prevent sending non-serializable data.
- */
-type JsonCompatible<T> = {
-  [P in keyof T]: T[P] extends object ? JsonCompatible<T[P]> : T[P]
-} & { [key: string]: any }
+type BridgeObject = { [key: string]: BridgeValue }
+type BridgeValue = string | number | boolean | null | BridgeValue[] | BridgeObject
 
 interface MessageData {
   settings?: Settings
   tools?: SerializableTool[]
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function isToolbarSize(value: unknown): value is Settings['toolbarSize'] {
+  return ['xs', 'sm', 'md', 'lg', 'xl'].includes(String(value))
+}
+
+function isSettings(value: unknown): value is Settings {
+  if (!isRecord(value) || !isRecord(value.position)) {
+    return false
+  }
+
+  return typeof value.expanded === 'boolean' &&
+    typeof value.position.x === 'number' &&
+    typeof value.position.y === 'number' &&
+    Array.isArray(value.activeTools) &&
+    value.activeTools.every(toolId => typeof toolId === 'string') &&
+    typeof value.isPinned === 'boolean' &&
+    (value.toolbarColor === undefined || typeof value.toolbarColor === 'string') &&
+    (value.toolbarSize === undefined || isToolbarSize(value.toolbarSize))
+}
+
 /**
  * Secure Bridge Initialization
- * 
+ *
  * Must be called before any message passing occurs. Registers the extension's
  * namespace with webext-bridge to enable secure cross-context communication.
- * 
+ *
  * Why needed: webext-bridge requires explicit namespace registration to
  * prevent message conflicts and ensure only authorized contexts can communicate.
- * 
+ *
  * Critical: Call this once at content script startup, before Vue initialization.
  */
 export const setupSecureBridge = () => {
@@ -91,29 +107,13 @@ export const setupSecureBridge = () => {
 }
 
 // Pour les tools, même approche
-interface SerializableTool extends JsonCompatible<Omit<Tool, 'component'>> {}
-
-// Pour la conversion Tool -> SerializableTool
-const toolToSerializable = (tool: Tool): SerializableTool => {
-  const { component, ...serializablePart } = tool
-  return serializablePart
-}
-
-// Définir un type pour les données JSON-safe
-interface SerializableSettings {
-  expanded: boolean
-  position: { x: number; y: number }
-  activeTools: string[]
-  isPinned: boolean
-  toolbarColor?: string
-  toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-}
+type SerializableTool = Omit<Tool, 'component'>
 
 // Fonctions pour envoyer des messages au background script
 export const bridgeApi = {
   updateSettings: async (settings: Settings) => {
     // Conversion en type compatible JSON
-    const jsonSettings: JsonCompatible<Settings> = {
+    const jsonSettings: BridgeObject = {
       expanded: settings.expanded,
       position: {
         x: settings.position.x,
@@ -121,25 +121,22 @@ export const bridgeApi = {
       },
       activeTools: [...settings.activeTools],
       isPinned: settings.isPinned,
-      toolbarColor: settings.toolbarColor,
       toolbarSize: settings.toolbarSize
     }
+
+    if (settings.toolbarColor) {
+      jsonSettings.toolbarColor = settings.toolbarColor
+    }
+
     await sendMessage('SETTINGS_UPDATED', { settings: jsonSettings }, 'background')
   },
   getInitialState: async () => {
     const response = await sendMessage('GET_INITIAL_STATE', {}, 'background')
     // Vérification et conversion sûre
-    if (typeof response === 'object' && response !== null) {
-      const settings = (response as any).settings
-      if (settings && 
-          typeof settings.expanded === 'boolean' &&
-          typeof settings.position?.x === 'number' &&
-          typeof settings.position?.y === 'number' &&
-          Array.isArray(settings.activeTools) &&
-          typeof settings.isPinned === 'boolean' &&
-          (!settings.toolbarColor || typeof settings.toolbarColor === 'string') &&
-          (!settings.toolbarSize || ['xs', 'sm', 'md', 'lg', 'xl'].includes(settings.toolbarSize))) {
-        return { 
+    if (isRecord(response)) {
+      const settings = (response as { settings?: unknown }).settings
+      if (isSettings(settings)) {
+        return {
           settings: {
             expanded: settings.expanded,
             position: {
@@ -150,7 +147,7 @@ export const bridgeApi = {
             isPinned: settings.isPinned,
             toolbarColor: settings.toolbarColor,
             toolbarSize: settings.toolbarSize || 'md'
-          } as Settings 
+          } as Settings
         }
       }
     }
@@ -164,7 +161,7 @@ export const initBridgeListeners = (callbacks: {
   onToolsUpdate?: (tools: Tool[]) => void
 }) => {
   console.log('[BRIDGE] 👂 Initializing bridge listeners')
-  
+
   try {
     // Écoute des mises à jour de settings
     onMessage('SETTINGS_SYNC', ({ data, sender }) => {
@@ -196,4 +193,4 @@ export const initBridgeListeners = (callbacks: {
     console.error('[BRIDGE] ❌ Failed to initialize bridge listeners:', error)
     throw error
   }
-} 
+}

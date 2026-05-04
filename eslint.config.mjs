@@ -30,6 +30,7 @@ export default [
       "tests",
       "cypress",
       "src/types/**/*",
+      "src/assets/primevue/**/*",
       "eslint.config.mjs",
     ],
   },
