@@ -13,6 +13,7 @@
 ### Fixed
 - Adapted reader mode parsing to `@mozilla/readability@0.6.0` built-in types.
 - Pointed manifest linting at the built Firefox extension and fixed manifest fields required by `web-ext lint`.
+- Cleared global TypeScript validation failures across background message payloads, stores, composables, options pages, and stale declaration files.
 
 ### Added
 - Added minimal technical and editorial governance maps for dependency/security documentation tracking.

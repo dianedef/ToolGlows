@@ -43,6 +43,20 @@ interface MessageData {
   tools?: string[]
 }
 
+interface DarkModePayload {
+  isActive: boolean
+  styles: string
+}
+
+function isDarkModePayload(data: unknown): data is DarkModePayload {
+  return typeof data === 'object' &&
+    data !== null &&
+    'isActive' in data &&
+    'styles' in data &&
+    typeof (data as DarkModePayload).isActive === 'boolean' &&
+    typeof (data as DarkModePayload).styles === 'string'
+}
+
 /**
  * Global state maintained by the background script
  * This serves as a source of truth that survives individual tab closures
@@ -255,6 +269,11 @@ onMessage('GET_INITIAL_STATE', async () => {
 onMessage('APPLY_DARK_MODE', async ({ data }) => {
   console.log('[BACKGROUND] 🌓 Relaying dark mode update to content scripts')
   
+  if (!isDarkModePayload(data)) {
+    console.warn('[BACKGROUND] Invalid dark mode payload:', data)
+    return
+  }
+
   try {
     // Obtenir tous les onglets
     const tabs = await chrome.tabs.query({})
@@ -315,6 +334,11 @@ function canInjectStyles(url: string): boolean {
 onMessage('INJECT_DARK_MODE', async ({ data }) => {
   console.log('[BACKGROUND] 🎨 Injecting dark mode styles')
   
+  if (!isDarkModePayload(data)) {
+    console.warn('[BACKGROUND] Invalid dark mode injection payload:', data)
+    return
+  }
+
   try {
     // Obtenir tous les onglets
     const tabs = await chrome.tabs.query({})
@@ -338,7 +362,7 @@ onMessage('INJECT_DARK_MODE', async ({ data }) => {
           }
         } catch (error) {
           // Log uniquement si ce n'est pas une erreur de permission
-          if (!error.message?.includes('Cannot access contents of the page')) {
+          if (!(error instanceof Error) || !error.message.includes('Cannot access contents of the page')) {
             console.error(`[BACKGROUND] ❌ Failed to update styles for tab ${tab.id}:`, error)
           }
         }

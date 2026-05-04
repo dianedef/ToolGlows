@@ -80,8 +80,8 @@
                 <div class="toolflowz-sentiment-bar">
                   <span class="toolflowz-sentiment-label">😊 Positif</span>
                   <div class="toolflowz-progress-bar">
-                    <div 
-                      class="toolflowz-progress positive" 
+                    <div
+                      class="toolflowz-progress positive"
                       :style="{ width: sentimentPercentages.male.positive + '%' }"
                     >
                       {{ sentimentPercentages.male.positive.toFixed(1) }}%
@@ -91,8 +91,8 @@
                 <div class="toolflowz-sentiment-bar">
                   <span class="toolflowz-sentiment-label">😐 Neutre</span>
                   <div class="toolflowz-progress-bar">
-                    <div 
-                      class="toolflowz-progress neutral" 
+                    <div
+                      class="toolflowz-progress neutral"
                       :style="{ width: sentimentPercentages.male.neutral + '%' }"
                     >
                       {{ sentimentPercentages.male.neutral.toFixed(1) }}%
@@ -102,8 +102,8 @@
                 <div class="toolflowz-sentiment-bar">
                   <span class="toolflowz-sentiment-label">😠 Négatif</span>
                   <div class="toolflowz-progress-bar">
-                    <div 
-                      class="toolflowz-progress negative" 
+                    <div
+                      class="toolflowz-progress negative"
                       :style="{ width: sentimentPercentages.male.negative + '%' }"
                     >
                       {{ sentimentPercentages.male.negative.toFixed(1) }}%
@@ -120,8 +120,8 @@
                 <div class="toolflowz-sentiment-bar">
                   <span class="toolflowz-sentiment-label">😊 Positif</span>
                   <div class="toolflowz-progress-bar">
-                    <div 
-                      class="toolflowz-progress positive" 
+                    <div
+                      class="toolflowz-progress positive"
                       :style="{ width: sentimentPercentages.female.positive + '%' }"
                     >
                       {{ sentimentPercentages.female.positive.toFixed(1) }}%
@@ -131,8 +131,8 @@
                 <div class="toolflowz-sentiment-bar">
                   <span class="toolflowz-sentiment-label">😐 Neutre</span>
                   <div class="toolflowz-progress-bar">
-                    <div 
-                      class="toolflowz-progress neutral" 
+                    <div
+                      class="toolflowz-progress neutral"
                       :style="{ width: sentimentPercentages.female.neutral + '%' }"
                     >
                       {{ sentimentPercentages.female.neutral.toFixed(1) }}%
@@ -142,8 +142,8 @@
                 <div class="toolflowz-sentiment-bar">
                   <span class="toolflowz-sentiment-label">😠 Négatif</span>
                   <div class="toolflowz-progress-bar">
-                    <div 
-                      class="toolflowz-progress negative" 
+                    <div
+                      class="toolflowz-progress negative"
                       :style="{ width: sentimentPercentages.female.negative + '%' }"
                     >
                       {{ sentimentPercentages.female.negative.toFixed(1) }}%
@@ -277,19 +277,19 @@ const platformName = computed(() => {
   }
 })
 
-const genderEmoji = {
+const genderEmoji: Record<string, string> = {
   male: '👨',
   female: '👩',
   unknown: '❓'
 }
 
-const genderLabel = {
+const genderLabel: Record<string, string> = {
   male: 'Homme',
   female: 'Femme',
   unknown: 'Inconnu'
 }
 
-const sentimentEmoji = {
+const sentimentEmoji: Record<string, string> = {
   positive: '😊',
   neutral: '😐',
   negative: '😠'
@@ -510,4 +510,4 @@ watch(dialogVisible, (newValue) => {
     cursor: not-allowed !important;
   }
 }
-</style> 
+</style>

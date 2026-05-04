@@ -1,7 +1,7 @@
 <template>
   <div class="shortcuts-config">
     <div 
-      v-for="(actions, category) in actionsByCategory"
+      v-for="{ category, actions } in actionCategories"
       :key="category"
       class="shortcut-category"
     >
@@ -22,4 +22,19 @@
       </div>
     </div>
   </div>
-</template> 
+</template>
+
+<script setup lang="ts">
+import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
+import { useQuickActionsStore } from '@/stores/quickActions'
+
+const quickActionsStore = useQuickActionsStore()
+const { actionsByCategory, shortcuts } = storeToRefs(quickActionsStore)
+const { updateShortcut } = quickActionsStore
+
+const actionCategories = computed(() => Array.from(actionsByCategory.value.entries()).map(([category, actions]) => ({
+  category,
+  actions
+})))
+</script>

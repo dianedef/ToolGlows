@@ -230,13 +230,21 @@ const showAddFileTypeDialog = ref(false)
 const showAddActionDialog = ref(false)
 const newFileType = ref('')
 const editingAction = ref<string | null>(null)
+type CustomActionDraft = {
+  id: string
+  name: string
+  pattern: string
+  action: 'open' | 'download' | 'copy' | 'custom'
+  customScript: string
+}
+
 const newAction = ref({
   id: '',
   name: '',
   pattern: '',
-  action: 'open' as const,
+  action: 'open',
   customScript: ''
-})
+} as CustomActionDraft)
 
 const actionTypes = [
   { label: 'Ouvrir', value: 'open' },
@@ -372,4 +380,4 @@ const closeDialog = () => {
   display: flex;
   gap: 0.25rem;
 }
-</style> 
+</style>

@@ -57,7 +57,7 @@ export function useRichCopy() {
       ...options.value,
       ...newOptions
     }
-    
+
     settingsStore.updateSettings({
       components: {
         ...settingsStore.settings.components,
@@ -117,7 +117,7 @@ export function useRichCopy() {
     isCopying.value = true
     try {
       let tabs: chrome.tabs.Tab[] = []
-      
+
       switch (options.scope) {
         case 'current':
           const currentTab = await chrome.tabs.query({ active: true, currentWindow: true })
@@ -171,20 +171,20 @@ export function useRichCopy() {
 
     switch (options.value.format) {
       case 'markdown':
-        formattedText = options.value.keepFormatting 
+        formattedText = options.value.keepFormatting
           ? formattedText
               .replace(/<b>(.*?)<\/b>/g, '**$1**')
               .replace(/<i>(.*?)<\/i>/g, '_$1_')
           : formattedText.replace(/<[^>]+>/g, '')
         break
-      
+
       case 'html':
         if (!options.value.keepFormatting) {
           formattedText = formattedText.replace(/<[^>]+>/g, '')
         }
         break
-      
-      case 'plain':
+
+      case 'text':
       default:
         formattedText = formattedText.replace(/<[^>]+>/g, '')
         break
@@ -211,7 +211,7 @@ export function useRichCopy() {
     extractedLinks.value = links.map(link => {
       const url = link.href
       const linkDomain = new URL(url).hostname
-      
+
       return {
         url,
         text: link.textContent?.trim() || url,
@@ -235,7 +235,7 @@ export function useRichCopy() {
   // Grouper les liens par domaine
   const linksByDomain = computed(() => {
     const grouped = new Map<string, LinkInfo[]>()
-    
+
     filteredLinks.value.forEach(link => {
       const domain = link.domain || 'unknown'
       if (!grouped.has(domain)) {
@@ -263,4 +263,4 @@ export function useRichCopy() {
     copyTabs,
     extractPageLinks
   }
-} 
+}

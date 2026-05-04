@@ -60,12 +60,12 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
           console.log('[INFO] Extension context invalidated, skipping settings save')
           return
         }
-        
+
         await chrome.storage.sync.set({ linksExplorerSettings: this.settings })
         console.log('[SUCCESS] Links Explorer settings saved:', this.settings)
       } catch (error) {
         // Ignore the error if it's related to the invalidated context
-        if (error.message?.includes('Extension context invalidated')) {
+        if (error instanceof Error && error.message.includes('Extension context invalidated')) {
           console.log('[INFO] Extension context invalidated, skipping settings save')
           return
         }
@@ -84,10 +84,10 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
 
     async exploreLinks(depth: number = 0) {
       if (depth >= this.settings.maxDepth) return []
-      
+
       this.isLoading = true
       if (depth === 0) this.links = []
-      
+
       try {
         // Function to clean the URL
         const cleanUrl = (url: string) => {
@@ -129,7 +129,7 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
               const iframe = document.createElement('iframe')
               iframe.style.display = 'none'
               document.body.appendChild(iframe)
-              
+
               // Wait for the page to load
               await new Promise((resolve, reject) => {
                 iframe.onload = resolve
@@ -177,7 +177,7 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
 
     async exploreDeeper() {
       if (this.settings.currentDepth >= this.settings.maxDepth) return
-      
+
       this.isLoading = true
       this.settings.currentDepth++
       await this.saveSettings()
@@ -198,10 +198,10 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
     clearLinks() {
       this.links = []
       this.settings.currentDepth = 0
-      // Only save if we're not unloading the page
-      if (document.readyState !== 'unloading') {
+      // Only save while the page is still visible enough for extension storage writes.
+      if (document.visibilityState !== 'hidden') {
         this.saveSettings()
       }
     }
   }
-}) 
+})

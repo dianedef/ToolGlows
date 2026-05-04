@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 interface CommentData {
   text: string
   profileUrl: string
-  gender?: 'male' | 'female' | 'unknown'
+  gender: 'male' | 'female' | 'unknown'
   sentiment: 'positive' | 'negative' | 'neutral'
   timestamp?: string
   likes?: number
@@ -33,7 +33,7 @@ interface SocialAnalysisState {
     }
   }
   isLoading: boolean
-  platform?: 'facebook' | 'instagram' | 'twitter' | 'linkedin' | 'unknown'
+  platform: 'facebook' | 'instagram' | 'twitter' | 'linkedin' | 'unknown'
 }
 
 export const useSocialAnalysisStore = defineStore('socialAnalysis', {
@@ -82,7 +82,7 @@ export const useSocialAnalysisStore = defineStore('socialAnalysis', {
       // Analyse simple basée sur des mots-clés
       const positiveWords = ['super', 'génial', 'excellent', 'bravo', 'merci', '👍', '❤️', '😊']
       const negativeWords = ['nul', 'mauvais', 'horrible', 'décevant', 'déçu', '👎', '😠', '😡']
-      
+
       const textLower = text.toLowerCase()
       let score = 0
 
@@ -101,7 +101,7 @@ export const useSocialAnalysisStore = defineStore('socialAnalysis', {
       try {
         // Analyse basique basée sur l'URL du profil
         const urlLower = profileUrl.toLowerCase()
-        
+
         // Liste de prénoms communs (à enrichir)
         const maleNames = ['jean', 'pierre', 'thomas', 'nicolas', 'david']
         const femaleNames = ['marie', 'julie', 'sophie', 'laura', 'emma']
@@ -127,7 +127,7 @@ export const useSocialAnalysisStore = defineStore('socialAnalysis', {
 
       try {
         let commentElements: Element[] = []
-        
+
         // Sélection des commentaires selon la plateforme
         switch (this.platform) {
           case 'facebook':
@@ -148,7 +148,7 @@ export const useSocialAnalysisStore = defineStore('socialAnalysis', {
         for (const element of commentElements) {
           const profileUrl = element.querySelector('a')?.href || ''
           const text = element.textContent || ''
-          
+
           const [sentiment, gender] = await Promise.all([
             this.analyzeSentiment(text),
             this.predictGender(profileUrl)
@@ -207,4 +207,4 @@ export const useSocialAnalysisStore = defineStore('socialAnalysis', {
       this.updateStats()
     }
   }
-}) 
+})

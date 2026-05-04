@@ -48,7 +48,7 @@
                 class="toolflowz-depth-input"
               />
             </div>
-            
+
             <div class="toolflowz-format-control">
               <Checkbox
                 v-model="settings.useMarkdown"
@@ -71,7 +71,7 @@
           label="Explorer"
           :loading="isLoading"
           class="toolflowz-action-button"
-          @click="exploreLinks"
+          @click="() => exploreLinks()"
         />
         <Button
           icon="pi pi-arrow-down"
@@ -348,4 +348,4 @@ const handleCopy = async () => {
   color: var(--text-color-secondary) !important;
   cursor: not-allowed !important;
 }
-</style> 
+</style>

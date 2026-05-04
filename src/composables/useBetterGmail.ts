@@ -86,26 +86,26 @@ export function useBetterGmail() {
 
     const style = document.createElement('style')
     style.id = 'better-gmail-styles'
-    
+
     const styles = `
       /* Masquer les éléments non désirés */
       ${designOptions.value.hidePromotions ? '.aKB { display: none !important; }' : ''}
       ${designOptions.value.hideSocial ? '.aKC { display: none !important; }' : ''}
       ${designOptions.value.hideFooter ? '.aeG { display: none !important; }' : ''}
-      
+
       /* Ajuster la largeur */
       .AO {
         max-width: ${getWidthValue()} !important;
         margin: 0 auto !important;
       }
-      
+
       /* Style compact */
       ${designOptions.value.compactHeader ? `
         .gb_Td {
           padding: 4px !important;
         }
       ` : ''}
-      
+
       ${designOptions.value.compactNavigation ? `
         .ain {
           padding: 4px 0 !important;
@@ -114,7 +114,7 @@ export function useBetterGmail() {
           padding: 4px 0 !important;
         }
       ` : ''}
-      
+
       /* Taille de police personnalisée */
       body {
         font-size: ${designOptions.value.fontSize}px !important;
@@ -177,7 +177,7 @@ export function useBetterGmail() {
 
     emails.forEach(email => {
       let key = ''
-      
+
       if (bundleOptions.value.byLabel) {
         key = email.querySelector('.av')?.textContent || ''
       } else if (bundleOptions.value.bySender) {
@@ -215,13 +215,17 @@ export function useBetterGmail() {
     `
 
     emails[0].parentNode?.insertBefore(bundle, emails[0])
-    emails.forEach(email => email.style.display = 'none')
+    emails.forEach(email => {
+      if (email instanceof HTMLElement) {
+        email.style.display = 'none'
+      }
+    })
   }
 
   // Gérer la pause de l'inbox
   const toggleInboxPause = (pause: boolean) => {
     pauseOptions.value.enabled = pause
-    
+
     if (pause) {
       if (pauseOptions.value.hideInbox) {
         document.querySelector('.AO')?.classList.add('hidden')
@@ -267,7 +271,7 @@ export function useBetterGmail() {
   const init = () => {
     applyDesignChanges()
     addQuoteStyles()
-    
+
     document.addEventListener('mouseup', handleQuoteSelection)
     const observer = initObserver()
 
@@ -304,7 +308,7 @@ export function useBetterGmail() {
     // Positionner le bouton près de la sélection
     const range = selection.getRangeAt(0)
     const rect = range.getBoundingClientRect()
-    
+
     quoteButton.style.position = 'fixed'
     quoteButton.style.left = `${rect.right + 10}px`
     quoteButton.style.top = `${rect.top - 10}px`
@@ -394,4 +398,4 @@ export function useBetterGmail() {
     toggleInboxPause,
     quoteOptions,
   }
-} 
+}

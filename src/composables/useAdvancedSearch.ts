@@ -10,8 +10,8 @@ interface AdvancedSearchOptions {
   inUrl?: boolean
   inText?: boolean
   exactPhrase?: boolean
-  excludeWords?: string[]
-  numRange?: {
+  excludeWords: string[]
+  numRange: {
     start?: number
     end?: number
   }
@@ -20,7 +20,13 @@ interface AdvancedSearchOptions {
 }
 
 export function useAdvancedSearch() {
-  const searchOptions = ref<AdvancedSearchOptions>({})
+  const searchOptions = ref<AdvancedSearchOptions>({
+    excludeWords: [],
+    numRange: {
+      start: undefined,
+      end: undefined
+    }
+  })
 
   const fileTypes = [
     { value: 'pdf', label: 'PDF' },
@@ -129,4 +135,4 @@ export function useAdvancedSearch() {
     languages,
     buildAdvancedQuery
   }
-} 
+}

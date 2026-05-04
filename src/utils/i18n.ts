@@ -43,6 +43,6 @@ export const i18n = createI18n({
  * Restore previously selected locale from storage
  * Provides persistence across browser sessions
  */
-const currentLocale = useBrowserLocalStorage<string>('user-locale', 'en')
+const { data: currentLocale } = useBrowserLocalStorage<string>('user-locale', 'en')
 
 i18n.global.locale.value = currentLocale.value

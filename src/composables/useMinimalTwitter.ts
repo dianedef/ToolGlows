@@ -10,6 +10,13 @@ interface MinimalThemeOptions {
   hideVanityCounts: boolean
   hideSearchBar: boolean
   hideTweetButton: boolean
+  hideExplore: boolean
+  hideNotifications: boolean
+  hideTrends: boolean
+  hideWhoToFollow: boolean
+  centerTimeline: boolean
+  hideMetrics: boolean
+  timelineWidth: number
   navigationItems: {
     home: boolean
     explore: boolean
@@ -34,6 +41,13 @@ export function useMinimalTwitter() {
     hideVanityCounts: false,
     hideSearchBar: false,
     hideTweetButton: false,
+    hideExplore: false,
+    hideNotifications: false,
+    hideTrends: true,
+    hideWhoToFollow: true,
+    centerTimeline: false,
+    hideMetrics: false,
+    timelineWidth: 600,
     navigationItems: {
       home: true,
       explore: true,
@@ -52,7 +66,7 @@ export function useMinimalTwitter() {
 
     const style = document.createElement('style')
     style.id = 'minimal-twitter-styles'
-    
+
     const styles = `
       /* Masquer les posts sponsorisés */
       ${options.value.removePromoted ? `
@@ -80,17 +94,36 @@ export function useMinimalTwitter() {
       ` : ''}
 
       /* Masquer la barre de tendances */
-      ${options.value.removeTrends ? `
+      ${options.value.removeTrends || options.value.hideTrends ? `
         [data-testid="sidebarColumn"],
         [data-testid="trend"] {
           display: none !important;
         }
       ` : ''}
 
+      /* Masquer des éléments de navigation courants */
+      ${options.value.hideExplore ? `
+        [data-testid="AppTabBar_Explore_Link"] {
+          display: none !important;
+        }
+      ` : ''}
+
+      ${options.value.hideNotifications ? `
+        [data-testid="AppTabBar_Notifications_Link"] {
+          display: none !important;
+        }
+      ` : ''}
+
+      ${options.value.hideWhoToFollow ? `
+        [data-testid="UserCell"] {
+          display: none !important;
+        }
+      ` : ''}
+
       /* Ajuster la largeur du timeline */
-      ${options.value.customTimelineWidth !== 'default' ? `
+      ${options.value.customTimelineWidth !== 'default' || options.value.centerTimeline ? `
         [data-testid="primaryColumn"] {
-          max-width: ${options.value.customTimelineWidth === 'narrow' ? '600px' : '1000px'} !important;
+          max-width: ${options.value.centerTimeline ? `${options.value.timelineWidth}px` : options.value.customTimelineWidth === 'narrow' ? '600px' : '1000px'} !important;
           margin: 0 auto !important;
         }
       ` : ''}
@@ -106,7 +139,7 @@ export function useMinimalTwitter() {
       ` : ''}
 
       /* Masquer les compteurs de vanité */
-      ${options.value.hideVanityCounts ? `
+      ${options.value.hideVanityCounts || options.value.hideMetrics ? `
         [data-testid="like"],
         [data-testid="retweet"],
         [data-testid="reply"] {
@@ -162,7 +195,7 @@ export function useMinimalTwitter() {
 
   // Initialisation
   const init = () => {
-    if (!window.location.hostname.includes('twitter.com') && 
+    if (!window.location.hostname.includes('twitter.com') &&
         !window.location.hostname.includes('x.com')) return
 
     applyMinimalStyles()
@@ -184,4 +217,4 @@ export function useMinimalTwitter() {
     options,
     init
   }
-} 
+}

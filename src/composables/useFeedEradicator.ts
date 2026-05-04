@@ -94,7 +94,7 @@ export function useFeedEradicator() {
       const feedElement = document.querySelector(network.feedSelector)
       const containerElement = document.querySelector(network.containerSelector)
 
-      if (feedElement && containerElement) {
+      if (feedElement instanceof HTMLElement && containerElement) {
         // Cacher le feed
         feedElement.style.display = 'none'
 
@@ -196,4 +196,4 @@ export function useFeedEradicator() {
     toggleNetwork,
     changeQuote
   }
-} 
+}
