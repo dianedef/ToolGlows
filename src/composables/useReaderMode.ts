@@ -27,7 +27,6 @@
  */
 import { ref, computed } from 'vue'
 import { Readability } from '@mozilla/readability'
-import type { ParseResult } from '@mozilla/readability'
 
 interface ReaderSettings {
   fontSize: number
@@ -52,10 +51,19 @@ interface ReaderModeOptions {
   }
 }
 
+interface ParsedReaderContent {
+  title: string
+  content: string
+  excerpt: string
+  byline: string
+  dir: string
+  lang: string
+}
+
 export function useReaderMode(options: ReaderModeOptions = {}) {
   const isEnabled = ref(false)
   const originalContent = ref<string>('')
-  const parsedContent = ref<any>(null)
+  const parsedContent = ref<ParsedReaderContent | null>(null)
   const settings = ref<ReaderSettings>({
     fontSize: 18,
     fontFamily: 'Arial',
@@ -72,6 +80,8 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
   // Convertir le contenu en mode lecture
   const parseContent = async () => {
     try {
+      let documentClone = document.cloneNode(true) as Document
+
       // Prétraitement personnalisé
       if (options.customParsing?.selectors) {
         const customContent = document.querySelectorAll(
@@ -79,9 +89,11 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
         )
         if (customContent.length) {
           // Utiliser le contenu personnalisé au lieu de la page entière
-          const wrapper = document.createElement('div')
-          customContent.forEach(el => wrapper.appendChild(el.cloneNode(true)))
-          documentClone = wrapper
+          const customDocument = document.implementation.createHTMLDocument(document.title)
+          const wrapper = customDocument.createElement('div')
+          customContent.forEach(el => wrapper.appendChild(customDocument.importNode(el, true)))
+          customDocument.body.appendChild(wrapper)
+          documentClone = customDocument
         }
       }
 
@@ -95,8 +107,9 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
 
       // Configuration de Readability
       const readerConfig = {
-        keepClasses: ['important', 'highlight'],
-        serializer: (element: Element) => {
+        classesToPreserve: ['important', 'highlight'],
+        keepClasses: false,
+        serializer: (element: Node) => {
           // Personnalisation du HTML généré
           if (element instanceof HTMLImageElement && !options.preserveImages) {
             return ''
@@ -104,11 +117,14 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
           if (options.maxImageWidth && element instanceof HTMLImageElement) {
             element.style.maxWidth = `${options.maxImageWidth}px`
           }
-          return element.outerHTML
+          if (element instanceof Element) {
+            return element.outerHTML
+          }
+          return element.textContent ?? ''
         }
       }
 
-      const reader = new Readability(documentClone, readerConfig)
+      const reader = new Readability<string>(documentClone, readerConfig)
       const article = reader.parse()
 
       if (!article) {
@@ -116,12 +132,12 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
       }
 
       return {
-        title: article.title,
-        content: article.content,
-        excerpt: article.excerpt,
-        byline: article.byline,
-        dir: article.dir,
-        lang: article.lang
+        title: article.title ?? document.title,
+        content: article.content ?? '',
+        excerpt: article.excerpt ?? '',
+        byline: article.byline ?? '',
+        dir: article.dir ?? document.dir,
+        lang: article.lang ?? document.documentElement.lang
       }
     } catch (error) {
       console.error('Erreur lors du parsing:', error)
@@ -307,9 +323,13 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
   }
 
   // Activer/désactiver le mode lecture
-  const toggleReaderMode = () => {
+  const toggleReaderMode = async () => {
     if (!isEnabled.value) {
-      parseContent()
+      originalContent.value = document.documentElement.innerHTML
+      parsedContent.value = await parseContent()
+      if (!parsedContent.value) return
+
+      applyReaderMode()
       isEnabled.value = true
     } else {
       document.documentElement.innerHTML = originalContent.value
@@ -331,4 +351,4 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
     toggleReaderMode,
     updateSettings
   }
-} 
+}

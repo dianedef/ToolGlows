@@ -116,7 +116,6 @@ _Please create an issue if you feel some feature is missing or could be improved
 - [`unplugin-auto-import`](https://github.com/antfu/unplugin-auto-import) - Directly use `browser` and Vue Composition API without importing
 - [`unplugin-vue-components`](https://github.com/antfu/vite-plugin-components) - components auto import
 - [`unplugin-icons`](https://github.com/antfu/unplugin-icons) - icons as components
-- [`unplugin-turbo-console`](https://github.com/unplugin/unplugin-turbo-console) - Improve the Developer Experience of console
 - [`@intlify/unplugin-vue-i18n`](https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n) - unplugin for Vue I18n
 
 ### Vue Plugins
@@ -160,7 +159,7 @@ _Tailwind css `forms` and `typography` plugins are enabled for default styling o
 
 If you prefer to do it manually with the cleaner git history
 
-> If you don't have pnpm installed, run: npm install -g pnpm
+> Requires Node.js `^20.19.0 || ^22.13.0 || >=24.0.0` and pnpm `10.33.2`.
 
 ```bash
 pnpx degit mubaidr/vite-vue3-browser-extension-v3 my-webext
@@ -182,6 +181,7 @@ pnpm i
 - `pnpm dev` - Start development server
 - `pnpm build` - Build extension
 - `pnpm lint` - Lint files
+- `pnpm lint:manifest` - Lint the built Firefox manifest in `dist/firefox`
 
 _You can also use pnpm dev:chrome, pnpm dev:firefox, pnpm build:chrome, pnpm build:firefox, pnpm lint:fix_
 

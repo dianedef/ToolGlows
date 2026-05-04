@@ -11,7 +11,6 @@ import { defineConfig } from "vite"
 // @ts-expect-error commonjs module
 import { defineViteConfig as define } from "./define.config.mjs"
 import vueDevTools from "vite-plugin-vue-devtools"
-import TurboConsole from "unplugin-turbo-console/vite"
 import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite"
 import { dirname, relative, resolve } from "node:path"
 import "dotenv/config"
@@ -91,8 +90,6 @@ export default defineConfig({
 
     vue(),
 
-    // imagemin({}),
-
     // https://github.com/unplugin/unplugin-auto-import
     AutoImport({
       imports: [
@@ -162,8 +159,6 @@ export default defineConfig({
         data: define, // Inject all key-value pairs from defineViteConfig
       },
     }),
-
-    TurboConsole(),
   ],
 
   build: {

@@ -307,8 +307,7 @@ UI Update
 4. **unplugin-auto-import**: Auto-import Vue APIs
 5. **unplugin-vue-components**: Auto-import components
 6. **unplugin-icons**: Icon component system
-7. **unplugin-turbo-console**: Enhanced console
-8. **@intlify/unplugin-vue-i18n**: i18n integration
+7. **@intlify/unplugin-vue-i18n**: i18n integration
 
 ### 5.3 Build Outputs
 

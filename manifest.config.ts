@@ -11,9 +11,7 @@ const [major, minor, patch, label = "0"] = version
   .split(/[.-]/)
 
 export default {
-  author: {
-    email: "mubaidr@gmail.com",
-  },
+  author: "mubaidr@gmail.com",
   name: env.mode === "staging" ? `[INTERNAL] ToolFlowz V2` : "ToolFlowz V2",
   description: "ToolFlowz - Version 2 (Nouvelle interface)",
   // up to four numbers separated by dots

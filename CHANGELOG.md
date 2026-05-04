@@ -1,5 +1,22 @@
 # Change Log
 
+## [2026-05-04]
+
+### Security
+- Cleared critical/high pnpm audit findings for production and full dependency graphs, leaving one documented moderate dev-only `uuid` advisory through `web-ext > node-notifier`.
+- Removed unused vulnerable build tooling (`unplugin-imagemin`, `unplugin-turbo-console`) and added narrow pnpm overrides for unresolved transitive advisory paths.
+
+### Changed
+- Added explicit Node and pnpm package-manager requirements in `package.json`, README, and the developer guide.
+- Updated extension build and test tooling including `jsdom`, `vitest`, `web-ext`, `@playwright/test`, `sass`, `tsx`, and `unplugin-icons`.
+
+### Fixed
+- Adapted reader mode parsing to `@mozilla/readability@0.6.0` built-in types.
+- Pointed manifest linting at the built Firefox extension and fixed manifest fields required by `web-ext lint`.
+
+### Added
+- Added minimal technical and editorial governance maps for dependency/security documentation tracking.
+
 ## Example update
 
 - Update README.md

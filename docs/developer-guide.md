@@ -26,8 +26,8 @@
 ## 1. Getting Started
 
 ### Prerequisites
-- Node.js 20+ installed
-- pnpm package manager
+- Node.js `^20.19.0 || ^22.13.0 || >=24.0.0` installed
+- pnpm `10.33.2` package manager
 - Basic knowledge of Vue 3 and TypeScript
 - Understanding of browser extensions
 
@@ -86,6 +86,9 @@ pnpm format        # Format code with Prettier
 
 # 5. Type check
 pnpm typecheck     # Check TypeScript types
+
+# 6. Manifest lint after a build
+pnpm lint:manifest # Lint dist/firefox with web-ext
 ```
 
 ### Hot Module Replacement (HMR)
