@@ -1,18 +1,19 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
-project: "ext---toolflowz"
+artifact_version: "1.0.0"
+project: "toolglows"
 created: "2026-05-04"
 created_at: "2026-05-04 06:30:00 UTC"
 updated: "2026-05-04"
 updated_at: "2026-05-04 06:37:00 UTC"
-status: shipped
+status: reviewed
 source_skill: sf-build
 source_model: "GPT-5 Codex"
 scope: "audit-fix"
 owner: "operator"
-user_story: "As the browser-extension maintainer, I want ToolFlowz hardened for Chrome and Firefox store review by reducing broad permissions, removing packaged CDN fallback code, fixing manifest icons, and preserving Chrome/Firefox builds."
+confidence: high
+user_story: "As the browser-extension maintainer, I want ToolGlows hardened for Chrome and Firefox store review by reducing broad permissions, removing packaged CDN fallback code, fixing manifest icons, and preserving Chrome/Firefox builds."
 risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
@@ -28,14 +29,14 @@ linked_systems:
   - "src/assets/icons/"
   - "package.json"
   - "pnpm-lock.yaml"
-  - "docs/architecture.md"
-  - "docs/developer-guide.md"
-  - "docs/technical/code-docs-map.md"
+  - "shipglows_data/technical/architecture.md"
+  - "shipglows_data/technical/developer-guide.md"
+  - "shipglows_data/technical/code-docs-map.md"
 depends_on:
-  - artifact: "specs/dependency-security-second-pass.md"
+  - artifact: "shipglows_data/workflow/specs/dependency-security-second-pass.md"
     artifact_version: "0.1.0"
     required_status: "shipped"
-  - artifact: "specs/typecheck-stabilization.md"
+  - artifact: "shipglows_data/workflow/specs/typecheck-stabilization.md"
     artifact_version: "0.1.0"
     required_status: "shipped"
 supersedes: []
@@ -51,7 +52,7 @@ next_step: "none"
 
 # Title
 
-Permission and Store Review Hardening for ToolFlowz
+Permission and Store Review Hardening for ToolGlows
 
 # Status
 
@@ -59,11 +60,11 @@ Shipped. This chantier was intentionally bounded to locally verifiable store-rev
 
 # User Story
 
-As the browser-extension maintainer, I want ToolFlowz hardened for Chrome and Firefox store review by reducing broad permissions, removing packaged CDN fallback code, fixing manifest icons, and preserving Chrome/Firefox builds.
+As the browser-extension maintainer, I want ToolGlows hardened for Chrome and Firefox store review by reducing broad permissions, removing packaged CDN fallback code, fixing manifest icons, and preserving Chrome/Firefox builds.
 
 # Behavior Contract
 
-ToolFlowz should still build for Chrome and Firefox, load its page toolbar/content script on ordinary HTTP(S) pages, synchronize toolbar settings, and apply dark-mode styles through the content script. The extension should no longer declare redundant broad host permissions or unused privileged APIs, should not package FormKit CDN fallback code, and should provide correctly sized manifest icon files.
+ToolGlows should still build for Chrome and Firefox, load its page toolbar/content script on ordinary HTTP(S) pages, synchronize toolbar settings, and apply dark-mode styles through the content script. The extension should no longer declare redundant broad host permissions or unused privileged APIs, should not package FormKit CDN fallback code, and should provide correctly sized manifest icon files.
 
 # Success Behavior
 
@@ -97,9 +98,9 @@ If removing a permission breaks an existing runtime path, restore the smallest r
 
 # Governance Gates
 
-Technical docs: complete. `README.md`, `docs/architecture.md`, `docs/developer-guide.md`, and `docs/technical/code-docs-map.md` were updated for permissions, icons, no-CDN checks, and native options forms.
+Technical docs: complete. `README.md`, `shipglows_data/technical/architecture.md`, `shipglows_data/technical/developer-guide.md`, and `shipglows_data/technical/code-docs-map.md` were updated for permissions, icons, no-CDN checks, and native options forms.
 
-Editorial docs: no public editorial impact. `CONTENT_MAP.md` was updated only to route the technical/store-review chantier impact.
+Editorial docs: no public editorial impact. `shipglows_data/editorial/content-map.md` was updated only to route the technical/store-review chantier impact.
 
 Model routing: implementation-heavy, security-sensitive multi-file work; current Codex runtime is acceptable with medium/high reasoning.
 
@@ -117,8 +118,8 @@ Model routing: implementation-heavy, security-sensitive multi-file work; current
 
 - Code changed: `manifest*.config.ts`, `src/background/index.ts`, `src/content-script/*`, `src/stores/darkMode.ts`, `src/ui/options*/pages/index.vue`, `package.json`, `pnpm-lock.yaml`, `src/assets/icons/*`
 - Subsystem: `extension permissions / store review / options forms / package policy`
-- Primary technical doc: `docs/architecture.md`
-- Secondary docs: `docs/developer-guide.md`, `docs/technical/code-docs-map.md`
+- Primary technical doc: `shipglows_data/technical/architecture.md`
+- Secondary docs: `shipglows_data/technical/developer-guide.md`, `shipglows_data/technical/code-docs-map.md`
 - Required action: `update`
 - Priority: `high`
 - Reason: permissions, dependencies, and manifest packaging are store-review relevant.

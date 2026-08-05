@@ -13,7 +13,7 @@
  * Architecture:
  * - Uses useBrowserSyncStorage for reactive chrome.storage integration
  * - Watches settings changes to trigger UI updates
- * - Coordinates with toolflowz store for tool activation
+ * - Coordinates with toolglows store for tool activation
  * - Implements optimistic updates with background sync
  *
  * Data flow:
@@ -24,7 +24,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { bridgeApi, initBridgeListeners } from '@/bridge'
-import { useToolflowzStore } from '@/stores/toolflowz'
+import { useToolGlowsStore } from '@/stores/toolglows'
 import { useBrowserSyncStorage } from '@/composables/useBrowserStorage'
 import type { HideElementSettings } from './hideElement'
 
@@ -34,7 +34,7 @@ import type { HideElementSettings } from './hideElement'
  * All fields must be JSON-serializable for chrome.storage and
  * webext-bridge compatibility. Avoid functions, Symbols, or circular refs.
  */
-export interface ToolflowzSettings {
+export interface ToolGlowsSettings {
   expanded: boolean
   position: {
     x: number
@@ -61,7 +61,7 @@ export const useSettingsStore = defineStore('settings', () => {
     throw new Error('chrome.storage.sync API is not available')
   }
 
-  const { data: settings, promise: settingsLoaded } = useBrowserSyncStorage<ToolflowzSettings>('toolflowzSettings', {
+  const { data: settings, promise: settingsLoaded } = useBrowserSyncStorage<ToolGlowsSettings>('toolglowsSettings', {
     expanded: false,
     position: { x: window.innerWidth - 100, y: 20 },
     activeTools: [],
@@ -69,7 +69,7 @@ export const useSettingsStore = defineStore('settings', () => {
     toolbarColor: '#ff69b4',
     toolbarSize: 'md',
     components: {}
-  } as ToolflowzSettings)
+  } as ToolGlowsSettings)
 
   /**
    * Reactive Settings Watcher
@@ -102,10 +102,10 @@ export const useSettingsStore = defineStore('settings', () => {
    * Implementation notes:
    * - Validates/normalizes activeTools format (handles legacy object format)
    * - Directly manipulates toolbar styles for immediate visual feedback
-   * - Coordinates with toolflowz store to update tool activation
+   * - Coordinates with toolglows store to update tool activation
    * - Uses JSON comparison to avoid unnecessary updates
    */
-  const applySettings = (newSettings: ToolflowzSettings) => {
+  const applySettings = (newSettings: ToolGlowsSettings) => {
     console.log('[INFO] Applying settings:', newSettings)
 
     // Legacy format handling: convert object to array
@@ -114,16 +114,16 @@ export const useSettingsStore = defineStore('settings', () => {
     }
 
     // Direct style manipulation for instant feedback
-    const toolbar = document.querySelector('.toolflowz-bar') as HTMLElement
+    const toolbar = document.querySelector('.toolglows-bar') as HTMLElement
     if (toolbar) {
       toolbar.style.backgroundColor = newSettings.toolbarColor || '#ffffff'
     }
 
     // Update active tools if changed (avoid redundant updates)
-    const toolflowzStore = useToolflowzStore()
+    const toolglowsStore = useToolGlowsStore()
     if (newSettings.activeTools &&
-        JSON.stringify(toolflowzStore.activeTools) !== JSON.stringify(newSettings.activeTools)) {
-      toolflowzStore.setActiveTools(newSettings.activeTools)
+        JSON.stringify(toolglowsStore.activeTools) !== JSON.stringify(newSettings.activeTools)) {
+      toolglowsStore.setActiveTools(newSettings.activeTools)
       console.log('[INFO] Active tools updated:', newSettings.activeTools)
     }
   }
@@ -132,9 +132,9 @@ export const useSettingsStore = defineStore('settings', () => {
     console.log('[INFO] Loading settings')
     try {
       // 1. Charge depuis le storage local
-      const result = await chrome.storage.sync.get('toolflowzSettings')
-      if (result.toolflowzSettings) {
-        settings.value = result.toolflowzSettings
+      const result = await chrome.storage.sync.get('toolglowsSettings')
+      if (result.toolglowsSettings) {
+        settings.value = result.toolglowsSettings
         console.log('[SUCCESS] Settings loaded from storage:', settings.value)
         applySettings(settings.value)
       } else {
@@ -153,7 +153,7 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  const updateSettings = async (newSettings: Partial<ToolflowzSettings>) => {
+  const updateSettings = async (newSettings: Partial<ToolGlowsSettings>) => {
     console.log('[INFO] Updating settings:', newSettings)
     // Met à jour localement en préservant les valeurs existantes
     settings.value = {

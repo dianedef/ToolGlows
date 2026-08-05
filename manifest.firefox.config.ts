@@ -6,7 +6,7 @@ export default defineManifest((env) => ({
   ...ManifestConfig,
   browser_specific_settings: {
     gecko: {
-      id: env["FIREFOX_ADDON_ID"] || "toolflowz-v2@example.com",
+      id: env["FIREFOX_ADDON_ID"] || "toolglows-v2@example.com",
       data_collection_permissions: {
         required: ["none"],
       },

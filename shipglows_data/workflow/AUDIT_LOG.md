@@ -1,6 +1,6 @@
 # Audit Log
 
-> Project-local audit runs for ext---toolflowz.
+> Project-local audit runs for toolglows.
 
 | Date       | Scope | Code | Design | Copy | SEO | GTM | Translate | Deps | Perf | Overall | Issues |
 |------------|-------|------|--------|------|-----|-----|-----------|------|------|---------|--------|

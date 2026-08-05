@@ -1,16 +1,16 @@
 /**
  * Content Script - Main Entry Point
- * 
- * This script runs in every web page and injects the ToolFlowz toolbar UI.
+ *
+ * This script runs in every web page and injects the ToolGlows toolbar UI.
  * It operates in an isolated context separate from the page's JavaScript
  * but shares the same DOM, allowing safe UI injection without page interference.
- * 
+ *
  * Architecture:
  * - Creates a complete Vue 3 app instance with Pinia stores
  * - Injects PrimeVue UI framework and required stylesheets
  * - Establishes webext-bridge communication with background script
  * - Handles graceful cleanup on page unload and context invalidation
- * 
+ *
  * Key challenges solved:
  * - CSS isolation: Uses scoped styles to prevent page CSS conflicts
  * - Bridge initialization order: Must setup bridge before Vue to enable messaging
@@ -25,7 +25,7 @@ import PrimeVue from 'primevue/config'
 import primeVueThemeStyles from 'primevue/resources/themes/lara-light-blue/theme.css?inline'
 import primeVueCoreStyles from 'primevue/resources/primevue.min.css?inline'
 import primeIconsStyles from 'primeicons/primeicons.css?inline'
-import ToolflowzBar from '../components/ToolflowzBar.vue'
+import ToolGlowsBar from '../components/ToolGlowsBar.vue'
 import { setupPrimeVue } from '../utils/setupPrimeVue'
 import { injectStyles } from '../utils/styleInjection'
 import mainStyles from '@/assets/main.css?inline'
@@ -35,15 +35,15 @@ import './darkMode'
 
 // Import des stores
 import { useSettingsStore } from '../stores/settings'
-import { useToolflowzStore } from '../stores/toolflowz'
+import { useToolGlowsStore } from '../stores/toolglows'
 import { useInstantOCRStore } from '../stores/instantOCR'
 import { useWordCounterStore } from '../stores/wordCounter'
 import { useQuickActionsStore } from '../stores/quickActions'
 
 // Types
 interface StorageData {
-  toolflowzSettings?: Record<string, any>
-  toolflowzActiveTools?: string[]
+  toolglowsSettings?: Record<string, any>
+  toolglowsActiveTools?: string[]
 }
 
 let app: ReturnType<typeof createApp> | null = null
@@ -51,19 +51,19 @@ let bridgeInitialized = false
 
 /**
  * Creates Vue App Mount Point in Page DOM
- * 
+ *
  * Injects a container element for the Vue app at the beginning of <html>.
  * This placement strategy ensures:
  * - Toolbar appears above all page content (z-index control)
  * - Survives even aggressive page DOM manipulations
  * - Doesn't interfere with page's body content
- * 
+ *
  * Idempotent: Safe to call multiple times, reuses existing element.
  */
 function createRootElement() {
-  const rootId = 'toolflowz-root'
+  const rootId = 'toolglows-root'
   let rootElement = document.getElementById(rootId)
-  
+
   if (!rootElement) {
     rootElement = document.createElement('div')
     rootElement.id = rootId
@@ -71,19 +71,19 @@ function createRootElement() {
     const htmlElement = document.documentElement
     htmlElement.insertBefore(rootElement, htmlElement.firstChild)
   }
-  
+
   return rootElement
 }
 
 /**
  * Vue Application Initialization in Content Script Context
- * 
+ *
  * Sets up a complete Vue 3 application with:
  * - Pinia stores for state management (settings, tools, OCR, etc.)
  * - PrimeVue component library with custom configuration
  * - External CDN stylesheets (with fallback error handling)
  * - Inline styles for extension UI
- * 
+ *
  * Critical initialization order:
  * 1. Create Pinia and set as active (required for store instantiation)
  * 2. Create all stores (some may depend on each other)
@@ -92,7 +92,7 @@ function createRootElement() {
  * 5. Load external styles (parallel for performance)
  * 6. Inject inline styles
  * 7. Mount to DOM
- * 
+ *
  * Why provide stores explicitly: While Pinia's useStore() works, explicit
  * injection gives better TypeScript support and makes dependencies clear.
  */
@@ -105,7 +105,7 @@ async function initVueApp() {
     // Create all stores upfront for cross-store dependencies
     const stores = {
       settings: useSettingsStore(),
-      toolflowz: useToolflowzStore(),
+      toolglows: useToolGlowsStore(),
       ocr: useInstantOCRStore(),
       wordCounter: useWordCounterStore(),
       quickActions: useQuickActionsStore()
@@ -122,7 +122,7 @@ async function initVueApp() {
         return {}
       },
       render() {
-        return h(ToolflowzBar)
+        return h(ToolGlowsBar)
       }
     })
 
@@ -145,16 +145,16 @@ async function initVueApp() {
     setupPrimeVue(app)
 
     // Injection des styles locaux et dépendances packagées.
-    injectStyles(primeVueThemeStyles, 'toolflowz-primevue-theme')
-    injectStyles(primeVueCoreStyles, 'toolflowz-primevue-core')
-    injectStyles(primeIconsStyles, 'toolflowz-prime-icons')
-    injectStyles(mainStyles, 'toolflowz-main-styles')
-    injectStyles(contentStyles, 'toolflowz-content-styles')
+    injectStyles(primeVueThemeStyles, 'toolglows-primevue-theme')
+    injectStyles(primeVueCoreStyles, 'toolglows-primevue-core')
+    injectStyles(primeIconsStyles, 'toolglows-prime-icons')
+    injectStyles(mainStyles, 'toolglows-main-styles')
+    injectStyles(contentStyles, 'toolglows-content-styles')
 
     // Montage de l'application
     const rootElement = createRootElement()
     app.mount(rootElement)
-    
+
     console.log('[SUCCESS] Vue application mounted in page')
   } catch (error) {
     console.error('[ERROR] Failed to initialize Vue app:', error)
@@ -167,7 +167,7 @@ function cleanup() {
     app.unmount()
     app = null
   }
-  const rootElement = document.getElementById('toolflowz-root')
+  const rootElement = document.getElementById('toolglows-root')
   if (rootElement) {
     rootElement.remove()
   }
@@ -184,11 +184,11 @@ async function init() {
       bridgeInitialized = true
       console.log('[CONTENT] ✅ Bridge initialized')
     }
-    
+
     // 2. Initialisation de Vue après le bridge
     console.log('[CONTENT] 🎯 Initializing Vue app')
     await initVueApp()
-    
+
     console.log('[CONTENT] ✅ Content script initialization complete')
   } catch (error) {
     console.error("[CONTENT] ❌ Failed to initialize content script:", error)
@@ -205,7 +205,7 @@ self.onerror = function (message, source, lineno, colno, error) {
     colno,
     error
   })
-  
+
   // Si l'erreur est liée à l'extension invalidée, on nettoie
   if (error && error.message.includes("Extension context invalidated")) {
     console.log('[CONTENT] 🧹 Cleaning up due to invalidated context')

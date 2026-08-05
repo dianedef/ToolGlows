@@ -12,7 +12,7 @@
           alt="logo"
           class="h-8 w-auto"
         />
-        <div class="text-base font-semibold">Vite Vue 3 Chrome Extension</div>
+        <div class="text-base font-semibold">ToolGlows</div>
       </RouterLink>
     </div>
     <div class="flex-none">

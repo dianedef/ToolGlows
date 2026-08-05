@@ -64,7 +64,7 @@ export const useHideElementStore = defineStore('hideElement', () => {
     try {
       // Générer un sélecteur unique pour l'élément
       const selector = generateUniqueSelector(element)
-      
+
       // Ajouter à la liste des éléments masqués
       const hiddenElement: HiddenElement = {
         selector,
@@ -72,9 +72,9 @@ export const useHideElementStore = defineStore('hideElement', () => {
         timestamp: Date.now(),
         name: getElementName(element)
       }
-      
+
       settings.value.hiddenElements.push(hiddenElement)
-      
+
       // Masquer l'élément
       element.style.display = 'none'
     } catch (err) {
@@ -88,14 +88,14 @@ export const useHideElementStore = defineStore('hideElement', () => {
     if (element.id) {
       return `#${element.id}`
     }
-    
+
     if (element.textContent) {
       const text = element.textContent.trim()
       if (text.length > 0) {
         return text.length > 30 ? text.substring(0, 30) + '...' : text
       }
     }
-    
+
     return element.tagName.toLowerCase()
   }
 
@@ -104,22 +104,22 @@ export const useHideElementStore = defineStore('hideElement', () => {
     if (element.id) {
       return `#${element.id}`
     }
-    
+
     // Classes
     const classes = Array.from(element.classList)
-      .filter(cls => !cls.includes('toolflowz'))
+      .filter(cls => !cls.includes('toolglows'))
       .join('.')
     if (classes) {
       return `.${classes}`
     }
-    
+
     // Position dans le parent
     const parent = element.parentElement
     if (parent) {
       const index = Array.from(parent.children).indexOf(element)
       return `${generateUniqueSelector(parent)} > :nth-child(${index + 1})`
     }
-    
+
     return element.tagName.toLowerCase()
   }
 
@@ -248,4 +248,4 @@ export const useHideElementStore = defineStore('hideElement', () => {
     applyHiddenElements,
     setupMutationObserver
   }
-}) 
+})

@@ -1,5 +1,5 @@
 <template>
-  <Dialog 
+  <Dialog
     v-if="!isLoading"
     v-model:visible="readerModeStore.isActive"
     :modal="true"
@@ -10,10 +10,10 @@
     append-to="body"
     @hide="closeDialog"
   >
-    <div class="toolflowz-reader-options">
+    <div class="toolglows-reader-options">
       <h4>Apparence</h4>
-      
-      <div class="toolflowz-field mb-3">
+
+      <div class="toolglows-field mb-3">
         <label>Police</label>
         <Dropdown
           v-model="readerModeStore.options.fontFamily"
@@ -22,9 +22,9 @@
         />
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <label>Taille du texte</label>
-        <Slider 
+        <Slider
           v-model="readerModeStore.options.fontSize"
           :min="12"
           :max="24"
@@ -32,7 +32,7 @@
         />
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <label>Hauteur de ligne</label>
         <Slider
           v-model="readerModeStore.options.lineHeight"
@@ -43,7 +43,7 @@
         />
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <label>Largeur maximale</label>
         <Slider
           v-model="readerModeStore.options.maxWidth"
@@ -55,7 +55,7 @@
       </div>
 
       <h4>Thème</h4>
-      <div class="toolflowz-field-radiobutton mb-3">
+      <div class="toolglows-field-radiobutton mb-3">
         <RadioButton
           v-model="readerModeStore.options.theme"
           value="light"
@@ -63,7 +63,7 @@
         />
         <label>Clair</label>
       </div>
-      <div class="toolflowz-field-radiobutton mb-3">
+      <div class="toolglows-field-radiobutton mb-3">
         <RadioButton
           v-model="readerModeStore.options.theme"
           value="sepia"
@@ -71,7 +71,7 @@
         />
         <label>Sépia</label>
       </div>
-      <div class="toolflowz-field-radiobutton mb-3">
+      <div class="toolglows-field-radiobutton mb-3">
         <RadioButton
           v-model="readerModeStore.options.theme"
           value="dark"
@@ -81,7 +81,7 @@
       </div>
 
       <h4>Contenu</h4>
-      <div class="toolflowz-field-checkbox mb-3">
+      <div class="toolglows-field-checkbox mb-3">
         <Checkbox
           v-model="readerModeStore.options.showImages"
           :binary="true"
@@ -89,7 +89,7 @@
         />
         <label>Afficher les images</label>
       </div>
-      <div class="toolflowz-field-checkbox mb-3">
+      <div class="toolglows-field-checkbox mb-3">
         <Checkbox
           v-model="readerModeStore.options.showLinks"
           :binary="true"
@@ -124,14 +124,14 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.toolflowz-reader-options {
+.toolglows-reader-options {
   padding: 1rem;
 }
-.toolflowz-field {
+.toolglows-field {
   margin-bottom: 1rem;
 }
-.toolflowz-field label {
+.toolglows-field label {
   display: block;
   margin-bottom: 0.5rem;
 }
-</style> 
+</style>

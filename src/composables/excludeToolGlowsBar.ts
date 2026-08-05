@@ -1,19 +1,19 @@
 import { onMounted, onUnmounted } from 'vue'
 
-export function useExcludeToolflowzBar() {
-  const TOOLFLOWZ_SELECTORS = [
-    '.toolflowz-bar',
-    '[data-component="toolflowz-tool"]',
-    '.p-dialog[class*="toolflowz"]',
+export function useExcludeToolGlowsBar() {
+  const TOOLGLOWS_SELECTORS = [
+    '.toolglows-bar',
+    '[data-component="toolglows-tool"]',
+    '.p-dialog[class*="toolglows"]',
     '.p-dialog-mask',
-    '.toolflowz-settings-content',
-    '.toolflowz-tools-grid',
-    '.toolflowz-tool-item',
-    '.toolflowz-setting-item',
-    '.toolflowz-tools-container',
-    '.toolflowz-settings-group',
-    '.toolflowz-settings-header',
-    '.toolflowz-tool-emoji',
+    '.toolglows-settings-content',
+    '.toolglows-tools-grid',
+    '.toolglows-tool-item',
+    '.toolglows-setting-item',
+    '.toolglows-tools-container',
+    '.toolglows-settings-group',
+    '.toolglows-settings-header',
+    '.toolglows-tool-emoji',
     '.p-toast',
     '.p-toast-message',
     '.p-toast-message-content',
@@ -22,34 +22,34 @@ export function useExcludeToolflowzBar() {
     '.p-toast-detail',
     '.p-toast-icon-close'
   ].join(', ')
-  
+
   function addExclusionStyles() {
     const style = document.createElement('style')
-    style.id = 'toolflowz-exclusion-styles'
+    style.id = 'toolglows-exclusion-styles'
     style.textContent = `
-      /* Réinitialiser les styles pour tous les composants Toolflowz et leurs enfants */
-      ${TOOLFLOWZ_SELECTORS},
-      ${TOOLFLOWZ_SELECTORS} *,
-      .p-dialog[class*="toolflowz"] *,
-      [data-component="toolflowz-tool"] * {
+      /* Réinitialiser les styles pour tous les composants ToolGlows et leurs enfants */
+      ${TOOLGLOWS_SELECTORS},
+      ${TOOLGLOWS_SELECTORS} *,
+      .p-dialog[class*="toolglows"] *,
+      [data-component="toolglows-tool"] * {
         background-color: var(--surface-card) !important;
         color: var(--text-color) !important;
       }
-      
+
       /* Styles spécifiques pour les éléments internes */
       .p-dialog-header,
       .p-dialog-content,
       .p-checkbox-box,
       .p-checkbox-input,
       input,
-      .toolflowz-tool-emoji,
-      .toolflowz-settings-group,
-      .toolflowz-settings-header,
-      .toolflowz-settings-content h3,
-      .toolflowz-tool-name,
-      .toolflowz-setting-item label,
-      .p-dialog[class*="toolflowz"] .p-dialog-header,
-      .p-dialog[class*="toolflowz"] .p-dialog-content,
+      .toolglows-tool-emoji,
+      .toolglows-settings-group,
+      .toolglows-settings-header,
+      .toolglows-settings-content h3,
+      .toolglows-tool-name,
+      .toolglows-setting-item label,
+      .p-dialog[class*="toolglows"] .p-dialog-header,
+      .p-dialog[class*="toolglows"] .p-dialog-content,
       .p-toast,
       .p-toast-message,
       .p-toast-message-content {
@@ -75,7 +75,7 @@ export function useExcludeToolflowzBar() {
         color: var(--text-color) !important;
         border-color: var(--surface-border) !important;
       }
-      
+
       /* Styles pour les liens */
       a {
         color: var(--primary-color) !important;
@@ -90,16 +90,16 @@ export function useExcludeToolflowzBar() {
       .p-datatable,
       .p-grid,
       .p-panel,
-      .toolflowz-tool-item,
-      .toolflowz-setting-item,
-      .toolflowz-settings-group {
+      .toolglows-tool-item,
+      .toolglows-setting-item,
+      .toolglows-settings-group {
         background-color: var(--surface-ground) !important;
         color: var(--text-color) !important;
       }
 
       /* Styles pour les éléments actifs */
-      .toolflowz-tool-item.active,
-      .toolflowz-setting-item.active,
+      .toolglows-tool-item.active,
+      .toolglows-setting-item.active,
       .p-button.p-highlight,
       .p-checkbox-checked .p-checkbox-box {
         background-color: var(--primary-color) !important;
@@ -107,8 +107,8 @@ export function useExcludeToolflowzBar() {
       }
 
       /* Styles pour les survols */
-      .toolflowz-tool-item:hover,
-      .toolflowz-setting-item:hover,
+      .toolglows-tool-item:hover,
+      .toolglows-setting-item:hover,
       .p-button:hover,
       .p-toast-icon-close:hover {
         background-color: var(--surface-hover) !important;
@@ -125,19 +125,19 @@ export function useExcludeToolflowzBar() {
       .p-toast {
         opacity: 1 !important;
       }
-      
+
       .p-toast-message-success {
         border-left-color: var(--green-500) !important;
       }
-      
+
       .p-toast-message-info {
         border-left-color: var(--blue-500) !important;
       }
-      
+
       .p-toast-message-warn {
         border-left-color: var(--yellow-500) !important;
       }
-      
+
       .p-toast-message-error {
         border-left-color: var(--red-500) !important;
       }
@@ -147,12 +147,12 @@ export function useExcludeToolflowzBar() {
         &.p-highlight {
           background-color: var(--primary-color) !important;
           border-color: var(--primary-color) !important;
-          
+
           .p-button-label {
             color: var(--primary-color-text) !important;
           }
         }
-        
+
         &:not(.p-disabled):hover {
           background-color: var(--surface-hover) !important;
         }
@@ -168,7 +168,7 @@ export function useExcludeToolflowzBar() {
   }
 
   function removeExclusionStyles() {
-    const style = document.getElementById('toolflowz-exclusion-styles')
+    const style = document.getElementById('toolglows-exclusion-styles')
     if (style) {
       style.remove()
     }
@@ -186,4 +186,4 @@ export function useExcludeToolflowzBar() {
     addExclusionStyles,
     removeExclusionStyles
   }
-} 
+}

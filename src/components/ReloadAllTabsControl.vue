@@ -9,10 +9,10 @@
     append-to="body"
     @hide="closeDialog"
   >
-    <div class="toolflowz-reload-tabs-options">
-      <div class="toolflowz-field mb-3">
+    <div class="toolglows-reload-tabs-options">
+      <div class="toolglows-field mb-3">
         <p>Cette action va recharger tous les onglets ouverts dans votre navigateur.</p>
-        
+
         <Message
           v-if="reloadAllTabsStore.error"
           severity="error"
@@ -32,7 +32,7 @@
             />
             <label>Activer le raccourci</label>
           </div>
-          
+
           <div
             v-if="isShortcutEnabled"
             class="shortcut-input"
@@ -51,7 +51,7 @@
             <small class="text-muted">Raccourci actuel : {{ shortcutInput }}</small>
           </div>
         </div>
-        
+
         <Button
           label="Recharger tous les onglets"
           icon="pi pi-refresh"
@@ -122,7 +122,7 @@ const captureShortcut = (event: KeyboardEvent) => {
   if (event.ctrlKey) keys.push('Ctrl')
   if (event.altKey) keys.push('Alt')
   if (event.shiftKey) keys.push('Shift')
-  
+
   const key = event.key
   if (!['Control', 'Alt', 'Shift'].includes(key)) {
     keys.push(key.toUpperCase())
@@ -137,7 +137,7 @@ const captureShortcut = (event: KeyboardEvent) => {
 
 onMounted(async () => {
   await reloadAllTabsStore.loadSettings()
-  
+
   // Ajouter le gestionnaire de raccourci global
   document.addEventListener('keydown', reloadAllTabsStore.handleShortcut)
 })
@@ -148,7 +148,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.toolflowz-reload-tabs-options {
+.toolglows-reload-tabs-options {
   padding: 1rem;
 }
 
@@ -187,4 +187,4 @@ h4 {
   color: var(--text-color);
   font-size: 1.1rem;
 }
-</style> 
+</style>

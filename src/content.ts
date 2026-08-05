@@ -7,13 +7,13 @@ import PrimeVue from 'primevue/config'
 
 const initHideElement = async () => {
   const hideElementStore = useHideElementStore()
-  
+
   // Charger les paramètres
   await hideElementStore.loadSettings()
-  
+
   // Configurer l'observateur de mutations
   const observer = hideElementStore.setupMutationObserver()
-  
+
   // Nettoyer lors du déchargement de la page
   window.addEventListener('unload', () => {
     observer.disconnect()
@@ -32,20 +32,20 @@ const init = async () => {
     // Charger d'abord les paramètres globaux
     const settingsStore = useSettingsStore()
     await settingsStore.loadSettings()
-    
+
     // Initialiser le système de masquage
     await initHideElement()
-    
+
     // Monter l'application
     const container = document.createElement('div')
-    container.id = 'toolflowz-app'
+    container.id = 'toolglows-app'
     document.body.appendChild(container)
     app.mount(container)
-    
+
     console.log('[SUCCESS] Content script initialized')
   } catch (error) {
     console.error('[ERROR] Failed to initialize content script:', error)
   }
 }
 
-init() 
+init()

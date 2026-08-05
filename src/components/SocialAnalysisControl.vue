@@ -7,16 +7,16 @@
     :breakpoints="{ '960px': '85vw', '641px': '100vw' }"
     :maximizable="true"
     :dismissable-mask="true"
-    class="toolflowz-social-analysis-dialog"
+    class="toolglows-social-analysis-dialog"
   >
-    <div class="toolflowz-social-analysis-content">
+    <div class="toolglows-social-analysis-content">
       <!-- En-tête avec plateforme -->
-      <div class="toolflowz-platform-header">
+      <div class="toolglows-platform-header">
         <h3>
           {{ platformEmoji }} {{ platformName }}
           <span
             v-if="platform === 'unknown'"
-            class="toolflowz-platform-warning"
+            class="toolglows-platform-warning"
           >
             (Plateforme non supportée)
           </span>
@@ -24,20 +24,20 @@
       </div>
 
       <!-- Actions -->
-      <div class="toolflowz-social-analysis-actions">
+      <div class="toolglows-social-analysis-actions">
         <Button
           icon="pi pi-search"
           label="Analyser les commentaires"
           :loading="isLoading"
           :disabled="platform === 'unknown'"
-          class="toolflowz-action-button"
+          class="toolglows-action-button"
           @click="analyzeComments"
         />
         <Button
           icon="pi pi-download"
           label="Exporter en CSV"
           :disabled="!comments.length"
-          class="toolflowz-action-button"
+          class="toolglows-action-button"
           @click="exportToCSV"
         />
       </div>
@@ -45,65 +45,65 @@
       <!-- Statistiques -->
       <div
         v-if="comments.length"
-        class="toolflowz-stats-container"
+        class="toolglows-stats-container"
       >
         <!-- Distribution par genre -->
-        <div class="toolflowz-stats-card">
+        <div class="toolglows-stats-card">
           <h4>📊 Distribution par genre</h4>
-          <div class="toolflowz-stats-grid">
-            <div class="toolflowz-stat-item">
-              <span class="toolflowz-stat-label">👨 Hommes</span>
-              <span class="toolflowz-stat-value">{{ stats.genderDistribution.male }}</span>
-              <span class="toolflowz-stat-percentage">({{ genderPercentages.male.toFixed(1) }}%)</span>
+          <div class="toolglows-stats-grid">
+            <div class="toolglows-stat-item">
+              <span class="toolglows-stat-label">👨 Hommes</span>
+              <span class="toolglows-stat-value">{{ stats.genderDistribution.male }}</span>
+              <span class="toolglows-stat-percentage">({{ genderPercentages.male.toFixed(1) }}%)</span>
             </div>
-            <div class="toolflowz-stat-item">
-              <span class="toolflowz-stat-label">👩 Femmes</span>
-              <span class="toolflowz-stat-value">{{ stats.genderDistribution.female }}</span>
-              <span class="toolflowz-stat-percentage">({{ genderPercentages.female.toFixed(1) }}%)</span>
+            <div class="toolglows-stat-item">
+              <span class="toolglows-stat-label">👩 Femmes</span>
+              <span class="toolglows-stat-value">{{ stats.genderDistribution.female }}</span>
+              <span class="toolglows-stat-percentage">({{ genderPercentages.female.toFixed(1) }}%)</span>
             </div>
-            <div class="toolflowz-stat-item">
-              <span class="toolflowz-stat-label">❓ Inconnu</span>
-              <span class="toolflowz-stat-value">{{ stats.genderDistribution.unknown }}</span>
-              <span class="toolflowz-stat-percentage">({{ genderPercentages.unknown.toFixed(1) }}%)</span>
+            <div class="toolglows-stat-item">
+              <span class="toolglows-stat-label">❓ Inconnu</span>
+              <span class="toolglows-stat-value">{{ stats.genderDistribution.unknown }}</span>
+              <span class="toolglows-stat-percentage">({{ genderPercentages.unknown.toFixed(1) }}%)</span>
             </div>
           </div>
         </div>
 
         <!-- Analyse des sentiments -->
-        <div class="toolflowz-stats-card">
+        <div class="toolglows-stats-card">
           <h4>🎭 Analyse des sentiments</h4>
-          <div class="toolflowz-sentiment-grid">
+          <div class="toolglows-sentiment-grid">
             <!-- Hommes -->
-            <div class="toolflowz-sentiment-column">
+            <div class="toolglows-sentiment-column">
               <h5>👨 Hommes</h5>
-              <div class="toolflowz-sentiment-bars">
-                <div class="toolflowz-sentiment-bar">
-                  <span class="toolflowz-sentiment-label">😊 Positif</span>
-                  <div class="toolflowz-progress-bar">
+              <div class="toolglows-sentiment-bars">
+                <div class="toolglows-sentiment-bar">
+                  <span class="toolglows-sentiment-label">😊 Positif</span>
+                  <div class="toolglows-progress-bar">
                     <div
-                      class="toolflowz-progress positive"
+                      class="toolglows-progress positive"
                       :style="{ width: sentimentPercentages.male.positive + '%' }"
                     >
                       {{ sentimentPercentages.male.positive.toFixed(1) }}%
                     </div>
                   </div>
                 </div>
-                <div class="toolflowz-sentiment-bar">
-                  <span class="toolflowz-sentiment-label">😐 Neutre</span>
-                  <div class="toolflowz-progress-bar">
+                <div class="toolglows-sentiment-bar">
+                  <span class="toolglows-sentiment-label">😐 Neutre</span>
+                  <div class="toolglows-progress-bar">
                     <div
-                      class="toolflowz-progress neutral"
+                      class="toolglows-progress neutral"
                       :style="{ width: sentimentPercentages.male.neutral + '%' }"
                     >
                       {{ sentimentPercentages.male.neutral.toFixed(1) }}%
                     </div>
                   </div>
                 </div>
-                <div class="toolflowz-sentiment-bar">
-                  <span class="toolflowz-sentiment-label">😠 Négatif</span>
-                  <div class="toolflowz-progress-bar">
+                <div class="toolglows-sentiment-bar">
+                  <span class="toolglows-sentiment-label">😠 Négatif</span>
+                  <div class="toolglows-progress-bar">
                     <div
-                      class="toolflowz-progress negative"
+                      class="toolglows-progress negative"
                       :style="{ width: sentimentPercentages.male.negative + '%' }"
                     >
                       {{ sentimentPercentages.male.negative.toFixed(1) }}%
@@ -114,36 +114,36 @@
             </div>
 
             <!-- Femmes -->
-            <div class="toolflowz-sentiment-column">
+            <div class="toolglows-sentiment-column">
               <h5>👩 Femmes</h5>
-              <div class="toolflowz-sentiment-bars">
-                <div class="toolflowz-sentiment-bar">
-                  <span class="toolflowz-sentiment-label">😊 Positif</span>
-                  <div class="toolflowz-progress-bar">
+              <div class="toolglows-sentiment-bars">
+                <div class="toolglows-sentiment-bar">
+                  <span class="toolglows-sentiment-label">😊 Positif</span>
+                  <div class="toolglows-progress-bar">
                     <div
-                      class="toolflowz-progress positive"
+                      class="toolglows-progress positive"
                       :style="{ width: sentimentPercentages.female.positive + '%' }"
                     >
                       {{ sentimentPercentages.female.positive.toFixed(1) }}%
                     </div>
                   </div>
                 </div>
-                <div class="toolflowz-sentiment-bar">
-                  <span class="toolflowz-sentiment-label">😐 Neutre</span>
-                  <div class="toolflowz-progress-bar">
+                <div class="toolglows-sentiment-bar">
+                  <span class="toolglows-sentiment-label">😐 Neutre</span>
+                  <div class="toolglows-progress-bar">
                     <div
-                      class="toolflowz-progress neutral"
+                      class="toolglows-progress neutral"
                       :style="{ width: sentimentPercentages.female.neutral + '%' }"
                     >
                       {{ sentimentPercentages.female.neutral.toFixed(1) }}%
                     </div>
                   </div>
                 </div>
-                <div class="toolflowz-sentiment-bar">
-                  <span class="toolflowz-sentiment-label">😠 Négatif</span>
-                  <div class="toolflowz-progress-bar">
+                <div class="toolglows-sentiment-bar">
+                  <span class="toolglows-sentiment-label">😠 Négatif</span>
+                  <div class="toolglows-progress-bar">
                     <div
-                      class="toolflowz-progress negative"
+                      class="toolglows-progress negative"
                       :style="{ width: sentimentPercentages.female.negative + '%' }"
                     >
                       {{ sentimentPercentages.female.negative.toFixed(1) }}%
@@ -159,7 +159,7 @@
       <!-- Liste des commentaires -->
       <div
         v-if="comments.length"
-        class="toolflowz-comments-list"
+        class="toolglows-comments-list"
       >
         <h4>💬 Commentaires ({{ comments.length }})</h4>
         <DataTable
@@ -172,7 +172,7 @@
             header="Commentaire"
           >
             <template #body="{ data }">
-              <div class="toolflowz-comment-text">{{ data.text }}</div>
+              <div class="toolglows-comment-text">{{ data.text }}</div>
             </template>
           </Column>
           <Column
@@ -181,7 +181,7 @@
           >
             <template #body="{ data }">
               <span
-                class="toolflowz-gender-badge"
+                class="toolglows-gender-badge"
                 :class="data.gender"
               >
                 {{ genderEmoji[data.gender] }} {{ genderLabel[data.gender] }}
@@ -194,7 +194,7 @@
           >
             <template #body="{ data }">
               <span
-                class="toolflowz-sentiment-badge"
+                class="toolglows-sentiment-badge"
                 :class="data.sentiment"
               >
                 {{ sentimentEmoji[data.sentiment] }}
@@ -209,7 +209,7 @@
               <a
                 :href="data.profileUrl"
                 target="_blank"
-                class="toolflowz-profile-link"
+                class="toolglows-profile-link"
               >
                 Voir le profil
               </a>
@@ -219,7 +219,7 @@
       </div>
       <div
         v-else-if="!isLoading"
-        class="toolflowz-no-data"
+        class="toolglows-no-data"
       >
         Cliquez sur "Analyser les commentaires" pour commencer l'analyse.
       </div>
@@ -305,13 +305,13 @@ watch(dialogVisible, (newValue) => {
 </script>
 
 <style scoped>
-.toolflowz-social-analysis-content {
+.toolglows-social-analysis-content {
   display: flex;
   flex-direction: column;
   gap: 2rem;
 }
 
-.toolflowz-platform-header {
+.toolglows-platform-header {
   h3 {
     margin: 0;
     display: flex;
@@ -321,25 +321,25 @@ watch(dialogVisible, (newValue) => {
   }
 }
 
-.toolflowz-platform-warning {
+.toolglows-platform-warning {
   color: var(--red-500);
   font-size: 0.9rem;
   font-weight: normal;
 }
 
-.toolflowz-social-analysis-actions {
+.toolglows-social-analysis-actions {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.toolflowz-stats-container {
+.toolglows-stats-container {
   display: flex;
   flex-direction: column;
   gap: 2rem;
 }
 
-.toolflowz-stats-card {
+.toolglows-stats-card {
   background: var(--surface-ground);
   border-radius: var(--border-radius);
   padding: 1.5rem;
@@ -350,13 +350,13 @@ watch(dialogVisible, (newValue) => {
   }
 }
 
-.toolflowz-stats-grid {
+.toolglows-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
 }
 
-.toolflowz-stat-item {
+.toolglows-stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -364,47 +364,47 @@ watch(dialogVisible, (newValue) => {
   gap: 0.5rem;
 }
 
-.toolflowz-stat-value {
+.toolglows-stat-value {
   font-size: 2rem;
   font-weight: bold;
   color: var(--primary-color);
 }
 
-.toolflowz-stat-percentage {
+.toolglows-stat-percentage {
   color: var(--text-color-secondary);
   font-size: 0.9rem;
 }
 
-.toolflowz-sentiment-grid {
+.toolglows-sentiment-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
 }
 
-.toolflowz-sentiment-column {
+.toolglows-sentiment-column {
   h5 {
     margin: 0 0 1rem 0;
     font-size: 1rem;
   }
 }
 
-.toolflowz-sentiment-bars {
+.toolglows-sentiment-bars {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.toolflowz-sentiment-bar {
+.toolglows-sentiment-bar {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.toolflowz-sentiment-label {
+.toolglows-sentiment-label {
   min-width: 100px;
 }
 
-.toolflowz-progress-bar {
+.toolglows-progress-bar {
   flex: 1;
   height: 24px;
   background: var(--surface-card);
@@ -412,7 +412,7 @@ watch(dialogVisible, (newValue) => {
   overflow: hidden;
 }
 
-.toolflowz-progress {
+.toolglows-progress {
   height: 100%;
   display: flex;
   align-items: center;
@@ -435,21 +435,21 @@ watch(dialogVisible, (newValue) => {
   }
 }
 
-.toolflowz-comments-list {
+.toolglows-comments-list {
   h4 {
     margin: 0 0 1rem 0;
     font-size: 1.1rem;
   }
 }
 
-.toolflowz-comment-text {
+.toolglows-comment-text {
   max-width: 300px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.toolflowz-gender-badge {
+.toolglows-gender-badge {
   padding: 0.25rem 0.5rem;
   border-radius: var(--border-radius);
   font-size: 0.9rem;
@@ -470,11 +470,11 @@ watch(dialogVisible, (newValue) => {
   }
 }
 
-.toolflowz-sentiment-badge {
+.toolglows-sentiment-badge {
   font-size: 1.2rem;
 }
 
-.toolflowz-profile-link {
+.toolglows-profile-link {
   color: var(--primary-color);
   text-decoration: none;
 
@@ -483,7 +483,7 @@ watch(dialogVisible, (newValue) => {
   }
 }
 
-.toolflowz-no-data {
+.toolglows-no-data {
   text-align: center;
   padding: 2rem;
   background: var(--surface-ground);
@@ -491,7 +491,7 @@ watch(dialogVisible, (newValue) => {
   color: var(--text-color-secondary);
 }
 
-:deep(.toolflowz-action-button) {
+:deep(.toolglows-action-button) {
   background-color: var(--primary-color) !important;
   color: white !important;
   border: none !important;

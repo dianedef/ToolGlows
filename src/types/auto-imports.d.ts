@@ -207,7 +207,7 @@ declare global {
   const useEventBus: typeof import('@vueuse/core')['useEventBus']
   const useEventListener: typeof import('@vueuse/core')['useEventListener']
   const useEventSource: typeof import('@vueuse/core')['useEventSource']
-  const useExcludeToolflowzBar: typeof import('../composables/excludeToolflowzBar')['useExcludeToolflowzBar']
+  const useExcludeToolGlowsBar: typeof import('../composables/excludeToolGlowsBar')['useExcludeToolGlowsBar']
   const useEyeDropper: typeof import('@vueuse/core')['useEyeDropper']
   const useFavicon: typeof import('@vueuse/core')['useFavicon']
   const useFeedEradicator: typeof import('../composables/useFeedEradicator')['useFeedEradicator']
@@ -333,9 +333,9 @@ declare global {
   const useToNumber: typeof import('@vueuse/core')['useToNumber']
   const useToString: typeof import('@vueuse/core')['useToString']
   const useToggle: typeof import('@vueuse/core')['useToggle']
-  const useToolflowzInfiniteScroll: typeof import('../composables/useInfiniteScroll')['useToolflowzInfiniteScroll']
-  const useToolflowzInfiniteScrollStore: typeof import('../stores/infiniteScroll')['useToolflowzInfiniteScrollStore']
-  const useToolflowzStore: typeof import('../stores/toolflowz')['useToolflowzStore']
+  const useToolGlowsInfiniteScroll: typeof import('../composables/useInfiniteScroll')['useToolGlowsInfiniteScroll']
+  const useToolGlowsInfiniteScrollStore: typeof import('../stores/infiniteScroll')['useToolGlowsInfiniteScrollStore']
+  const useToolGlowsStore: typeof import('../stores/toolglows')['useToolGlowsStore']
   const useTransition: typeof import('@vueuse/core')['useTransition']
   const useUrlSearchParams: typeof import('@vueuse/core')['useUrlSearchParams']
   const useUserMedia: typeof import('@vueuse/core')['useUserMedia']
@@ -385,7 +385,7 @@ declare global {
   export type { HideElementSettings } from '../stores/hideElement'
   import('../stores/hideElement')
   // @ts-ignore
-  export type { ToolflowzSettings } from '../stores/settings'
+  export type { ToolGlowsSettings } from '../stores/settings'
   import('../stores/settings')
 }
 
@@ -595,7 +595,7 @@ declare module 'vue' {
     readonly useEventBus: UnwrapRef<typeof import('@vueuse/core')['useEventBus']>
     readonly useEventListener: UnwrapRef<typeof import('@vueuse/core')['useEventListener']>
     readonly useEventSource: UnwrapRef<typeof import('@vueuse/core')['useEventSource']>
-    readonly useExcludeToolflowzBar: UnwrapRef<typeof import('../composables/excludeToolflowzBar')['useExcludeToolflowzBar']>
+    readonly useExcludeToolGlowsBar: UnwrapRef<typeof import('../composables/excludeToolGlowsBar')['useExcludeToolGlowsBar']>
     readonly useEyeDropper: UnwrapRef<typeof import('@vueuse/core')['useEyeDropper']>
     readonly useFavicon: UnwrapRef<typeof import('@vueuse/core')['useFavicon']>
     readonly useFeedEradicator: UnwrapRef<typeof import('../composables/useFeedEradicator')['useFeedEradicator']>
@@ -721,9 +721,9 @@ declare module 'vue' {
     readonly useToNumber: UnwrapRef<typeof import('@vueuse/core')['useToNumber']>
     readonly useToString: UnwrapRef<typeof import('@vueuse/core')['useToString']>
     readonly useToggle: UnwrapRef<typeof import('@vueuse/core')['useToggle']>
-    readonly useToolflowzInfiniteScroll: UnwrapRef<typeof import('../composables/useInfiniteScroll')['useToolflowzInfiniteScroll']>
-    readonly useToolflowzInfiniteScrollStore: UnwrapRef<typeof import('../stores/infiniteScroll')['useToolflowzInfiniteScrollStore']>
-    readonly useToolflowzStore: UnwrapRef<typeof import('../stores/toolflowz')['useToolflowzStore']>
+    readonly useToolGlowsInfiniteScroll: UnwrapRef<typeof import('../composables/useInfiniteScroll')['useToolGlowsInfiniteScroll']>
+    readonly useToolGlowsInfiniteScrollStore: UnwrapRef<typeof import('../stores/infiniteScroll')['useToolGlowsInfiniteScrollStore']>
+    readonly useToolGlowsStore: UnwrapRef<typeof import('../stores/toolglows')['useToolGlowsStore']>
     readonly useTransition: UnwrapRef<typeof import('@vueuse/core')['useTransition']>
     readonly useUrlSearchParams: UnwrapRef<typeof import('@vueuse/core')['useUrlSearchParams']>
     readonly useUserMedia: UnwrapRef<typeof import('@vueuse/core')['useUserMedia']>

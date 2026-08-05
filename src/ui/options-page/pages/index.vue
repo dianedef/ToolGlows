@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
 
-const settings = useStorage('toolflowz-settings', {
+const settings = useStorage('toolglows-settings', {
   darkMode: {
     autoSync: true,
     excludedDomains: [] as string[],
@@ -45,7 +45,7 @@ function saveSettings() {
     class="options-page"
     @submit.prevent="saveSettings"
   >
-    <h1>Parametres Toolflowz</h1>
+    <h1>Paramètres ToolGlows</h1>
 
     <section>
       <h2>Mode sombre</h2>

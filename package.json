@@ -13,7 +13,7 @@
     "vue-router": "^4.5.0",
     "webextension-polyfill": "^0.12.0"
   },
-  "description": "A Vue 3 + Vite project for building Chrome extensions",
+  "description": "ToolGlows browser productivity toolkit for Chrome and Firefox",
   "devDependencies": {
     "@antfu/eslint-config": "^3.16.0",
     "@crxjs/vite-plugin": "2.0.0-beta.28",
@@ -77,11 +77,11 @@
     "web-ext": "^10.1.0",
     "webext-bridge": "^6.0.1"
   },
-  "displayName": "Vite Vue 3 Chrome Extension",
+  "displayName": "ToolGlows",
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=24.0.0"
   },
-  "name": "vite-vue3-browser-extension-v3",
+  "name": "toolglows",
   "overrides": {
     "@crxjs/vite-plugin": "$@crxjs/vite-plugin"
   },
@@ -126,10 +126,6 @@
   "private": true,
   "securityOverrideNotes": {
     "dependencySecuritySecondPass": "Narrow pnpm overrides for audit advisories in transitive dependency paths: Babel helpers/runtime, ESLint plugin-kit, once, ajv, brace-expansion, cross-spawn, flatted, glob, js-yaml, lodash, minimatch, node-forge, picomatch, rollup, tar, tmp, and yaml. Remove an override once the owning direct package resolves to a patched version without it."
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mubaidr/vite-vue3-browser-extension-v3"
   },
   "scripts": {
     "build": "pnpm run build:chrome && pnpm run build:firefox",

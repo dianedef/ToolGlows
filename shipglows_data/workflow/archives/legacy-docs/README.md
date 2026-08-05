@@ -1,6 +1,6 @@
-# ToolFlowz Documentation
+# ToolGlows Documentation
 
-Welcome to the ToolFlowz documentation! This documentation follows the **BMAD (Breakthrough Method for Agile AI-Driven Development)** methodology for organization and structure.
+Welcome to the ToolGlows documentation! This documentation follows the **BMAD (Breakthrough Method for Agile AI-Driven Development)** methodology for organization and structure.
 
 ## 📚 Documentation Structure
 
@@ -206,9 +206,9 @@ For more information about BMAD:
 
 ---
 
-**Documentation Version**: 1.0  
-**Last Updated**: 2025-12-16  
-**Maintained By**: Project Team  
+**Documentation Version**: 1.0
+**Last Updated**: 2025-12-16
+**Maintained By**: Project Team
 **Review Cycle**: Monthly
 
 For issues or suggestions about this documentation, please open a GitHub issue.

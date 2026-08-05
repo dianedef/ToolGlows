@@ -8,10 +8,10 @@
     :style="{ width: '350px' }"
     @hide="closeDialog"
   >
-    <div class="toolflowz-scroll-options">
-      <div class="toolflowz-field mb-3">
+    <div class="toolglows-scroll-options">
+      <div class="toolglows-field mb-3">
         <h4>Seuil de déclenchement</h4>
-        <div class="toolflowz-threshold-slider">
+        <div class="toolglows-threshold-slider">
           <Slider
             v-model="scrollStore.options.threshold"
             :min="100"
@@ -19,13 +19,13 @@
             :step="50"
             @change="scrollStore.saveOptions()"
           />
-          <small class="toolflowz-small">{{ scrollStore.options.threshold }}px avant la fin</small>
+          <small class="toolglows-small">{{ scrollStore.options.threshold }}px avant la fin</small>
         </div>
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Options</h4>
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="scrollStore.options.autoLoad"
             :binary="true"
@@ -34,7 +34,7 @@
           <label>Chargement automatique</label>
         </div>
 
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="scrollStore.options.showProgress"
             :binary="true"
@@ -44,7 +44,7 @@
         </div>
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Limite de pages</h4>
         <InputNumber
           v-model="scrollStore.options.maxPages"
@@ -53,7 +53,7 @@
           class="w-full"
           @change="scrollStore.saveOptions()"
         />
-        <small class="toolflowz-small">Nombre maximum de pages à charger</small>
+        <small class="toolglows-small">Nombre maximum de pages à charger</small>
       </div>
     </div>
   </Dialog>
@@ -61,13 +61,13 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useToolflowzInfiniteScrollStore } from '@/stores/infiniteScroll'
+import { useToolGlowsInfiniteScrollStore } from '@/stores/infiniteScroll'
 import Dialog from 'primevue/dialog'
 import Slider from 'primevue/slider'
 import Checkbox from 'primevue/checkbox'
 import InputNumber from 'primevue/inputnumber'
 
-const scrollStore = useToolflowzInfiniteScrollStore()
+const scrollStore = useToolGlowsInfiniteScrollStore()
 
 const closeDialog = () => {
   scrollStore.isActive = false
@@ -79,34 +79,34 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.toolflowz-scroll-options {
+.toolglows-scroll-options {
   padding: 1rem;
 }
 
-.toolflowz-field {
+.toolglows-field {
   margin-bottom: 1rem;
 }
 
-.toolflowz-field h4 {
+.toolglows-field h4 {
   margin-bottom: 0.5rem;
   color: var(--text-color);
 }
 
-.toolflowz-field-checkbox {
+.toolglows-field-checkbox {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.toolflowz-threshold-slider {
+.toolglows-threshold-slider {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.toolflowz-small {
+.toolglows-small {
   color: var(--text-color-secondary);
   display: block;
   text-align: center;
 }
-</style> 
+</style>

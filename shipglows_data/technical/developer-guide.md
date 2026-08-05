@@ -1,9 +1,9 @@
 # Developer Guide
-# ToolFlowz Browser Extension Framework
+# ToolGlows Browser Extension Framework
 
 **Version**: 1.0
 **Date**: 2025-12-16
-**Audience**: Developers building with ToolFlowz
+**Audience**: Developers building with ToolGlows
 
 ---
 
@@ -34,9 +34,8 @@
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/dianedef/ext---ToolFlowz.git
-cd ext---ToolFlowz
+# From your local ToolGlows checkout
+cd /path/to/toolglows
 
 # Install dependencies
 pnpm install

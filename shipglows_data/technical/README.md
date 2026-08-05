@@ -2,7 +2,7 @@
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "ext---toolflowz"
+project: "toolglows"
 created: "2026-05-04"
 updated: "2026-05-04"
 status: draft
@@ -14,12 +14,12 @@ risk_level: medium
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - docs/technical/code-docs-map.md
+  - shipglows_data/technical/code-docs-map.md
   - package.json
   - pnpm-lock.yaml
   - vite.config.ts
 depends_on:
-  - artifact: "specs/dependency-security-second-pass.md"
+  - artifact: "shipglows_data/workflow/specs/dependency-security-second-pass.md"
     artifact_version: "0.1.0"
     required_status: ready
 supersedes: []
@@ -33,13 +33,13 @@ next_step: "/sf-docs technical audit"
 
 ## Purpose
 
-This directory contains internal, code-proximate technical documentation for ToolFlowz.
+This directory contains internal, code-proximate technical documentation for ToolGlows.
 
 ## Index
 
 | Document | Role |
 | --- | --- |
-| `docs/technical/code-docs-map.md` | Maps code surfaces to docs and validation triggers |
+| `shipglows_data/technical/code-docs-map.md` | Maps code surfaces to docs and validation triggers |
 
 ## Current Coverage
 

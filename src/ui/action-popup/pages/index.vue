@@ -5,11 +5,9 @@
     <div class="hero">
       <div class="hero-content text-center">
         <div class="max-w-md">
-          <h1>Hello there</h1>
+          <h1>ToolGlows</h1>
           <p>
-            Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
-            excepturi exercitationem quasi. In deleniti eaque aut repudiandae et
-            a id nisi.
+            Vos outils essentiels, directement dans chaque page web.
           </p>
 
           <div class="flex gap-2 justify-center mb-4">
@@ -18,14 +16,14 @@
               class="btn btn-primary"
             >
               <i-ph-list-heart />
-              Features
+              Fonctionnalités
             </RouterLink>
             <RouterLink
               to="/common/pricing"
               class="btn btn-primary"
             >
               <i-ph-presentation-chart />
-              Pricing
+              Offre
             </RouterLink>
           </div>
 
@@ -34,7 +32,7 @@
             class="btn btn-secondary btn-lg"
           >
             <i-ph-rocket-launch />
-            Get Started Now
+            Commencer
           </RouterLink>
 
           <br />
@@ -43,22 +41,9 @@
             to="/action-popup/playground"
             class="btn btn-link"
           >
-            Playground
+            Tester l'interface
           </RouterLink>
 
-          <a
-            class="btn btn-link"
-            href="https://github.com/mubaidr/vite-vue3-browser-extension-v3"
-          >
-            Documentation
-          </a>
-
-          <a
-            class="btn btn-link"
-            href="https://mubaidr.js.org"
-          >
-            Support
-          </a>
         </div>
       </div>
     </div>

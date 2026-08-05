@@ -21,7 +21,7 @@ import { sendMessage, onMessage, allowWindowMessaging } from 'webext-bridge/cont
 import type { Tool } from '@/types/tools'
 
 // Unique namespace prevents conflicts with other extensions using webext-bridge
-const EXTENSION_NAMESPACE = 'com.toolflowz.extension'
+const EXTENSION_NAMESPACE = 'com.toolglows.extension'
 
 /**
  * Settings structure shared across all extension contexts

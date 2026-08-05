@@ -7,15 +7,15 @@
     :breakpoints="{ '960px': '75vw', '641px': '100vw' }"
     :maximizable="true"
     :dismissable-mask="true"
-    class="toolflowz-links-explorer-dialog"
+    class="toolglows-links-explorer-dialog"
   >
-    <div class="toolflowz-links-explorer-content">
+    <div class="toolglows-links-explorer-content">
       <!-- Paramètres -->
-      <div class="toolflowz-links-explorer-settings">
-        <div class="toolflowz-settings-group">
+      <div class="toolglows-links-explorer-settings">
+        <div class="toolglows-settings-group">
           <h3>🎯 Type de liens</h3>
-          <div class="toolflowz-settings-row">
-            <div class="toolflowz-checkbox-wrapper">
+          <div class="toolglows-settings-row">
+            <div class="toolglows-checkbox-wrapper">
               <Checkbox
                 v-model="settings.includeInternal"
                 :binary="true"
@@ -24,7 +24,7 @@
               <label for="includeInternal">Liens internes</label>
             </div>
 
-            <div class="toolflowz-checkbox-wrapper">
+            <div class="toolglows-checkbox-wrapper">
               <Checkbox
                 v-model="settings.includeExternal"
                 :binary="true"
@@ -35,29 +35,29 @@
           </div>
         </div>
 
-        <div class="toolflowz-settings-group">
+        <div class="toolglows-settings-group">
           <h3>⚙️ Options</h3>
-          <div class="toolflowz-settings-row">
-            <div class="toolflowz-depth-control">
+          <div class="toolglows-settings-row">
+            <div class="toolglows-depth-control">
               <label for="maxDepth">Profondeur max:</label>
               <InputNumber
                 v-model="settings.maxDepth"
                 :min="1"
                 :max="5"
                 input-id="maxDepth"
-                class="toolflowz-depth-input"
+                class="toolglows-depth-input"
               />
             </div>
 
-            <div class="toolflowz-format-control">
+            <div class="toolglows-format-control">
               <Checkbox
                 v-model="settings.useMarkdown"
                 :binary="true"
                 input-id="useMarkdown"
               />
-              <div class="toolflowz-label-with-hint">
+              <div class="toolglows-label-with-hint">
                 <label for="useMarkdown">Format Markdown</label>
-                <small class="toolflowz-format-hint">{{ settings.useMarkdown ? '(avec titres)' : '(liens uniquement)' }}</small>
+                <small class="toolglows-format-hint">{{ settings.useMarkdown ? '(avec titres)' : '(liens uniquement)' }}</small>
               </div>
             </div>
           </div>
@@ -65,26 +65,26 @@
       </div>
 
       <!-- Actions -->
-      <div class="toolflowz-links-explorer-actions">
+      <div class="toolglows-links-explorer-actions">
         <Button
           icon="pi pi-search"
           label="Explorer"
           :loading="isLoading"
-          class="toolflowz-action-button"
+          class="toolglows-action-button"
           @click="() => exploreLinks()"
         />
         <Button
           icon="pi pi-arrow-down"
           label="Explorer plus profond"
           :disabled="settings.currentDepth >= settings.maxDepth || isLoading"
-          class="toolflowz-action-button"
+          class="toolglows-action-button"
           @click="exploreDeeper"
         />
         <Button
           icon="pi pi-copy"
           label="Copier tous"
           :disabled="!links.length"
-          class="toolflowz-action-button"
+          class="toolglows-action-button"
           @click="handleCopy"
         />
       </div>
@@ -92,7 +92,7 @@
       <!-- Liste des liens -->
       <div
         v-if="links.length"
-        class="toolflowz-links-list"
+        class="toolglows-links-list"
       >
         <DataTable
           :value="links"
@@ -129,17 +129,17 @@
           <Column
             field="depth"
             header="Profondeur"
-            class="toolflowz-text-center"
+            class="toolglows-text-center"
           >
             <template #body="{ data }">
-              <div class="toolflowz-text-center">{{ data.depth }}</div>
+              <div class="toolglows-text-center">{{ data.depth }}</div>
             </template>
           </Column>
         </DataTable>
       </div>
       <div
         v-else
-        class="toolflowz-no-links"
+        class="toolglows-no-links"
       >
         Aucun lien trouvé. Lancez l'exploration pour commencer !
       </div>
@@ -212,19 +212,19 @@ const handleCopy = async () => {
 </script>
 
 <style scoped>
-.toolflowz-links-explorer-content {
+.toolglows-links-explorer-content {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.toolflowz-links-explorer-settings {
+.toolglows-links-explorer-settings {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.toolflowz-settings-group {
+.toolglows-settings-group {
   background: var(--surface-ground);
   border-radius: var(--border-radius);
   padding: 1.25rem;
@@ -237,7 +237,7 @@ const handleCopy = async () => {
   }
 }
 
-.toolflowz-settings-row {
+.toolglows-settings-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -245,7 +245,7 @@ const handleCopy = async () => {
   flex-wrap: wrap;
 }
 
-.toolflowz-checkbox-wrapper {
+.toolglows-checkbox-wrapper {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -272,7 +272,7 @@ const handleCopy = async () => {
   }
 }
 
-.toolflowz-depth-control {
+.toolglows-depth-control {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -282,41 +282,41 @@ const handleCopy = async () => {
     font-weight: 500;
   }
 
-  .toolflowz-depth-input {
+  .toolglows-depth-input {
     width: 5rem;
   }
 }
 
-.toolflowz-format-control {
+.toolglows-format-control {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   min-width: 200px;
 }
 
-.toolflowz-label-with-hint {
+.toolglows-label-with-hint {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.toolflowz-format-hint {
+.toolglows-format-hint {
   color: var(--text-color-secondary);
   font-size: 0.8rem;
 }
 
-.toolflowz-links-explorer-actions {
+.toolglows-links-explorer-actions {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.toolflowz-links-list {
+.toolglows-links-list {
   max-height: 400px;
   overflow-y: auto;
 }
 
-.toolflowz-no-links {
+.toolglows-no-links {
   text-align: center;
   padding: 2rem;
   background: var(--surface-ground);
@@ -324,11 +324,11 @@ const handleCopy = async () => {
   color: var(--text-color-secondary);
 }
 
-.toolflowz-text-center {
+.toolglows-text-center {
   text-align: center;
 }
 
-:deep(.toolflowz-action-button) {
+:deep(.toolglows-action-button) {
   background-color: var(--primary-color) !important;
   color: white !important;
   border: none !important;
@@ -337,13 +337,13 @@ const handleCopy = async () => {
   transition: all 0.3s ease !important;
 }
 
-:deep(.toolflowz-action-button:hover) {
+:deep(.toolglows-action-button:hover) {
   background-color: var(--primary-color) !important;
   filter: brightness(1.1) !important;
   transform: translateY(-1px) !important;
 }
 
-:deep(.toolflowz-action-button:disabled) {
+:deep(.toolglows-action-button:disabled) {
   background-color: var(--surface-border) !important;
   color: var(--text-color-secondary) !important;
   cursor: not-allowed !important;

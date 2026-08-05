@@ -44,11 +44,11 @@
               :binary="true"
               @change="() => {
                 copyStore.saveSettings();
-                toast.add({ 
-                  severity: 'success', 
-                  summary: 'Formatting', 
+                toast.add({
+                  severity: 'success',
+                  summary: 'Formatting',
                   detail: copyStore.settings.preserveFormatting ? 'Formatting enabled' : 'Formatting disabled',
-                  life: 3000 
+                  life: 3000
                 });
               }"
             />
@@ -61,11 +61,11 @@
               :binary="true"
               @change="() => {
                 copyStore.saveSettings();
-                toast.add({ 
-                  severity: 'success', 
-                  summary: 'Source', 
+                toast.add({
+                  severity: 'success',
+                  summary: 'Source',
                   detail: copyStore.settings.includeSource ? 'Source included' : 'Source not included',
-                  life: 3000 
+                  life: 3000
                 });
               }"
             />
@@ -78,11 +78,11 @@
               :binary="true"
               @change="() => {
                 copyStore.saveSettings();
-                toast.add({ 
-                  severity: 'success', 
-                  summary: 'Notifications', 
+                toast.add({
+                  severity: 'success',
+                  summary: 'Notifications',
                   detail: copyStore.settings.showNotifications ? 'Notifications enabled' : 'Notifications disabled',
-                  life: 3000 
+                  life: 3000
                 });
               }"
             />
@@ -95,11 +95,11 @@
               :binary="true"
               @change="() => {
                 copyStore.saveSettings();
-                toast.add({ 
-                  severity: 'success', 
-                  summary: 'Alt Selection', 
+                toast.add({
+                  severity: 'success',
+                  summary: 'Alt Selection',
                   detail: copyStore.settings.enableAltSelection ? 'Alt Selection enabled' : 'Alt Selection disabled',
-                  life: 3000 
+                  life: 3000
                 });
               }"
             />
@@ -118,7 +118,7 @@ import { useAutoCopy } from '@/composables/useAutoCopy'
 import Dialog from 'primevue/dialog'
 import Checkbox from 'primevue/checkbox'
 import { useToast } from 'primevue/usetoast'
-import { useExcludeToolflowzBar } from '@/composables/excludeToolflowzBar'
+import { useExcludeToolGlowsBar } from '@/composables/excludeToolGlowsBar'
 
 const copyStore = useAutoCopyStore()
 const toast = useToast()
@@ -127,7 +127,7 @@ const toast = useToast()
 useAutoCopy()
 
 // Exclude from dark mode
-useExcludeToolflowzBar()
+useExcludeToolGlowsBar()
 
 onMounted(async () => {
   console.log('[DEBUG] Before loadSettings - formats:', copyStore.settings.formats)
@@ -211,4 +211,4 @@ const closeDialog = () => {
   align-items: center;
   gap: 0.5rem;
 }
-</style> 
+</style>

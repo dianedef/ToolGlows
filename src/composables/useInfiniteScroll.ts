@@ -7,7 +7,7 @@ interface InfiniteScrollOptions {
   maxPages: number
 }
 
-export function useToolflowzInfiniteScroll() {
+export function useToolGlowsInfiniteScroll() {
   const isEnabled = ref(false)
   const options = ref<InfiniteScrollOptions>({
     threshold: 400,
@@ -25,4 +25,4 @@ export function useToolflowzInfiniteScroll() {
     options,
     updateOptions
   }
-} 
+}

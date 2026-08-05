@@ -1,18 +1,18 @@
 /**
  * Element Selector Composable
- * 
+ *
  * Provides a point-and-click interface for selecting DOM elements on a page.
  * Similar to browser DevTools element picker, used for features like:
  * - Element hiding tool
  * - Custom CSS injection targets
  * - Data scraping selectors
- * 
+ *
  * User experience:
  * 1. Call startSelecting() to enable selection mode
  * 2. Hover over elements to see visual highlight
  * 3. Click to select an element
  * 4. Press Escape to cancel
- * 
+ *
  * Key features:
  * - Visual feedback with hover and selection states
  * - Excludes extension's own UI elements to prevent conflicts
@@ -33,7 +33,7 @@ export function useElementSelector(options: ElementSelectorOptions = {}) {
   const {
     highlightColor = 'rgba(255, 0, 0, 0.2)',
     hoverColor = 'rgba(255, 165, 0, 0.3)',
-    excludeSelector = '.toolflowz-bar, [data-component="toolflowz-tool"]',
+    excludeSelector = '.toolglows-bar, [data-component="toolglows-tool"]',
     onElementSelect = () => {},
     onElementHover = () => {}
   } = options
@@ -48,13 +48,13 @@ export function useElementSelector(options: ElementSelectorOptions = {}) {
    * to prevent selecting extension UI or nested elements within it.
    */
   const isElementExcluded = (element: HTMLElement): boolean => {
-    return element.matches(excludeSelector) || 
+    return element.matches(excludeSelector) ||
            element.closest(excludeSelector) !== null
   }
 
   /**
    * Restores element's original inline styles
-   * 
+   *
    * Why use data attributes: We modify element.style (inline styles) for
    * immediate visual feedback. Must restore original values to avoid
    * permanently breaking page styling. Data attributes provide reliable
@@ -192,4 +192,4 @@ export function useElementSelector(options: ElementSelectorOptions = {}) {
     startSelecting,
     stopSelecting
   }
-} 
+}

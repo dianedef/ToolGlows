@@ -9,31 +9,31 @@
     :maximizable="true"
     @hide="closeDialog"
   >
-    <div class="toolflowz-gmail-options">
-      <div class="toolflowz-field mb-3">
+    <div class="toolglows-gmail-options">
+      <div class="toolglows-field mb-3">
         <h4>Labels</h4>
-        <div class="toolflowz-labels-list">
+        <div class="toolglows-labels-list">
           <div
             v-for="label in gmailStore.options.labels"
             :key="label.id"
-            class="toolflowz-label-item"
+            class="toolglows-label-item"
           >
-            <div class="toolflowz-label-info">
+            <div class="toolglows-label-info">
               <span
-                class="toolflowz-label-color"
+                class="toolglows-label-color"
                 :style="{ backgroundColor: label.color }"
               />
-              <div class="toolflowz-label-details">
-                <span class="toolflowz-label-name">{{ label.name }}</span>
+              <div class="toolglows-label-details">
+                <span class="toolglows-label-name">{{ label.name }}</span>
                 <small
                   v-if="label.shortcut"
-                  class="toolflowz-label-shortcut"
+                  class="toolglows-label-shortcut"
                 >
                   {{ label.shortcut }}
                 </small>
               </div>
             </div>
-            <div class="toolflowz-label-actions">
+            <div class="toolglows-label-actions">
               <Button
                 icon="pi pi-pencil"
                 text
@@ -57,9 +57,9 @@
         </div>
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Options générales</h4>
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="gmailStore.options.autoArchive"
             :binary="true"
@@ -68,7 +68,7 @@
           <label>Archivage automatique</label>
         </div>
 
-        <div class="toolflowz-field-slider mb-2">
+        <div class="toolglows-field-slider mb-2">
           <label>Délai d'archivage (secondes)</label>
           <Slider
             v-model="gmailStore.options.archiveDelay"
@@ -80,7 +80,7 @@
           <small>{{ gmailStore.options.archiveDelay }} secondes</small>
         </div>
 
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="gmailStore.options.showUnreadCount"
             :binary="true"
@@ -89,7 +89,7 @@
           <label>Afficher le nombre de messages non lus</label>
         </div>
 
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="gmailStore.options.showPreview"
             :binary="true"
@@ -98,7 +98,7 @@
           <label>Afficher l'aperçu des messages</label>
         </div>
 
-        <div class="toolflowz-field-dropdown mb-2">
+        <div class="toolglows-field-dropdown mb-2">
           <label>Position de l'aperçu</label>
           <Dropdown
             v-model="gmailStore.options.previewPosition"
@@ -111,19 +111,19 @@
         </div>
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Raccourcis clavier</h4>
-        <div class="toolflowz-shortcuts-list">
+        <div class="toolglows-shortcuts-list">
           <div
             v-for="shortcut in gmailStore.options.customKeyboardShortcuts"
             :key="shortcut.id"
-            class="toolflowz-shortcut-item"
+            class="toolglows-shortcut-item"
           >
-            <div class="toolflowz-shortcut-info">
-              <span class="toolflowz-shortcut-name">{{ shortcut.name }}</span>
-              <code class="toolflowz-shortcut-key">{{ shortcut.key }}</code>
+            <div class="toolglows-shortcut-info">
+              <span class="toolglows-shortcut-name">{{ shortcut.name }}</span>
+              <code class="toolglows-shortcut-key">{{ shortcut.key }}</code>
             </div>
-            <div class="toolflowz-shortcut-actions">
+            <div class="toolglows-shortcut-actions">
               <Button
                 icon="pi pi-pencil"
                 text
@@ -147,27 +147,27 @@
         </div>
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Filtres</h4>
-        <div class="toolflowz-filters-list">
+        <div class="toolglows-filters-list">
           <div
             v-for="filter in gmailStore.options.filters"
             :key="filter.id"
-            class="toolflowz-filter-item"
+            class="toolglows-filter-item"
           >
-            <div class="toolflowz-filter-info">
-              <span class="toolflowz-filter-name">{{ filter.name }}</span>
-              <div class="toolflowz-filter-conditions">
+            <div class="toolglows-filter-info">
+              <span class="toolglows-filter-name">{{ filter.name }}</span>
+              <div class="toolglows-filter-conditions">
                 <small
                   v-for="(condition, index) in filter.conditions"
                   :key="index"
-                  class="toolflowz-filter-condition"
+                  class="toolglows-filter-condition"
                 >
                   {{ condition.field }} {{ condition.operator }} "{{ condition.value }}"
                 </small>
               </div>
             </div>
-            <div class="toolflowz-filter-actions">
+            <div class="toolglows-filter-actions">
               <Button
                 icon="pi pi-pencil"
                 text
@@ -191,9 +191,9 @@
         </div>
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Options de composition</h4>
-        <div class="toolflowz-field-input mb-2">
+        <div class="toolglows-field-input mb-2">
           <label>Signature</label>
           <Textarea
             v-model="gmailStore.options.composeDefaults.signature"
@@ -203,7 +203,7 @@
           />
         </div>
 
-        <div class="toolflowz-field-dropdown mb-2">
+        <div class="toolglows-field-dropdown mb-2">
           <label>Police</label>
           <Dropdown
             v-model="gmailStore.options.composeDefaults.font"
@@ -213,7 +213,7 @@
           />
         </div>
 
-        <div class="toolflowz-field-spinner mb-2">
+        <div class="toolglows-field-spinner mb-2">
           <label>Taille de police</label>
           <InputNumber
             v-model="gmailStore.options.composeDefaults.fontSize"
@@ -223,7 +223,7 @@
           />
         </div>
 
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="gmailStore.options.composeDefaults.spellCheck"
             :binary="true"
@@ -232,7 +232,7 @@
           <label>Vérification orthographique</label>
         </div>
 
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="gmailStore.options.composeDefaults.confirmationBeforeSend"
             :binary="true"
@@ -342,7 +342,7 @@
         <div
           v-for="(condition, index) in newFilter.conditions"
           :key="index"
-          class="toolflowz-condition-row"
+          class="toolglows-condition-row"
         >
           <Dropdown
             v-model="condition.field"
@@ -382,7 +382,7 @@
         <div
           v-for="(action, index) in newFilter.actions"
           :key="index"
-          class="toolflowz-action-row"
+          class="toolglows-action-row"
         >
           <Dropdown
             v-model="action.type"
@@ -615,30 +615,30 @@ const closeDialog = () => {
 </script>
 
 <style scoped>
-.toolflowz-gmail-options {
+.toolglows-gmail-options {
   padding: 1rem;
 }
 
-.toolflowz-field {
+.toolglows-field {
   margin-bottom: 1.5rem;
 }
 
-.toolflowz-field h4 {
+.toolglows-field h4 {
   margin-bottom: 0.5rem;
   color: var(--text-color);
 }
 
-.toolflowz-labels-list,
-.toolflowz-shortcuts-list,
-.toolflowz-filters-list {
+.toolglows-labels-list,
+.toolglows-shortcuts-list,
+.toolglows-filters-list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.toolflowz-label-item,
-.toolflowz-shortcut-item,
-.toolflowz-filter-item {
+.toolglows-label-item,
+.toolglows-shortcut-item,
+.toolglows-filter-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -648,80 +648,80 @@ const closeDialog = () => {
   border: 1px solid var(--surface-border);
 }
 
-.toolflowz-label-info,
-.toolflowz-shortcut-info,
-.toolflowz-filter-info {
+.toolglows-label-info,
+.toolglows-shortcut-info,
+.toolglows-filter-info {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.toolflowz-label-color {
+.toolglows-label-color {
   width: 1rem;
   height: 1rem;
   border-radius: 50%;
 }
 
-.toolflowz-label-details,
-.toolflowz-filter-details {
+.toolglows-label-details,
+.toolglows-filter-details {
   display: flex;
   flex-direction: column;
 }
 
-.toolflowz-label-name,
-.toolflowz-shortcut-name,
-.toolflowz-filter-name {
+.toolglows-label-name,
+.toolglows-shortcut-name,
+.toolglows-filter-name {
   font-weight: 500;
 }
 
-.toolflowz-label-shortcut,
-.toolflowz-filter-conditions {
+.toolglows-label-shortcut,
+.toolglows-filter-conditions {
   font-size: 0.875rem;
   color: var(--text-color-secondary);
 }
 
-.toolflowz-label-actions,
-.toolflowz-shortcut-actions,
-.toolflowz-filter-actions {
+.toolglows-label-actions,
+.toolglows-shortcut-actions,
+.toolglows-filter-actions {
   display: flex;
   gap: 0.25rem;
 }
 
-.toolflowz-field-checkbox {
+.toolglows-field-checkbox {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.toolflowz-field-slider {
+.toolglows-field-slider {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.toolflowz-field-slider label,
-.toolflowz-field-input label,
-.toolflowz-field-dropdown label,
-.toolflowz-field-spinner label {
+.toolglows-field-slider label,
+.toolglows-field-input label,
+.toolglows-field-dropdown label,
+.toolglows-field-spinner label {
   font-size: 0.875rem;
   color: var(--text-color);
   margin-bottom: 0.25rem;
 }
 
-.toolflowz-field-slider small {
+.toolglows-field-slider small {
   color: var(--text-color-secondary);
   text-align: center;
 }
 
-.toolflowz-field-input,
-.toolflowz-field-dropdown,
-.toolflowz-field-spinner {
+.toolglows-field-input,
+.toolglows-field-dropdown,
+.toolglows-field-spinner {
   display: flex;
   flex-direction: column;
   margin-bottom: 0.5rem;
 }
 
-.toolflowz-shortcut-key {
+.toolglows-shortcut-key {
   font-family: monospace;
   padding: 0.25rem 0.5rem;
   background: var(--surface-ground);
@@ -729,24 +729,24 @@ const closeDialog = () => {
   font-size: 0.875rem;
 }
 
-.toolflowz-condition-row,
-.toolflowz-action-row {
+.toolglows-condition-row,
+.toolglows-action-row {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
   align-items: center;
 }
 
-.toolflowz-filter-conditions {
+.toolglows-filter-conditions {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.toolflowz-filter-condition {
+.toolglows-filter-condition {
   font-family: monospace;
   padding: 0.125rem 0.25rem;
   background: var(--surface-ground);
   border-radius: 4px;
 }
-</style> 
+</style>

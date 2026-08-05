@@ -1,13 +1,8 @@
 {
   "mcpServers": {
-    "codebase": {
-      "command": "python3",
-      "args": ["/home/ubuntu/shipflow/tools/codebase-mcp/server.py", "/home/ubuntu/ext---toolflowz"]
-    },
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"]
     }
-  },
-  "disabledMcpServers": ["codebase"]
+  }
 }

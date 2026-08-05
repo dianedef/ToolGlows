@@ -1,12 +1,12 @@
 /**
  * Background Script - Extension Service Worker
- * 
+ *
  * This is the persistent background service worker that manages:
  * - Cross-tab communication and settings synchronization
  * - Extension lifecycle events (install/update)
  * - Dark mode CSS injection across all tabs
  * - Global state management for the extension
- * 
+ *
  * Architecture Note: Uses webext-bridge for type-safe message passing
  * between background, content scripts, and popup contexts.
  */
@@ -69,7 +69,7 @@ console.log('[BACKGROUND] 🚀 Background script started', { globalState })
 
 /**
  * Chrome Keep-Alive Mechanism
- * 
+ *
  * In Manifest V3, service workers can be terminated after 30 seconds of inactivity.
  * This listener keeps the background script alive by maintaining port connections.
  * Critical for extensions that need to maintain state or respond quickly to events.
@@ -82,11 +82,11 @@ if (typeof chrome !== 'undefined' && chrome.runtime?.onConnect) {
 
 /**
  * Extension Lifecycle Event Handler
- * 
+ *
  * Handles onboarding and update flows:
  * - On first install: Clears any stale data and shows welcome page
  * - On update: Shows changelog/update notes to user
- * 
+ *
  * Why clear storage on install: Ensures clean state if extension was
  * previously installed, avoiding conflicts from old data structures.
  */
@@ -115,15 +115,15 @@ chrome.runtime.onInstalled.addListener(async (opt) => {
 
 /**
  * Cross-Tab Settings Synchronization
- * 
+ *
  * Broadcasts settings changes to all open tabs except the source tab.
  * This ensures that when a user changes settings in one tab, all other
  * tabs with the extension toolbar immediately reflect those changes.
- * 
+ *
  * @param type - Message type identifier for webext-bridge routing
  * @param data - Payload containing settings or tools data
  * @param sourceTabId - Tab that initiated the change (excluded from broadcast)
- * 
+ *
  * Design decisions:
  * - Uses Promise.allSettled to avoid one tab failure blocking others
  * - Filters out chrome:// and extension:// URLs (handled by query pattern)
@@ -166,15 +166,15 @@ const broadcastToOtherTabs = async (type: string, data: MessageData, sourceTabId
 
 /**
  * SETTINGS_UPDATED Message Handler
- * 
+ *
  * Central handler for settings changes from any content script.
  * Implements the complete settings synchronization flow:
- * 
+ *
  * 1. Validates and normalizes incoming settings data
  * 2. Updates background script's in-memory state
  * 3. Persists to chrome.storage.sync (auto-syncs across devices)
  * 4. Broadcasts to all other tabs twice for reliability
- * 
+ *
  * Why double broadcast: Content scripts may not be fully initialized
  * when the first broadcast arrives. The delayed second broadcast catches
  * any tabs that were in the process of loading their content scripts.
@@ -185,32 +185,32 @@ onMessage('SETTINGS_UPDATED', async ({ data, sender }) => {
     if (!messageData?.settings) return
 
     const sourceTabId = sender.tabId
-    
+
     // Normalize activeTools to array if received as object (compatibility fix)
     const settings = messageData.settings
     if (!Array.isArray(settings.activeTools)) {
       settings.activeTools = Object.values(settings.activeTools || {})
     }
-    
+
     // Update global state for immediate availability
     globalState.settings = settings
 
     // Persist to sync storage (survives browser restarts, syncs across devices)
-    await chrome.storage.sync.set({ 
-      toolflowzSettings: settings 
+    await chrome.storage.sync.set({
+      toolglowsSettings: settings
     })
 
     console.log('[BACKGROUND] 💾 Settings saved:', settings)
 
     // Immediate broadcast to responsive tabs
-    await broadcastToOtherTabs('SETTINGS_SYNC', { 
-      settings: settings 
+    await broadcastToOtherTabs('SETTINGS_SYNC', {
+      settings: settings
     }, sourceTabId)
 
     // Delayed broadcast to catch tabs that were loading
     setTimeout(async () => {
-      await broadcastToOtherTabs('SETTINGS_SYNC', { 
-        settings: settings 
+      await broadcastToOtherTabs('SETTINGS_SYNC', {
+        settings: settings
       }, sourceTabId)
     }, 500)
   } catch (error) {
@@ -222,32 +222,32 @@ onMessage('TOOLS_UPDATED', async ({ data, sender }) => {
   try {
     const messageData = data as MessageData
     if (!messageData?.tools) return
-    
+
     const sourceTabId = sender.tabId
-    
+
     // Récupérer les settings actuels
-    const result = await chrome.storage.sync.get('toolflowzSettings')
-    const currentSettings = result.toolflowzSettings || {}
-    
+    const result = await chrome.storage.sync.get('toolglowsSettings')
+    const currentSettings = result.toolglowsSettings || {}
+
     // S'assurer que tools est un tableau
-    const tools = Array.isArray(messageData.tools) ? 
-      messageData.tools : 
+    const tools = Array.isArray(messageData.tools) ?
+      messageData.tools :
       Object.values(messageData.tools)
-    
+
     // Mettre à jour uniquement activeTools
     const updatedSettings = {
       ...currentSettings,
       activeTools: tools
     }
-    
+
     // Sauvegarder les settings complets
-    await chrome.storage.sync.set({ 
-      toolflowzSettings: updatedSettings 
+    await chrome.storage.sync.set({
+      toolglowsSettings: updatedSettings
     })
-    
+
     // Broadcast aux autres onglets
-    await broadcastToOtherTabs('SETTINGS_SYNC', { 
-      settings: updatedSettings 
+    await broadcastToOtherTabs('SETTINGS_SYNC', {
+      settings: updatedSettings
     }, sourceTabId)
   } catch (error) {
     console.error('[ERROR] Tools update error:', error)
@@ -257,8 +257,8 @@ onMessage('TOOLS_UPDATED', async ({ data, sender }) => {
 onMessage('GET_INITIAL_STATE', async () => {
   try {
     // Récupérer l'état depuis le storage
-    const result = await chrome.storage.sync.get('toolflowzSettings')
-    return { settings: result.toolflowzSettings }
+    const result = await chrome.storage.sync.get('toolglowsSettings')
+    return { settings: result.toolglowsSettings }
   } catch (error) {
     console.error('[ERROR] Failed to get initial state:', error)
     return { settings: null }

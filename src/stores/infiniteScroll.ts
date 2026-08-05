@@ -7,7 +7,7 @@ interface InfiniteScrollOptions {
   maxPages: number
 }
 
-export const useToolflowzInfiniteScrollStore = defineStore('infiniteScroll', {
+export const useToolGlowsInfiniteScrollStore = defineStore('infiniteScroll', {
   state: () => ({
     options: {
       threshold: 400,
@@ -51,4 +51,4 @@ export const useToolflowzInfiniteScrollStore = defineStore('infiniteScroll', {
 })
 
 // Pour la rétrocompatibilité, on garde l'ancien nom
-export const useInfiniteScrollStore = useToolflowzInfiniteScrollStore 
+export const useInfiniteScrollStore = useToolGlowsInfiniteScrollStore

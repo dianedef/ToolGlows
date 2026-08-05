@@ -1,10 +1,10 @@
 /**
  * Reader Mode Composable
- * 
+ *
  * Converts cluttered web pages into clean, readable articles similar to
  * Safari Reader View or Firefox Reading Mode. Uses Mozilla's Readability
  * algorithm to extract main content and strip ads, sidebars, and navigation.
- * 
+ *
  * Key features:
  * - Content extraction: Identifies and isolates main article text
  * - Customizable typography: Font size, family, line height, alignment
@@ -12,13 +12,13 @@
  * - Bionic reading: Bolds first half of words for faster reading
  * - Responsive layout: Adjustable width and column count
  * - Link visibility: Option to display full URLs for accessibility
- * 
+ *
  * Technical approach:
  * - Uses Mozilla's Readability library (same as Firefox Reader Mode)
  * - Fallback parsing for sites where Readability fails
  * - Replaces entire page content with cleaned version
  * - Stores original HTML for restoration
- * 
+ *
  * Use cases:
  * - Reading articles without distractions
  * - Improving readability on poorly designed sites
@@ -283,8 +283,8 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
 
     // Créer le conteneur du mode lecture
     const readerContent = document.createElement('div')
-    readerContent.id = 'toolflowz-reader-mode'
-    
+    readerContent.id = 'toolglows-reader-mode'
+
     // Appliquer les styles de base
     applyReaderStyles(readerContent)
 
@@ -330,18 +330,18 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
 
   /**
    * Apply Bionic Reading Enhancement
-   * 
+   *
    * Bolds the first half of each word to guide eye movement and increase
    * reading speed. Based on research showing that the brain processes the
    * beginning of words more heavily than the end.
-   * 
+   *
    * Algorithm:
    * 1. Find all text nodes in document using XPath
    * 2. Skip code blocks (pre, code) to preserve formatting
    * 3. Split text into words
    * 4. Bold first half of each word (rounded up for odd lengths)
    * 5. Replace original text node with formatted version
-   * 
+   *
    * Performance note: XPath evaluation is fast for this use case and
    * provides cleaner results than TreeWalker or manual recursion.
    */
@@ -386,7 +386,7 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
   const applyReaderStyles = (container: HTMLElement) => {
     const style = document.createElement('style')
     style.textContent = `
-      #toolflowz-reader-mode {
+      #toolglows-reader-mode {
         max-width: ${getWidthValue()};
         margin: 0 auto;
         padding: 2rem;
@@ -400,23 +400,23 @@ export function useReaderMode(options: ReaderModeOptions = {}) {
         color: ${getThemeColors().text};
       }
 
-      #toolflowz-reader-mode .link-url {
+      #toolglows-reader-mode .link-url {
         color: ${getThemeColors().secondary};
         font-size: 0.9em;
         font-style: italic;
       }
 
-      #toolflowz-reader-mode img {
+      #toolglows-reader-mode img {
         ${settings.value.imageSize === 'small' ? 'max-width: 300px;' : ''}
         ${settings.value.imageSize === 'hidden' ? 'display: none;' : ''}
       }
 
-      #toolflowz-reader-mode h1 {
+      #toolglows-reader-mode h1 {
         font-size: 2em;
         margin-bottom: 1rem;
       }
 
-      #toolflowz-reader-mode .byline {
+      #toolglows-reader-mode .byline {
         font-style: italic;
         color: ${getThemeColors().secondary};
       }

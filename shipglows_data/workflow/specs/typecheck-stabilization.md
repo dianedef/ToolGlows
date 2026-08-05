@@ -1,17 +1,18 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
-project: "ext---toolflowz"
+artifact_version: "1.0.0"
+project: "toolglows"
 created: "2026-05-04"
 created_at: "2026-05-04 05:30:29 UTC"
 updated: "2026-05-04"
 updated_at: "2026-05-04 05:33:59 UTC"
-status: shipped
+status: reviewed
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "bug"
 owner: "operator"
+confidence: high
 user_story: "As the browser-extension maintainer, I want `pnpm run typecheck` to pass without weakening runtime behavior, so dependency-security closure is not blocked by stale TypeScript errors."
 risk_level: "medium"
 security_impact: "none"
@@ -24,7 +25,7 @@ linked_systems:
   - "src/stores"
   - "src/types"
 depends_on:
-  - artifact: "specs/dependency-security-second-pass.md"
+  - artifact: "shipglows_data/workflow/specs/dependency-security-second-pass.md"
     artifact_version: "0.1.0"
     required_status: "shipped"
 supersedes: []
@@ -110,7 +111,7 @@ Apply targeted, mechanical TypeScript corrections: initialize optional state use
 
 # Documentation Coherence
 
-No user-facing documentation changes are expected. If validation commands or workflow claims change, update `docs/developer-guide.md` and `docs/technical/code-docs-map.md`.
+No user-facing documentation changes are expected. If validation commands or workflow claims change, update `shipglows_data/technical/developer-guide.md` and `shipglows_data/technical/code-docs-map.md`.
 
 # Edge Cases
 

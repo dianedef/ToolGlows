@@ -11,9 +11,9 @@ const [major, minor, patch, label = "0"] = version
   .split(/[.-]/)
 
 export default {
-  author: "mubaidr@gmail.com",
-  name: env.mode === "staging" ? `[INTERNAL] ToolFlowz V2` : "ToolFlowz V2",
-  description: "ToolFlowz - Version 2 (Nouvelle interface)",
+  author: "ToolGlows",
+  name: env.mode === "staging" ? `[INTERNAL] ToolGlows` : "ToolGlows",
+  description: "ToolGlows - vos outils essentiels directement dans chaque page web",
   // up to four numbers separated by dots
   version: `${major}.${minor}.${patch}.${label}`,
   // semver is OK in "version_name"

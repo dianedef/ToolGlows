@@ -1,7 +1,7 @@
-<Dialog 
+<Dialog
   v-model:visible="visible"
   :modal="true"
-  class="toolflowz-settings-dialog"
+  class="toolglows-settings-dialog"
   :style="{ width: '500px' }"
   position="right"
 >
@@ -12,7 +12,7 @@
     </div>
   </template>
 
-  <div class="toolflowz-settings-content">
+  <div class="toolglows-settings-content">
     <!-- ... rest of the content ... -->
   </div>
 </Dialog>
@@ -26,7 +26,7 @@ import ThemeSwatch from './ThemeSwatch.vue'
 </script>
 
 <style scoped>
-.toolflowz-settings-dialog {
+.toolglows-settings-dialog {
   :deep(.p-dialog-header) {
     padding: 1rem;
   }
@@ -37,7 +37,7 @@ import ThemeSwatch from './ThemeSwatch.vue'
     align-items: center;
     width: 100%;
     min-height: 40px;
-    
+
     h3 {
       margin: 0;
       font-size: 1.25rem;
@@ -53,4 +53,4 @@ import ThemeSwatch from './ThemeSwatch.vue'
     }
   }
 }
-</style> 
+</style>

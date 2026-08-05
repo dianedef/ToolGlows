@@ -1,17 +1,18 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
-project: "ext---toolflowz"
+artifact_version: "1.0.0"
+project: "toolglows"
 created: "2026-05-03"
 created_at: "2026-05-03 20:10:08 UTC"
 updated: "2026-05-04"
 updated_at: "2026-05-04 05:26:25 UTC"
-status: shipped
+status: reviewed
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "audit-fix"
 owner: "operator"
+confidence: high
 user_story: "As the browser-extension maintainer, I want the remaining dependency security advisories reduced to no critical or high findings without breaking Chrome and Firefox builds, so the extension can move toward a shippable dependency baseline."
 risk_level: "high"
 security_impact: "yes"
@@ -28,11 +29,11 @@ linked_systems:
   - "Vitest/jsdom test tooling"
   - "web-ext packaging/lint tooling"
   - "README.md"
-  - "docs/developer-guide.md"
-  - "docs/architecture.md"
-  - "docs/technical/code-docs-map.md"
-  - "CONTENT_MAP.md"
-  - "docs/editorial/README.md"
+  - "shipglows_data/technical/developer-guide.md"
+  - "shipglows_data/technical/architecture.md"
+  - "shipglows_data/technical/code-docs-map.md"
+  - "shipglows_data/editorial/content-map.md"
+  - "shipglows_data/editorial/README.md"
 depends_on:
   - artifact: "package.json"
     artifact_version: "0.0.1"
@@ -46,10 +47,10 @@ depends_on:
   - artifact: "README.md"
     artifact_version: "unknown"
     required_status: "unknown"
-  - artifact: "docs/architecture.md"
+  - artifact: "shipglows_data/technical/architecture.md"
     artifact_version: "unknown"
     required_status: "unknown"
-  - artifact: "docs/developer-guide.md"
+  - artifact: "shipglows_data/technical/developer-guide.md"
     artifact_version: "unknown"
     required_status: "unknown"
 supersedes: []
@@ -109,7 +110,7 @@ Run a staged dependency-security remediation focused on critical/high advisories
 - Add package-manager/runtime governance in `package.json`, including `packageManager: "pnpm@10.33.2"` and an explicit Node engine compatible with the documented toolchain.
 - Preserve `.npmrc` install-policy settings unless a dependency change proves they are unsafe.
 - Allow bounded major migrations needed for critical/high remediation, currently including `vitest`, `web-ext`, `jsdom`, `@formkit/vue`, `@formkit/themes`, and Tailwind-related packages.
-- Bootstrap minimal ShipFlow governance files required by `sf-build`: `docs/technical/`, `docs/technical/code-docs-map.md`, `CONTENT_MAP.md`, and `docs/editorial/`.
+- Bootstrap minimal ShipFlow governance files required by `sf-build`: `shipglows_data/technical/`, `shipglows_data/technical/code-docs-map.md`, `shipglows_data/editorial/content-map.md`, and `shipglows_data/editorial/`.
 - Preserve the existing Chrome and Firefox production build commands.
 - Update README and technical docs when dependency versions, required Node/pnpm version, or validation commands materially change.
 
@@ -184,7 +185,7 @@ Run a staged dependency-security remediation focused on critical/high advisories
 - `notivue` and `@formkit/themes` are runtime dependencies; production audit findings through their transitive paths must be treated as user-facing security posture, even if the vulnerable code is not obviously called by product flows.
 - FormKit usage is limited to `src/ui/options/pages/index.vue` and `src/ui/options-page/pages/index.vue`; if FormKit 2 is required, migration validation must cover those pages through build output and typecheck.
 - `vitest`, `jsdom`, and `@playwright/test` are dev/test dependencies; they affect CI, local validation, and source exposure through dev servers but should not be framed as production runtime exposure.
-- `docs/technical/code-docs-map.md`, `CONTENT_MAP.md`, and `docs/editorial/` are governance files required by `sf-build`; keep bootstrap content minimal and factual.
+- `shipglows_data/technical/code-docs-map.md`, `shipglows_data/editorial/content-map.md`, and `shipglows_data/editorial/` are governance files required by `sf-build`; keep bootstrap content minimal and factual.
 - README and docs currently mention Vite, Vitest, Playwright, pnpm, Notivue, FormKit, and dependency/version expectations; docs must be aligned if required versions or workflows change.
 
 # Documentation Coherence
@@ -192,10 +193,10 @@ Run a staged dependency-security remediation focused on critical/high advisories
 Update docs only when the dependency contract changes. Required checks:
 
 - `README.md`: update package-manager setup if `packageManager` and Node engine are added; update listed commands only if scripts change.
-- `docs/developer-guide.md`: update prerequisites if Node or pnpm version requirements change; keep `pnpm install`, `pnpm build`, and validation instructions aligned.
-- `docs/architecture.md`: update dependency/version references for Vite, Vitest, Playwright, and build plugins if any direct versions materially change.
-- `docs/project-brief.md` and `docs/prd.md`: update only if major stack positioning changes, such as removing a named tool or moving to a new major framework.
-- `docs/technical/code-docs-map.md`, `docs/technical/README.md`, `CONTENT_MAP.md`, and `docs/editorial/README.md`: create or update minimal governance coverage for this dependency-security chantier.
+- `shipglows_data/technical/developer-guide.md`: update prerequisites if Node or pnpm version requirements change; keep `pnpm install`, `pnpm build`, and validation instructions aligned.
+- `shipglows_data/technical/architecture.md`: update dependency/version references for Vite, Vitest, Playwright, and build plugins if any direct versions materially change.
+- `shipglows_data/business/project-brief.md` and `shipglows_data/business/product.md`: update only if major stack positioning changes, such as removing a named tool or moving to a new major framework.
+- `shipglows_data/technical/code-docs-map.md`, `shipglows_data/technical/README.md`, `shipglows_data/editorial/content-map.md`, and `shipglows_data/editorial/README.md`: create or update minimal governance coverage for this dependency-security chantier.
 - No public marketing or pricing copy is impacted by this dependency-only chantier.
 
 # Edge Cases
@@ -218,7 +219,7 @@ Update docs only when the dependency contract changes. Required checks:
   - User story link: Confirms the maintainer is fixing the actual current advisory set.
   - Depends on: None
   - Validate with: Baseline report lists full and prod counts plus direct/transitive package paths.
-  - Notes: Do not edit `TASKS.md` or `AUDIT_LOG.md` from this spec.
+  - Notes: Do not edit `TASKS.md` or `shipglows_data/workflow/AUDIT_LOG.md` from this spec.
 
 - [x] Task 2: Add dependency governance
   - File: `package.json`
@@ -269,11 +270,11 @@ Update docs only when the dependency contract changes. Required checks:
   - Notes: Do not add audit ignores for unfixable findings unless the operator explicitly accepts the risk.
 
 - [x] Task 8: Update documentation for changed dependency contract
-  - File: `README.md`, `docs/developer-guide.md`, `docs/architecture.md`, optionally `docs/project-brief.md` and `docs/prd.md`
+  - File: `README.md`, `shipglows_data/technical/developer-guide.md`, `shipglows_data/technical/architecture.md`, optionally `shipglows_data/business/project-brief.md` and `shipglows_data/business/product.md`
   - Action: Update prerequisites, package-manager notes, dependency version references, and validation commands only where the implementation changed them.
   - User story link: Keeps future maintainers aligned with the secured dependency baseline.
   - Depends on: Tasks 2-7
-  - Validate with: `rg -n "Vitest|Playwright|Vite|pnpm|Node|dependencies|unplugin-turbo-console|unplugin-imagemin" README.md docs/*.md`
+  - Validate with: `rg -n "Vitest|Playwright|Vite|pnpm|Node|dependencies|unplugin-turbo-console|unplugin-imagemin" README.md shipglows_data/technical/*.md`
   - Notes: Avoid broad docs rewriting; keep changes factual and tied to package changes.
 
 - [x] Task 9: Run final validation and report ship gate
@@ -308,8 +309,8 @@ Update docs only when the dependency contract changes. Required checks:
 - Run `pnpm run build` as the final combined build command.
 - Run `pnpm run lint:manifest` to verify extension manifests if `web-ext` or browser manifest build output changes.
 - Run `pnpm run typecheck` and classify failures as pre-existing or newly introduced.
-- Inspect `git diff -- package.json pnpm-lock.yaml vite.config.ts README.md docs/architecture.md docs/developer-guide.md` before final report.
-- Inspect `git diff -- .npmrc docs/technical CONTENT_MAP.md docs/editorial` before final report when governance or package-manager surfaces are touched.
+- Inspect `git diff -- package.json pnpm-lock.yaml vite.config.ts README.md shipglows_data/technical/architecture.md shipglows_data/technical/developer-guide.md` before final report.
+- Inspect `git diff -- .npmrc shipglows_data/technical shipglows_data/editorial` before final report when governance or package-manager surfaces are touched.
 
 # Risks
 
@@ -330,10 +331,10 @@ Update docs only when the dependency contract changes. Required checks:
   - `vite.firefox.config.ts`
   - `.npmrc`
   - `README.md`
-  - `docs/developer-guide.md`
-  - `docs/architecture.md`
-  - `docs/technical/code-docs-map.md` if present after bootstrap
-  - `CONTENT_MAP.md` if present after bootstrap
+  - `shipglows_data/technical/developer-guide.md`
+  - `shipglows_data/technical/architecture.md`
+  - `shipglows_data/technical/code-docs-map.md` if present after bootstrap
+  - `shipglows_data/editorial/content-map.md` if present after bootstrap
 - Implementation order:
   1. Capture fresh audit/why/outdated evidence.
   2. Add governance fields.

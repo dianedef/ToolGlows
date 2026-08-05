@@ -1,5 +1,5 @@
 # System Architecture Document
-# ToolFlowz Browser Extension Framework
+# ToolGlows Browser Extension Framework
 
 **Version**: 1.0
 **Date**: 2025-12-16
@@ -12,7 +12,7 @@
 
 ### 1.1 System Context
 
-ToolFlowz is a browser extension framework that operates within the browser environment, utilizing multiple isolated contexts (background, content scripts, popup, etc.) that communicate via browser extension APIs.
+ToolGlows is a browser extension framework that operates within the browser environment, utilizing multiple isolated contexts (background, content scripts, popup, etc.) that communicate via browser extension APIs.
 
 ```
 ┌─────────────────────────────────────────────────────────┐

@@ -1,11 +1,11 @@
 import { ref, onMounted, onUnmounted, inject } from 'vue'
 import { useAutoCopyStore } from '@/stores/autoCopy'
-import { useToolflowzStore } from '@/stores/toolflowz'
+import { useToolGlowsStore } from '@/stores/toolglows'
 import { useToast } from 'primevue/usetoast'
 
 export function useAutoCopy() {
   const store = useAutoCopyStore()
-  const toolflowzStore = useToolflowzStore()
+  const toolglowsStore = useToolGlowsStore()
   const toast = useToast()
   const isCopying = ref(false)
   const isAltMode = ref(false)
@@ -94,10 +94,10 @@ export function useAutoCopy() {
       textarea.style.opacity = '0'
       document.body.appendChild(textarea)
       textarea.select()
-      
+
       const success = document.execCommand('copy')
       document.body.removeChild(textarea)
-      
+
       if (success) {
         return true
       } else {
@@ -113,8 +113,8 @@ export function useAutoCopy() {
   // Function to check if an element should be excluded from the copy
   const isElementExcluded = (element: HTMLElement): boolean => {
     // Check if the element or one of its parents matches the exclusion selectors
-    const isExcluded = element.matches('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') ||
-                      element.closest('#toolflowz-extension, .toolflowz-extension, [id^="toolflowz-"], [class*="toolflowz-"], [class*="p-"], .p-component, [class*="primevue-"]') !== null
+    const isExcluded = element.matches('#toolglows-extension, .toolglows-extension, [id^="toolglows-"], [class*="toolglows-"], [class*="p-"], .p-component, [class*="primevue-"]') ||
+                      element.closest('#toolglows-extension, .toolglows-extension, [id^="toolglows-"], [class*="toolglows-"], [class*="p-"], .p-component, [class*="primevue-"]') !== null
     return isExcluded
   }
 
@@ -127,7 +127,7 @@ export function useAutoCopy() {
     const range = selection.getRangeAt(0)
     const container = range.commonAncestorContainer
     const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : container as HTMLElement
-    
+
     if (!element || isElementExcluded(element)) {
       console.log('[DEBUG] Selection in an excluded element, copy ignored')
       return
@@ -142,9 +142,9 @@ export function useAutoCopy() {
     try {
       const formattedText = formatText(text)
       console.log('[DEBUG] Formatted text:', formattedText)
-      
+
       const success = await copyToClipboard(formattedText)
-      
+
       if (success) {
         console.log('[DEBUG] Text copied successfully')
         if (store.settings.showNotifications) {
@@ -170,9 +170,9 @@ export function useAutoCopy() {
 
   // Keyboard shortcut handler
   const handleShortcut = (event: KeyboardEvent) => {
-    if (!toolflowzStore.activeTools.includes('autoCopy')) return
+    if (!toolglowsStore.activeTools.includes('autoCopy')) return
 
-    const format = Array.isArray(store.settings.formats) 
+    const format = Array.isArray(store.settings.formats)
       ? store.settings.formats.find(f => {
           if (!f.shortcut) return false
           const keys = f.shortcut.toLowerCase().split('+')
@@ -196,7 +196,7 @@ export function useAutoCopy() {
   // Function to enable ALT mode with delay
   const enableAltMode = () => {
     if (!store.settings.enableAltSelection) return
-    
+
     // Nettoyer le timer existant si présent
     if (altKeyTimer.value !== null) {
       clearTimeout(altKeyTimer.value)
@@ -216,7 +216,7 @@ export function useAutoCopy() {
           el.dataset.originalBackground = el.style.backgroundColor
           el.style.outline = '2px dashed #007bff'
           el.style.transition = 'all 0.2s ease-in-out'
-          
+
           // Add hover handlers
           el.addEventListener('mouseenter', () => {
             if (isAltMode.value) {
@@ -230,7 +230,7 @@ export function useAutoCopy() {
               el.style.backgroundColor = el.dataset.originalBackground || ''
             }
           })
-          
+
           highlightedElements.value.push(el)
         }
       })
@@ -255,7 +255,7 @@ export function useAutoCopy() {
       delete el.dataset.originalOutline
       delete el.dataset.originalTransition
       delete el.dataset.originalBackground
-      
+
       // Remove hover handlers
       el.removeEventListener('mouseenter', () => {})
       el.removeEventListener('mouseleave', () => {})
@@ -266,19 +266,19 @@ export function useAutoCopy() {
   // ALT mode click handler
   const handleAltClick = (event: MouseEvent) => {
     if (!isAltMode.value || !store.settings.enableAltSelection) return
-    
+
     const target = event.target as HTMLElement
     if (!target || isElementExcluded(target)) return
 
     const range = document.createRange()
     range.selectNodeContents(target)
-    
+
     const selection = window.getSelection()
     if (!selection) return
-    
+
     selection.removeAllRanges()
     selection.addRange(range)
-    
+
     copySelection()
     event.preventDefault()
   }
@@ -355,4 +355,4 @@ export function useAutoCopy() {
     updateSettings: store.updateSettings,
     setActiveFormat: store.setActiveFormat
   }
-} 
+}

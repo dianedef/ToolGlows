@@ -55,7 +55,7 @@ declare module 'vue' {
     ThemeSwatch: typeof import('./../components/ThemeSwatch.vue')['default']
     ThemeSwitch: typeof import('./../components/ThemeSwitch.vue')['default']
     TimeSelector: typeof import('./../components/TimeSelector.vue')['default']
-    ToolflowzBar: typeof import('./../components/ToolflowzBar.vue')['default']
+    ToolGlowsBar: typeof import('./../components/ToolGlowsBar.vue')['default']
     Update: typeof import('./../components/update.vue')['default']
     WordCounterPopup: typeof import('./../components/WordCounterPopup.vue')['default']
   }

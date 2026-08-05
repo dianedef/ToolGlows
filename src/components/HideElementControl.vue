@@ -9,10 +9,10 @@
     append-to="body"
     @hide="closeDialog"
   >
-    <div class="toolflowz-hide-element-options">
-      <div class="toolflowz-field mb-3">
+    <div class="toolglows-hide-element-options">
+      <div class="toolglows-field mb-3">
         <p>This tool allows you to hide elements on the page.</p>
-        
+
         <Message
           v-if="hideElementStore.error"
           severity="error"
@@ -43,7 +43,7 @@
             />
             <label>Enable Shortcut</label>
           </div>
-          
+
           <div
             v-if="hideElementStore.settings.enableShortcut"
             class="shortcut-input"
@@ -219,7 +219,7 @@ const captureShortcut = (event: KeyboardEvent) => {
   if (event.ctrlKey) keys.push('Ctrl')
   if (event.altKey) keys.push('Alt')
   if (event.shiftKey) keys.push('Shift')
-  
+
   const key = event.key
   if (!['Control', 'Alt', 'Shift'].includes(key)) {
     keys.push(key.toUpperCase())
@@ -244,7 +244,7 @@ const vTooltip = Tooltip
 onMounted(async () => {
   await hideElementStore.loadSettings()
   await nextTick()
-  
+
   // Add global shortcut handler
   document.addEventListener('keydown', hideElementStore.handleShortcut)
 })
@@ -255,7 +255,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.toolflowz-hide-element-options {
+.toolglows-hide-element-options {
   padding: 1rem;
 }
 
@@ -350,4 +350,4 @@ h4 {
   color: var(--text-color);
   font-size: 1.1rem;
 }
-</style> 
+</style>

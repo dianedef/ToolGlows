@@ -25,7 +25,7 @@ async function saveSettings() {
     class="options-page"
     @submit.prevent="saveSettings"
   >
-    <h1>Parametres Toolflowz</h1>
+    <h1>Paramètres ToolGlows</h1>
 
     <section>
       <h2>Barre d'outils</h2>

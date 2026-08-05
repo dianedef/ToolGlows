@@ -89,9 +89,9 @@ export const useThemeStore = defineStore('theme', () => {
     if (isInitialized.value) return
 
     try {
-      const result = await chrome.storage.sync.get('toolflowzTheme')
-      if (result.toolflowzTheme) {
-        const savedTheme = themes.find(t => t.name === result.toolflowzTheme)
+      const result = await chrome.storage.sync.get('toolglowsTheme')
+      if (result.toolglowsTheme) {
+        const savedTheme = themes.find(t => t.name === result.toolglowsTheme)
         if (savedTheme) {
           currentTheme.value = savedTheme
         }
@@ -105,7 +105,7 @@ export const useThemeStore = defineStore('theme', () => {
 
   async function saveTheme() {
     try {
-      await chrome.storage.sync.set({ toolflowzTheme: currentTheme.value.name })
+      await chrome.storage.sync.set({ toolglowsTheme: currentTheme.value.name })
       console.log('[SUCCESS] Theme saved:', currentTheme.value.name)
     } catch (error) {
       console.error('[ERROR] Failed to save theme:', error)

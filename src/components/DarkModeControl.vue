@@ -10,10 +10,10 @@
     append-to="body"
     @hide="closeDialog"
   >
-    <div class="toolflowz-dark-mode-options">
-      <div class="toolflowz-field mb-3">
+    <div class="toolglows-dark-mode-options">
+      <div class="toolglows-field mb-3">
         <h4>État</h4>
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="darkModeStore.isActive"
             :binary="true"
@@ -28,23 +28,23 @@
         </div>
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Couleurs</h4>
-        <div class="toolflowz-color-picker mb-2">
+        <div class="toolglows-color-picker mb-2">
           <label>Arrière-plan</label>
           <ColorPicker
             v-model="darkModeStore.options.backgroundColor"
             @update:model-value="darkModeStore.saveOptions()"
           />
         </div>
-        <div class="toolflowz-color-picker mb-2">
+        <div class="toolglows-color-picker mb-2">
           <label>Texte</label>
           <ColorPicker
             v-model="darkModeStore.options.textColor"
             @update:model-value="darkModeStore.saveOptions()"
           />
         </div>
-        <div class="toolflowz-color-picker mb-2">
+        <div class="toolglows-color-picker mb-2">
           <label>Liens</label>
           <ColorPicker
             v-model="darkModeStore.options.linkColor"
@@ -53,9 +53,9 @@
         </div>
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Apparence</h4>
-        <div class="toolflowz-field-slider mb-2">
+        <div class="toolglows-field-slider mb-2">
           <label>Contraste</label>
           <Slider
             v-model="darkModeStore.options.contrastLevel"
@@ -65,7 +65,7 @@
             @update:model-value="darkModeStore.saveOptions()"
           />
         </div>
-        <div class="toolflowz-field-slider mb-2">
+        <div class="toolglows-field-slider mb-2">
           <label>Durée de transition (ms)</label>
           <Slider
             v-model="darkModeStore.options.transitionDuration"
@@ -75,7 +75,7 @@
             @update:model-value="darkModeStore.saveOptions()"
           />
         </div>
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="darkModeStore.options.invertImages"
             :binary="true"
@@ -92,9 +92,9 @@
 
       <Divider />
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Programmation</h4>
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="darkModeStore.options.syncWithSystem"
             :binary="true"
@@ -107,8 +107,8 @@
             for="sync-system"
           >Synchroniser avec le système</label>
         </div>
-        
-        <div class="toolflowz-field-checkbox mb-2">
+
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="darkModeStore.options.autoEnable"
             :binary="true"
@@ -121,19 +121,19 @@
             for="auto-enable"
           >Activer automatiquement</label>
         </div>
-        
+
         <div
           v-if="darkModeStore.options.autoEnable"
-          class="toolflowz-schedule"
+          class="toolglows-schedule"
         >
-          <div class="toolflowz-time-picker mb-2">
+          <div class="toolglows-time-picker mb-2">
             <label>Début</label>
             <TimeSelector
               v-model="darkModeStore.options.scheduleStart"
               @update:model-value="darkModeStore.saveOptions()"
             />
           </div>
-          <div class="toolflowz-time-picker">
+          <div class="toolglows-time-picker">
             <label>Fin</label>
             <TimeSelector
               v-model="darkModeStore.options.scheduleEnd"
@@ -145,9 +145,9 @@
 
       <Divider />
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Sites exclus</h4>
-        <div class="toolflowz-excluded-domains">
+        <div class="toolglows-excluded-domains">
           <div
             v-if="darkModeStore.options.excludedDomains.length === 0"
             class="text-muted"
@@ -171,7 +171,7 @@
           </ul>
           <div
             v-if="darkModeStore.currentDomain"
-            class="toolflowz-add-domain mt-2"
+            class="toolglows-add-domain mt-2"
           >
             <Button
               :label="'Exclure ' + darkModeStore.currentDomain"
@@ -233,7 +233,7 @@ const scheduleEnd = computed(() => getTimeAsDate(darkModeStore.options.scheduleE
 // Gérer les changements de temps
 const onTimeChange = (value: unknown, isStart: boolean) => {
   if (!value || !(value instanceof Date)) return
-  
+
   const timeString = `${value.getHours().toString().padStart(2, '0')}:${value.getMinutes().toString().padStart(2, '0')}`
   if (isStart) {
     darkModeStore.options.scheduleStart = timeString
@@ -245,46 +245,46 @@ const onTimeChange = (value: unknown, isStart: boolean) => {
 </script>
 
 <style scoped>
-.toolflowz-dark-mode-options {
+.toolglows-dark-mode-options {
   padding: 1rem;
 }
 
-.toolflowz-field {
+.toolglows-field {
   margin-bottom: 1rem;
 }
 
-.toolflowz-field h4 {
+.toolglows-field h4 {
   margin-bottom: 0.5rem;
   color: var(--text-color);
 }
 
-.toolflowz-color-picker,
-.toolflowz-field-slider {
+.toolglows-color-picker,
+.toolglows-field-slider {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.toolflowz-field-checkbox {
+.toolglows-field-checkbox {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.toolflowz-schedule {
+.toolglows-schedule {
   margin-top: 1rem;
   padding-left: 1.5rem;
 }
 
-.toolflowz-time-picker {
+.toolglows-time-picker {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.toolflowz-excluded-domains {
+.toolglows-excluded-domains {
   ul {
     list-style: none;
     padding: 0;
@@ -305,4 +305,4 @@ const onTimeChange = (value: unknown, isStart: boolean) => {
   color: var(--text-color-secondary);
   font-style: italic;
 }
-</style> 
+</style>

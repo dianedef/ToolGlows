@@ -1,49 +1,49 @@
 <template>
-  <div 
+  <div
     v-if="!isLoading"
     ref="toolbarRef"
-    class="toolflowz-bar" 
+    class="toolglows-bar"
     :style="toolbarStyle"
-    :class="{ 
-      'toolflowz-expanded': isExpanded || settingsStore.settings.isPinned,
-      'toolflowz-dragging': isDragging 
+    :class="{
+      'toolglows-expanded': isExpanded || settingsStore.settings.isPinned,
+      'toolglows-dragging': isDragging
     }"
   >
     <Toast position="bottom-right" />
     <!-- Bouton principal -->
-    <Button 
-      class="toolflowz-main-button p-button-rounded"
+    <Button
+      class="toolglows-main-button p-button-rounded"
       :icon="isExpanded || settingsStore.settings.isPinned ? 'pi pi-times' : 'pi pi-bars'"
       text
       raised
-      aria-label="Toolflowz"
+      aria-label="ToolGlows"
       @click.stop="handleMainButtonClick"
     >
-      <span class="toolflowz-tool-emoji">🔧</span>
+      <span class="toolglows-tool-emoji">🔧</span>
     </Button>
 
     <!-- Barre d'outils -->
     <div
       v-if="isExpanded"
-      class="toolflowz-tools-container"
+      class="toolglows-tools-container"
     >
       <!-- Bouton paramètres -->
-      <Button 
+      <Button
         class="p-button-rounded p-button-text"
         severity="secondary"
         aria-label="Paramètres"
         @click="showSettings = !showSettings"
       >
-        <span class="toolflowz-tool-emoji">⚙️</span>
+        <span class="toolglows-tool-emoji">⚙️</span>
       </Button>
 
       <!-- Boutons des outils actifs -->
       <template
-        v-for="tool in toolflowzStore.tools"
+        v-for="tool in toolglowsStore.tools"
         :key="tool.id"
       >
-        <Button 
-          v-if="toolflowzStore.activeTools.includes(tool.id)"
+        <Button
+          v-if="toolglowsStore.activeTools.includes(tool.id)"
           class="p-button-rounded p-button-text"
           :aria-label="tool.name"
           @click="() => {
@@ -52,29 +52,29 @@
             console.log('[INFO] Tool visibility updated:', tool.id, isVisible[tool.id])
           }"
         >
-          <span class="toolflowz-tool-emoji">{{ tool.emoji }}</span>
+          <span class="toolglows-tool-emoji">{{ tool.emoji }}</span>
         </Button>
       </template>
     </div>
 
     <!-- Composants des outils actifs -->
     <template
-      v-for="tool in toolflowzStore.tools"
+      v-for="tool in toolglowsStore.tools"
       :key="tool.id"
     >
       <component
         :is="tool.component"
-        v-if="toolflowzStore.activeTools.includes(tool.id)"
+        v-if="toolglowsStore.activeTools.includes(tool.id)"
         v-model="isVisible[tool.id]"
         :visible="isVisible[tool.id]"
-        data-component="toolflowz-tool"
+        data-component="toolglows-tool"
         @update:visible="(val: boolean) => isVisible[tool.id] = val"
       />
     </template>
   </div>
   <div
     v-else
-    class="toolflowz-loading"
+    class="toolglows-loading"
   >
     ⌛ Chargement...
   </div>
@@ -88,17 +88,17 @@
     header="⚙️ Paramètres"
     :style="{ width: '50vw' }"
     :breakpoints="{ '960px': '75vw', '641px': '100vw' }"
-    class="toolflowz-settings-dialog"
+    class="toolglows-settings-dialog"
     append-to="body"
     @hide="closeSettings"
   >
-    <div class="toolflowz-settings-content">
+    <div class="toolglows-settings-content">
       <!-- Paramètres généraux -->
-      <div class="toolflowz-settings-header">
+      <div class="toolglows-settings-header">
         <h3>🔧 Général</h3>
         <ThemeSwatch />
       </div>
-      <div class="toolflowz-setting-item">
+      <div class="toolglows-setting-item">
         <Checkbox
           v-model="autoHide"
           :binary="true"
@@ -106,8 +106,8 @@
         />
         <label for="autoHide">Masquer automatiquement</label>
       </div>
-      <div class="toolflowz-setting-item">
-        <Checkbox 
+      <div class="toolglows-setting-item">
+        <Checkbox
           v-model="settingsStore.settings.isPinned"
           :binary="true"
           input-id="pinBar"
@@ -115,7 +115,7 @@
         <label for="pinBar">Épingler la barre d'outils</label>
       </div>
 
-      <div class="toolflowz-setting-item">
+      <div class="toolglows-setting-item">
         <label for="toolbarSize">Taille de la barre d'outils</label>
         <Dropdown
           v-model="settingsStore.settings.toolbarSize"
@@ -131,26 +131,26 @@
           class="w-full md:w-14rem"
         />
       </div>
-      
+
       <!-- Gestion des outils -->
       <h3>🛠️ Outils actifs</h3>
-      <div class="toolflowz-tools-grid">
+      <div class="toolglows-tools-grid">
         <div
-          v-for="tool in toolflowzStore.tools"
+          v-for="tool in toolglowsStore.tools"
           :key="tool.id"
-          class="toolflowz-tool-item"
+          class="toolglows-tool-item"
         >
           <Checkbox
-            :model-value="toolflowzStore.activeTools.includes(tool.id)"
+            :model-value="toolglowsStore.activeTools.includes(tool.id)"
             :binary="true"
             :input-id="'tool-' + tool.id"
-            @update:model-value="() => toolflowzStore.toggleTool(tool.id)"
+            @update:model-value="() => toolglowsStore.toggleTool(tool.id)"
           />
-          <div class="toolflowz-tool-header">
-            <span class="toolflowz-tool-emoji">{{ tool.emoji }}</span>
+          <div class="toolglows-tool-header">
+            <span class="toolglows-tool-emoji">{{ tool.emoji }}</span>
             <label
               :for="'tool-' + tool.id"
-              class="toolflowz-tool-name"
+              class="toolglows-tool-name"
             >{{ tool.name }}</label>
           </div>
         </div>
@@ -163,7 +163,7 @@
 import { ref, onMounted, inject, markRaw, onUnmounted, computed, watch, nextTick } from 'vue'
 import type { Tool } from '@/types/tools'
 import { useSettingsStore } from '@/stores/settings'
-import { useToolflowzStore } from '@/stores/toolflowz'
+import { useToolGlowsStore } from '@/stores/toolglows'
 import { useInstantOCRStore } from '@/stores/instantOCR'
 import { useWordCounterStore } from '@/stores/wordCounter'
 import { useAutoCopyStore } from '@/stores/autoCopy'
@@ -191,7 +191,7 @@ import Checkbox from 'primevue/checkbox'
 import Dropdown from 'primevue/dropdown'
 import { useDraggable, onClickOutside } from '@vueuse/core'
 import Toast from 'primevue/toast'
-import { useExcludeToolflowzBar } from '@/composables/excludeToolflowzBar'
+import { useExcludeToolGlowsBar } from '@/composables/excludeToolGlowsBar'
 import ThemeSwatch from './ThemeSwatch.vue'
 import { useDebounceFn } from '@vueuse/core'
 
@@ -205,12 +205,12 @@ const toolbarRef = ref<HTMLElement | null>(null)
 
 // Injection des stores avec typage
 const settingsStore = inject('settingsStore') as ReturnType<typeof useSettingsStore>
-const toolflowzStore = inject('toolflowzStore') as ReturnType<typeof useToolflowzStore>
+const toolglowsStore = inject('toolglowsStore') as ReturnType<typeof useToolGlowsStore>
 const ocrStore = inject('ocrStore') as ReturnType<typeof useInstantOCRStore>
 const wordCounterStore = inject('wordCounterStore') as ReturnType<typeof useWordCounterStore>
 const autoCopyStore = useAutoCopyStore()
 
-if (!settingsStore || !toolflowzStore || !ocrStore || !wordCounterStore) {
+if (!settingsStore || !toolglowsStore || !ocrStore || !wordCounterStore) {
   throw new Error('Les stores requis n\'ont pas été injectés')
 }
 
@@ -398,7 +398,7 @@ watch([
   () => settingsStore.settings.position,
   () => settingsStore.settings.expanded,
   () => settingsStore.settings.isPinned,
-  () => toolflowzStore.activeTools
+  () => toolglowsStore.activeTools
 ], ([newPosition]) => {
   if (!isDragging.value && newPosition) {
     try {
@@ -429,11 +429,11 @@ const { isDragging } = useDraggable(toolbarRef, {
     try {
       const boundedPosition = calculateBoundaries(x, y)
       position.value = boundedPosition
-      
+
       // Mise à jour des settings avec retry
       const maxRetries = 3
       let retryCount = 0
-      
+
       while (retryCount < maxRetries) {
         try {
           await settingsStore.updateSettings({
@@ -495,7 +495,7 @@ const sizeClasses = {
 // Computed style qui combine le style du drag et les autres styles
 const toolbarStyle = computed(() => {
   const size = sizeClasses[settingsStore.settings.toolbarSize || 'md']
-  
+
   return {
     position: 'fixed' as const,
     left: `${position.value.x}px`,
@@ -553,22 +553,22 @@ watch(() => autoCopyStore.isActive, (newValue) => {
 })
 
 // Exclure la barre du mode sombre
-useExcludeToolflowzBar()
+useExcludeToolGlowsBar()
 
 onMounted(async () => {
   try {
     await settingsStore.loadSettings()
     isExpanded.value = settingsStore.settings.expanded
-    
+
     // Applique la position initiale avec les limites
     const boundedPosition = calculateBoundaries(
       settingsStore.settings.position.x || window.innerWidth - 100,
       settingsStore.settings.position.y || 20
     )
     position.value = boundedPosition
-    
+
     // Met à jour le store si la position a été ajustée
-    if (boundedPosition.x !== settingsStore.settings.position.x || 
+    if (boundedPosition.x !== settingsStore.settings.position.x ||
         boundedPosition.y !== settingsStore.settings.position.y) {
       try {
         await settingsStore.updateSettings({
@@ -579,14 +579,14 @@ onMounted(async () => {
         console.error('[ERROR] Failed to update initial position:', error)
       }
     }
-    
+
     console.log('[INFO] Initializing tools')
-    await toolflowzStore.initTools(initialTools)
-    
+    await toolglowsStore.initTools(initialTools)
+
     initialTools.forEach(tool => {
       isVisible.value[tool.id] = false
     })
-    
+
     isLoading.value = false
     console.log('[SUCCESS] Initialization complete')
   } catch (error) {
@@ -601,7 +601,7 @@ const closeSettings = () => {
 </script>
 
 <style scoped>
-.toolflowz-bar {
+.toolglows-bar {
   display: flex;
   flex-direction: row;
   gap: 1rem;
@@ -613,11 +613,11 @@ const closeSettings = () => {
   padding: 0.5rem;
   touch-action: none;
 
-  &.toolflowz-expanded {
+  &.toolglows-expanded {
     cursor: default;
   }
 
-  &.toolflowz-dragging {
+  &.toolglows-dragging {
     cursor: grabbing !important;
     opacity: 0.95;
   }
@@ -640,7 +640,7 @@ const closeSettings = () => {
   }
 }
 
-.toolflowz-loading {
+.toolglows-loading {
   position: fixed;
   bottom: 20px;
   left: 20px;
@@ -651,7 +651,7 @@ const closeSettings = () => {
   z-index: 2147483647;
 }
 
-.toolflowz-tool-emoji {
+.toolglows-tool-emoji {
   font-size: var(--emoji-size);
   display: flex;
   align-items: center;
@@ -660,28 +660,28 @@ const closeSettings = () => {
   height: 100%;
 }
 
-.toolflowz-settings-header {
+.toolglows-settings-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1rem;
-  
+
   h3 {
     margin: 0;
   }
 }
 
-.toolflowz-settings-content {
+.toolglows-settings-content {
   padding: 1rem;
 }
 
-.toolflowz-tools-grid {
+.toolglows-tools-grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
-.toolflowz-tool-item {
+.toolglows-tool-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -690,19 +690,19 @@ const closeSettings = () => {
   border-radius: var(--border-radius);
 }
 
-.toolflowz-tool-header {
+.toolglows-tool-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex: 1;
 }
 
-.toolflowz-tool-name {
+.toolglows-tool-name {
   color: var(--text-color);
   font-size: 0.9rem;
 }
 
-.toolflowz-setting-item {
+.toolglows-setting-item {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -712,16 +712,16 @@ const closeSettings = () => {
   flex-wrap: wrap;
 }
 
-.toolflowz-settings-dialog {
+.toolglows-settings-dialog {
   :deep(.p-dialog-content) {
     padding: 1.5rem;
   }
 }
 
-.toolflowz-tools-container {
+.toolglows-tools-container {
   display: flex;
   flex-direction: row;
   gap: 1rem;
   flex-wrap: wrap;
 }
-</style> 
+</style>

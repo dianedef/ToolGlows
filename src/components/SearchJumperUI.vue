@@ -8,18 +8,18 @@
     :dismissable-mask="true"
     @hide="closeDialog"
   >
-    <div class="toolflowz-search-options">
-      <div class="toolflowz-field mb-3">
+    <div class="toolglows-search-options">
+      <div class="toolglows-field mb-3">
         <h4>Moteurs de recherche</h4>
-        <div class="toolflowz-engines-list">
+        <div class="toolglows-engines-list">
           <div
             v-for="engine in searchStore.options.engines"
             :key="engine.id"
-            class="toolflowz-engine-item"
+            class="toolglows-engine-item"
           >
-            <span class="toolflowz-engine-icon">{{ engine.icon }}</span>
-            <span class="toolflowz-engine-name">{{ engine.name }}</span>
-            <div class="toolflowz-engine-actions">
+            <span class="toolglows-engine-icon">{{ engine.icon }}</span>
+            <span class="toolglows-engine-name">{{ engine.name }}</span>
+            <div class="toolglows-engine-actions">
               <Button
                 icon="pi pi-pencil"
                 text
@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Raccourci clavier</h4>
         <InputText
           v-model="searchStore.options.shortcutKey"
@@ -51,9 +51,9 @@
         />
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Options d'affichage</h4>
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="searchStore.options.showIcons"
             :binary="true"
@@ -62,7 +62,7 @@
           <label>Afficher les icônes</label>
         </div>
 
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="searchStore.options.openInNewTab"
             :binary="true"
@@ -71,7 +71,7 @@
           <label>Ouvrir dans un nouvel onglet</label>
         </div>
 
-        <div class="toolflowz-field-checkbox mb-2">
+        <div class="toolglows-field-checkbox mb-2">
           <Checkbox
             v-model="searchStore.options.groupByCategory"
             :binary="true"
@@ -81,24 +81,24 @@
         </div>
       </div>
 
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <h4>Personnalisation</h4>
-        <div class="toolflowz-color-pickers">
-          <div class="toolflowz-color-field">
+        <div class="toolglows-color-pickers">
+          <div class="toolglows-color-field">
             <label>Arrière-plan</label>
             <ColorPicker
               v-model="searchStore.options.customStyles.backgroundColor"
               @change="searchStore.saveOptions()"
             />
           </div>
-          <div class="toolflowz-color-field">
+          <div class="toolglows-color-field">
             <label>Texte</label>
             <ColorPicker
               v-model="searchStore.options.customStyles.textColor"
               @change="searchStore.saveOptions()"
             />
           </div>
-          <div class="toolflowz-color-field">
+          <div class="toolglows-color-field">
             <label>Accent</label>
             <ColorPicker
               v-model="searchStore.options.customStyles.accentColor"
@@ -115,15 +115,15 @@
       :modal="true"
       class="p-fluid"
     >
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <label>Nom</label>
         <InputText v-model="newEngine.name" />
       </div>
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <label>URL (utilisez {query} pour la recherche)</label>
         <InputText v-model="newEngine.url" />
       </div>
-      <div class="toolflowz-field mb-3">
+      <div class="toolglows-field mb-3">
         <label>Icône</label>
         <InputText v-model="newEngine.icon" />
       </div>
@@ -191,26 +191,26 @@ function saveEngine() {
 </script>
 
 <style scoped>
-.toolflowz-search-options {
+.toolglows-search-options {
   padding: 1rem;
 }
 
-.toolflowz-field {
+.toolglows-field {
   margin-bottom: 1.5rem;
 }
 
-.toolflowz-field h4 {
+.toolglows-field h4 {
   margin-bottom: 0.75rem;
   color: var(--text-color);
 }
 
-.toolflowz-engines-list {
+.toolglows-engines-list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.toolflowz-engine-item {
+.toolglows-engine-item {
   display: flex;
   align-items: center;
   padding: 0.5rem;
@@ -219,41 +219,41 @@ function saveEngine() {
   border: 1px solid var(--surface-border);
 }
 
-.toolflowz-engine-icon {
+.toolglows-engine-icon {
   font-size: 1.2rem;
   margin-right: 0.5rem;
 }
 
-.toolflowz-engine-name {
+.toolglows-engine-name {
   flex: 1;
 }
 
-.toolflowz-engine-actions {
+.toolglows-engine-actions {
   display: flex;
   gap: 0.25rem;
 }
 
-.toolflowz-field-checkbox {
+.toolglows-field-checkbox {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.toolflowz-color-pickers {
+.toolglows-color-pickers {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
 
-.toolflowz-color-field {
+.toolglows-color-field {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
 }
 
-.toolflowz-color-field label {
+.toolglows-color-field label {
   font-size: 0.875rem;
   color: var(--text-color-secondary);
 }
-</style> 
+</style>
