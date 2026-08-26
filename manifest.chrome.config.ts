@@ -5,4 +5,5 @@ import ManifestConfig from "./manifest.config"
 export default defineManifest((env) => ({
   ...ManifestConfig,
   key: env["CHROME_ADDON_KEY"],
+  permissions: [...ManifestConfig.permissions, "sidePanel"],
 }))

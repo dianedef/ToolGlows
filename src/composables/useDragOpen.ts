@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { bridgeApi, type DragOpenAction } from '@/bridge'
 
 interface DragOpenOptions {
   enabled: boolean
@@ -237,18 +238,12 @@ export function useDragOpen() {
 
   // Ouvrir dans de nouveaux onglets
   const openInTabs = async () => {
-    for (const link of selectedLinks.value) {
-      await chrome.tabs.create({ url: link.href, active: false })
-      if (options.value.openDelay > 0) {
-        await new Promise(resolve => setTimeout(resolve, options.value.openDelay))
-      }
-    }
+    await performPrivilegedAction('tabs')
   }
 
   // Ouvrir dans une nouvelle fenêtre
   const openInWindow = async () => {
-    const urls = selectedLinks.value.map(link => link.href)
-    await chrome.windows.create({ url: urls })
+    await performPrivilegedAction('window')
   }
 
   // Copier dans le presse-papiers
@@ -261,17 +256,18 @@ export function useDragOpen() {
 
   // Sauvegarder comme favoris
   const saveAsBookmarks = async () => {
-    const folder = await chrome.bookmarks.create({
-      title: `DragOpen - ${new Date().toLocaleString()}`
-    })
+    await performPrivilegedAction('bookmark')
+  }
 
-    for (const link of selectedLinks.value) {
-      await chrome.bookmarks.create({
-        parentId: folder.id,
-        title: link.textContent || link.href,
+  const performPrivilegedAction = async (action: DragOpenAction) => {
+    await bridgeApi.performDragOpenAction(
+      action,
+      selectedLinks.value.map(link => ({
+        title: link.textContent?.trim() || link.href,
         url: link.href
-      })
-    }
+      })),
+      options.value.openDelay
+    )
   }
 
   // Afficher le menu d'actions
@@ -302,4 +298,4 @@ export function useDragOpen() {
     isDragging,
     init
   }
-} 
+}

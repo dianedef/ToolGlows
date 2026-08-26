@@ -48,6 +48,70 @@ interface DarkModePayload {
   styles: string
 }
 
+interface DragOpenLink {
+  title: string
+  url: string
+}
+
+interface DragOpenPayload {
+  action: 'tabs' | 'window' | 'bookmark'
+  links: DragOpenLink[]
+  openDelay: number
+}
+
+const MAX_DRAG_OPEN_LINKS = 200
+const MAX_DRAG_OPEN_DELAY_MS = 5_000
+
+function normalizeDragOpenPayload(data: unknown): DragOpenPayload | null {
+  if (typeof data !== 'object' || data === null) return null
+
+  const payload = data as Record<string, unknown>
+  if (!['tabs', 'window', 'bookmark'].includes(String(payload.action))) {
+    return null
+  }
+
+  if (
+    !Array.isArray(payload.links) ||
+    payload.links.length === 0 ||
+    payload.links.length > MAX_DRAG_OPEN_LINKS
+  ) {
+    return null
+  }
+
+  const links: DragOpenLink[] = []
+  for (const candidate of payload.links) {
+    if (typeof candidate !== 'object' || candidate === null) return null
+
+    const link = candidate as Record<string, unknown>
+    if (typeof link.url !== 'string' || typeof link.title !== 'string') {
+      return null
+    }
+
+    try {
+      const url = new URL(link.url)
+      if (!['http:', 'https:'].includes(url.protocol)) return null
+
+      links.push({
+        title: link.title.slice(0, 500) || url.href,
+        url: url.href
+      })
+    } catch {
+      return null
+    }
+  }
+
+  const requestedDelay = Number(payload.openDelay)
+  const openDelay = Number.isFinite(requestedDelay)
+    ? Math.min(Math.max(Math.trunc(requestedDelay), 0), MAX_DRAG_OPEN_DELAY_MS)
+    : 0
+
+  return {
+    action: payload.action as DragOpenPayload['action'],
+    links,
+    openDelay
+  }
+}
+
 function isDarkModePayload(data: unknown): data is DarkModePayload {
   return typeof data === 'object' &&
     data !== null &&
@@ -263,6 +327,96 @@ onMessage('GET_INITIAL_STATE', async () => {
     console.error('[ERROR] Failed to get initial state:', error)
     return { settings: null }
   }
+})
+
+onMessage('DRAG_OPEN_ACTION', async ({ data }) => {
+  const payload = normalizeDragOpenPayload(data)
+  if (!payload) {
+    throw new Error('Invalid drag-open action payload')
+  }
+
+  if (payload.action === 'tabs') {
+    for (const link of payload.links) {
+      await chrome.tabs.create({ url: link.url, active: false })
+      if (payload.openDelay > 0) {
+        await new Promise(resolve => setTimeout(resolve, payload.openDelay))
+      }
+    }
+  }
+
+  if (payload.action === 'window') {
+    await chrome.windows.create({ url: payload.links.map(link => link.url) })
+  }
+
+  if (payload.action === 'bookmark') {
+    const folder = await chrome.bookmarks.create({
+      title: `DragOpen - ${new Date().toLocaleString()}`
+    })
+
+    for (const link of payload.links) {
+      await chrome.bookmarks.create({
+        parentId: folder.id,
+        title: link.title,
+        url: link.url
+      })
+    }
+  }
+
+  return { processed: payload.links.length }
+})
+
+onMessage('GET_TABS', async ({ data }) => {
+  const scope =
+    typeof data === 'object' && data !== null && 'scope' in data
+      ? String(data.scope)
+      : ''
+
+  const queryByScope: Record<string, chrome.tabs.QueryInfo> = {
+    current: { active: true, currentWindow: true },
+    window: { currentWindow: true },
+    all: {},
+    selected: { highlighted: true, currentWindow: true }
+  }
+  const query = queryByScope[scope]
+  if (!query) throw new Error('Invalid tab query scope')
+
+  const tabs = await chrome.tabs.query(query)
+  return tabs.flatMap(tab =>
+    tab.url && tab.title ? [{ title: tab.title, url: tab.url }] : []
+  )
+})
+
+onMessage('RELOAD_ALL_TABS', async ({ sender }) => {
+  const tabs = await chrome.tabs.query({})
+  const initiatingTabId = sender.tabId
+  let successCount = 0
+  let errorCount = 0
+
+  for (const tab of tabs) {
+    if (!tab.id || tab.id === initiatingTabId) continue
+
+    try {
+      await chrome.tabs.reload(tab.id)
+      successCount++
+    } catch (error) {
+      console.warn(`[BACKGROUND] Could not reload tab ${tab.id}:`, error)
+      errorCount++
+    }
+  }
+
+  if (initiatingTabId) {
+    successCount++
+    setTimeout(() => {
+      chrome.tabs.reload(initiatingTabId).catch(error => {
+        console.warn(
+          `[BACKGROUND] Could not reload initiating tab ${initiatingTabId}:`,
+          error
+        )
+      })
+    }, 0)
+  }
+
+  return { successCount, errorCount }
 })
 
 async function broadcastDarkModeUpdate(data: unknown) {

@@ -1,9 +1,11 @@
 import { defineManifest } from "@crxjs/vite-plugin"
 import ManifestConfig from "./manifest.config"
 
+const { side_panel: _chromeSidePanel, ...FirefoxManifestConfig } = ManifestConfig
+
 // @ts-expect-error ManifestConfig provides all required fields
 export default defineManifest((env) => ({
-  ...ManifestConfig,
+  ...FirefoxManifestConfig,
   browser_specific_settings: {
     gecko: {
       id: env["FIREFOX_ADDON_ID"] || "toolglows-v2@example.com",
@@ -17,10 +19,10 @@ export default defineManifest((env) => ({
     type: "module",
     persistent: false,
   },
-  permissions: [
-    // @ts-expect-error background permission is not supported in Firefox
-    ...ManifestConfig.permissions.filter(
-      (permission) => permission !== "background",
-    ),
-  ],
+  sidebar_action: {
+    default_icon: ManifestConfig.icons,
+    default_panel: "src/ui/side-panel/index.html",
+    default_title: "ToolGlows",
+    open_at_install: false,
+  },
 }))

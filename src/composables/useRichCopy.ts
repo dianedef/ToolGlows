@@ -1,11 +1,12 @@
 import { ref, computed } from 'vue'
 import { useSettingsStore } from '@/stores/settings'
+import { bridgeApi, type TabQueryScope } from '@/bridge'
 
 type CopyFormat = 'text' | 'html' | 'markdown'
 
 interface CopyOptions {
   format: CopyFormat
-  scope: 'current' | 'window' | 'all' | 'selected'
+  scope: TabQueryScope
 }
 
 interface RichCopyOptions {
@@ -116,28 +117,10 @@ export function useRichCopy() {
   const copyTabs = async (options: CopyOptions) => {
     isCopying.value = true
     try {
-      let tabs: chrome.tabs.Tab[] = []
-
-      switch (options.scope) {
-        case 'current': {
-          const currentTab = await chrome.tabs.query({ active: true, currentWindow: true })
-          tabs = currentTab
-          break
-        }
-        case 'window':
-          tabs = await chrome.tabs.query({ currentWindow: true })
-          break
-        case 'all':
-          tabs = await chrome.tabs.query({})
-          break
-        case 'selected':
-          tabs = await chrome.tabs.query({ highlighted: true, currentWindow: true })
-          break
-      }
+      const tabs = await bridgeApi.getTabs(options.scope)
 
       const formattedLinks = tabs
-        .filter(tab => tab.url && tab.title)
-        .map(tab => formatLink(tab.url!, tab.title!, options.format))
+        .map(tab => formatLink(tab.url, tab.title, options.format))
         .join('\n')
 
       await navigator.clipboard.writeText(formattedLinks)

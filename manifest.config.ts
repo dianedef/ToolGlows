@@ -40,20 +40,16 @@ export default {
   },
   devtools_page: "src/devtools/index.html",
   options_page: "src/ui/options-page/index.html",
-  offline_enabled: true,
-  permissions: [
-    "storage",
-    "tabs"
-  ],
+  permissions: ["bookmarks", "storage", "tabs"],
   web_accessible_resources: [
     {
       resources: [
         "src/assets/logo.png",
         "src/ui/devtools-panel/index.html",
-        "src/ui/setup/index.html"
+        "src/ui/setup/index.html",
       ],
-      matches: ["<all_urls>"]
-    }
+      matches: ["<all_urls>"],
+    },
   ],
   icons: {
     16: "src/assets/icons/logo-16.png",

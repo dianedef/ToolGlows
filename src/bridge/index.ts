@@ -61,6 +61,19 @@ interface MessageData {
   tools?: SerializableTool[]
 }
 
+export interface DragOpenLink {
+  title: string
+  url: string
+}
+
+export type DragOpenAction = 'tabs' | 'window' | 'bookmark'
+export type TabQueryScope = 'current' | 'window' | 'all' | 'selected'
+
+export interface TabSummary {
+  title: string
+  url: string
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
@@ -152,6 +165,40 @@ export const bridgeApi = {
       }
     }
     throw new Error('Invalid response format')
+  },
+  performDragOpenAction: async (
+    action: DragOpenAction,
+    links: DragOpenLink[],
+    openDelay: number
+  ) => {
+    return sendMessage(
+      'DRAG_OPEN_ACTION',
+      { action, links, openDelay },
+      'background'
+    )
+  },
+  getTabs: async (scope: TabQueryScope): Promise<TabSummary[]> => {
+    const response = await sendMessage('GET_TABS', { scope }, 'background')
+    if (!Array.isArray(response)) throw new Error('Invalid tabs response')
+
+    return response.filter((tab): tab is TabSummary =>
+      isRecord(tab) && typeof tab.title === 'string' && typeof tab.url === 'string'
+    )
+  },
+  reloadAllTabs: async () => {
+    const response = await sendMessage('RELOAD_ALL_TABS', {}, 'background')
+    if (
+      !isRecord(response) ||
+      typeof response.successCount !== 'number' ||
+      typeof response.errorCount !== 'number'
+    ) {
+      throw new Error('Invalid reload-all-tabs response')
+    }
+
+    return {
+      successCount: response.successCount,
+      errorCount: response.errorCount
+    }
   }
 }
 

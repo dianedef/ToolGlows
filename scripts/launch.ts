@@ -1,24 +1,36 @@
- 
-
-import { exec } from "node:child_process"
-import { GetInstalledBrowsers } from "./getInstalledBrowsers"
+import { type ChildProcess, spawn } from "node:child_process"
+import { existsSync, statSync } from "node:fs"
+import { createRequire } from "node:module"
+import { isAbsolute, relative, resolve } from "node:path"
 import concurrently, { type ConcurrentlyCommandInput } from "concurrently"
 import { program } from "commander"
+import { GetInstalledBrowsers } from "./getInstalledBrowsers"
+
+const require = createRequire(import.meta.url)
+const projectRoot = process.cwd()
+const viteEntry = resolve(
+  require.resolve("vite/package.json"),
+  "..",
+  "bin",
+  "vite.js",
+)
+const buildTimeoutMs = 30_000
+const viteProcesses: ChildProcess[] = []
 
 program
-  .option("-a, --all", "Launch All Supported Browsers", false)
-  .option("-c, --chrome", "Launch Chrome only", true)
+  .option("-a, --all", "Launch all supported browsers", false)
+  .option("-c, --chrome", "Launch Chrome only", false)
   .option("-f, --firefox", "Launch Firefox only", false)
   .option("-e, --edge", "Launch Edge only", false)
   .option(
     "-v, --vite-chrome-config <path>",
     "Path to Vite Chrome config",
-    "vite.chrome.config.ts"
+    "vite.chrome.config.ts",
   )
   .option(
     "-x, --vite-firefox-config <path>",
     "Path to Vite Firefox config",
-    "vite.firefox.config.ts"
+    "vite.firefox.config.ts",
   )
 
 program.parse(process.argv)
@@ -32,92 +44,164 @@ const options = program.opts<{
   viteFirefoxConfig: string
 }>()
 
-async function runViteDev() {
-  return new Promise<void>((resolve) => {
-    console.info("Starting Vite dev servers...")
+const noExplicitBrowser =
+  !options.all && !options.chrome && !options.firefox && !options.edge
+const targets = {
+  chrome: options.all || options.chrome || noExplicitBrowser,
+  firefox: options.all || options.firefox,
+  edge: options.all || options.edge,
+}
 
-    const viteChrome = exec(`vite dev --config ${options.viteChromeConfig}`)
-    const viteFirefox = exec(`vite dev --config ${options.viteFirefoxConfig}`)
+function resolveConfigPath(configPath: string) {
+  const absolutePath = resolve(projectRoot, configPath)
+  const projectRelativePath = relative(projectRoot, absolutePath)
 
-    viteChrome.stdout?.pipe(process.stdout)
-    viteChrome.stderr?.pipe(process.stderr)
+  if (
+    projectRelativePath.startsWith("..") ||
+    isAbsolute(projectRelativePath) ||
+    !existsSync(absolutePath)
+  ) {
+    throw new Error(
+      `Vite config must be an existing file inside the project: ${configPath}`,
+    )
+  }
 
-    viteFirefox.stdout?.pipe(process.stdout)
-    viteFirefox.stderr?.pipe(process.stderr)
+  return absolutePath
+}
 
-    viteChrome.on("exit", (code) => {
-      console.info(`Vite Chrome process exited with code ${code}`)
-    })
+function startVite(args: string[], name: string) {
+  const child = spawn(process.execPath, [viteEntry, ...args], {
+    cwd: projectRoot,
+    stdio: "inherit",
+    windowsHide: true,
+  })
 
-    viteFirefox.on("exit", (code) => {
-      console.info(`Vite Firefox process exited with code ${code}`)
-    })
+  child.once("error", (error) => {
+    console.error(`${name} could not start:`, error)
+  })
 
-    setTimeout(() => {
-      resolve()
-    }, 1000)
+  viteProcesses.push(child)
+  return child
+}
+
+function waitForFreshManifest(
+  browser: "chrome" | "firefox",
+  startedAt: number,
+  child: ChildProcess,
+) {
+  const manifestPath = resolve(projectRoot, "dist", browser, "manifest.json")
+
+  return new Promise<void>((resolveReady, rejectReady) => {
+    const timeout = setTimeout(() => {
+      cleanup()
+      rejectReady(
+        new Error(
+          `${browser} build did not produce a fresh manifest within ${buildTimeoutMs / 1000}s`,
+        ),
+      )
+    }, buildTimeoutMs)
+
+    const interval = setInterval(() => {
+      if (
+        existsSync(manifestPath) &&
+        statSync(manifestPath).mtimeMs >= startedAt - 1_000
+      ) {
+        cleanup()
+        resolveReady()
+      }
+    }, 250)
+
+    const onExit = (code: number | null) => {
+      cleanup()
+      rejectReady(
+        new Error(`${browser} build process exited before readiness (${code})`),
+      )
+    }
+
+    const cleanup = () => {
+      clearTimeout(timeout)
+      clearInterval(interval)
+      child.off("exit", onExit)
+    }
+
+    child.once("exit", onExit)
   })
 }
 
+async function runViteDev() {
+  const readiness: Promise<void>[] = []
+
+  if (targets.chrome || targets.edge) {
+    const startedAt = Date.now()
+    const configPath = resolveConfigPath(options.viteChromeConfig)
+    const child = startVite(["--config", configPath], "Chrome Vite")
+    readiness.push(waitForFreshManifest("chrome", startedAt, child))
+  }
+
+  if (targets.firefox) {
+    const startedAt = Date.now()
+    const configPath = resolveConfigPath(options.viteFirefoxConfig)
+    const child = startVite(
+      ["build", "--mode", "development", "--watch", "--config", configPath],
+      "Firefox Vite",
+    )
+    readiness.push(waitForFreshManifest("firefox", startedAt, child))
+  }
+
+  await Promise.all(readiness)
+}
+
 async function launchBrowsers() {
-  console.info("Detecting installed browsers...")
-
   const installedBrowsers = GetInstalledBrowsers()
-  const commands: Array<ConcurrentlyCommandInput> = []
+  const commands: ConcurrentlyCommandInput[] = []
 
-  if (options.chrome || options.all) {
-    if (installedBrowsers.Chrome) {
-      commands.push({
-        command: installedBrowsers.Chrome.command,
-        name: installedBrowsers.Chrome.name,
-      })
+  for (const [enabled, browserName] of [
+    [targets.chrome, "Chrome"],
+    [targets.firefox, "Firefox"],
+    [targets.edge, "Edge"],
+  ] as const) {
+    if (!enabled) continue
+
+    const browser = installedBrowsers[browserName]
+    if (browser) {
+      commands.push({ command: browser.command, name: browser.name })
     } else {
-      console.error("Chrome is not installed.")
+      console.error(`${browserName} is not installed.`)
     }
   }
 
-  if (options.firefox || options.all) {
-    if (installedBrowsers.Firefox) {
-      commands.push({
-        command: installedBrowsers.Firefox.command,
-        name: installedBrowsers.Firefox.name,
-      })
-    } else {
-      console.error("Firefox is not installed.")
-    }
+  if (commands.length === 0) {
+    throw new Error("No selected browser is installed.")
   }
 
-  if (options.edge || options.all) {
-    if (installedBrowsers.Edge) {
-      commands.push({
-        command: installedBrowsers.Edge.command,
-        name: installedBrowsers.Edge.name,
-      })
-    } else {
-      console.error("Edge is not installed.")
-    }
-  }
+  await concurrently(commands, {
+    killOthers: ["failure", "success"],
+    restartTries: 1,
+  }).result
+}
 
-  if (commands.length > 0) {
-    console.info("Launching browsers...")
-
-    concurrently(commands, {
-      killOthers: ["failure", "success"],
-      restartTries: 1,
-    })
-  } else {
-    console.error("No compatible browsers found or selected.")
+function shutdown() {
+  for (const child of viteProcesses) {
+    if (!child.killed) child.kill()
   }
 }
 
-process.on("SIGINT", () => {
-  console.info("Received SIGINT. Shutting down...")
-  process.exit()
+process.once("SIGINT", () => {
+  shutdown()
+  process.exitCode = 130
 })
 
-process.on("SIGTERM", () => {
-  console.info("Received SIGTERM. Shutting down...")
-  process.exit()
+process.once("SIGTERM", () => {
+  shutdown()
+  process.exitCode = 143
 })
 
-runViteDev().then(launchBrowsers)
+try {
+  await runViteDev()
+  await launchBrowsers()
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error)
+  process.exitCode = 1
+} finally {
+  shutdown()
+}

@@ -63,18 +63,22 @@ pnpm build               # Builds de production Chrome et Firefox
 pnpm typecheck           # Vérification TypeScript/Vue
 pnpm exec vitest run     # Tests automatisés
 pnpm lint:manifest       # Validation du manifeste Firefox construit
+pnpm launch              # Build de développement et lancement de Chrome
+pnpm launch -- --firefox # Build de développement et lancement de Firefox
+pnpm launch:all          # Lancement de Chrome, Firefox et Edge détectés
 ```
 
 ## Architecture
 
-- Vue 3, TypeScript et Vite ;
+- Vue 3, TypeScript, Vite 8 et CRXJS stable ;
 - Manifest V3 avec configurations Chrome et Firefox ;
 - Pinia et stockage navigateur pour les préférences ;
 - script de contenu pour injecter la barre ToolGlows ;
 - service worker pour la synchronisation entre onglets ;
-- PrimeVue, Tailwind CSS et DaisyUI pour les interfaces.
+- Vue Router 5 avec génération de routes intégrée ;
+- PrimeVue 3, Tailwind CSS et DaisyUI pour les interfaces.
 
-Le manifeste demande actuellement les permissions `storage` et `tabs`, ainsi que l'injection du script de contenu sur les pages web. Toute permission supplémentaire doit être justifiée par une fonctionnalité et validée avant publication en store.
+Le manifeste partagé demande `bookmarks`, `storage` et `tabs`, ainsi que l'injection du script de contenu sur les pages web. `bookmarks` est requis par l'export de liens vers les favoris. Chrome ajoute `sidePanel` pour sa surface latérale et Firefox déclare la même surface avec `sidebar_action`. Toute permission supplémentaire doit être justifiée par une fonctionnalité et validée avant publication en store.
 
 ## Documentation
 
@@ -88,3 +92,5 @@ La documentation canonique se trouve dans `shipglows_data/` :
 ## État du produit
 
 ToolGlows est en développement actif. Le socle multi-navigateur, la barre et les principaux outils sont implémentés, mais toutes les fonctions ne disposent pas encore du même niveau de validation en conditions réelles. La version du package reste pré-1.0.
+
+La modernisation du toolchain d'août 2026 est implémentée mais reste à valider par build et dans les navigateurs avant toute publication.

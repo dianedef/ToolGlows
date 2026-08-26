@@ -46,6 +46,12 @@ pnpm dev
 # Or run specific browser dev mode
 pnpm dev:chrome   # Chrome only
 pnpm dev:firefox  # Firefox only
+
+# Or build, wait for a fresh manifest, and launch a detected browser
+pnpm launch              # Chrome by default
+pnpm launch -- --firefox # Firefox only
+pnpm launch -- --edge    # Edge only, sharing the Chromium build
+pnpm launch:all          # All selected browsers detected on the machine
 ```
 
 ### First Run
@@ -619,9 +625,11 @@ pnpm run lint:manifest
 rg -n "cdn\\.jsdelivr|https://cdn" src manifest*.ts dist/chrome dist/firefox
 ```
 
-The expected manifest permission baseline is `storage` and `tabs`, plus the static content-script match for the toolbar surface. Do not reintroduce `host_permissions`, `scripting`, `activeTab`, or `webNavigation` without a feature-specific justification and validation. Dark-mode CSS should be applied by content-script messaging, not by `chrome.scripting`.
+The expected shared manifest permission baseline is `bookmarks`, `storage`, and `tabs`, plus the static content-script match for the toolbar surface. `bookmarks` is required by the drag-open bookmark export. Chrome adds `sidePanel`; Firefox exposes the equivalent page through `sidebar_action`. Do not reintroduce `host_permissions`, `scripting`, `activeTab`, or `webNavigation` without a feature-specific justification and validation. Dark-mode CSS should be applied by content-script messaging, not by `chrome.scripting`.
 
-The packaged extension should not contain CDN fallback URLs. Options pages use native Vue controls so FormKit is not part of the runtime bundle. Firefox builds must keep `browser_specific_settings.gecko.data_collection_permissions.required: ["none"]` unless product behavior changes to collect or transmit data.
+Privileged tab, window, reload, and bookmark operations belong in the background service worker. Content scripts must use the maintained bridge methods; new privileged messages require bounded payload validation before they call browser APIs.
+
+The packaged extension should not contain CDN fallback URLs. Options pages use native Vue controls so FormKit is not part of the runtime bundle. Firefox builds must keep `browser_specific_settings.gecko.data_collection_permissions.required: ["none"]` unless product behavior changes to collect or transmit data. The August 2026 toolchain modernization remains unverified until the full commands above and real-browser checks are run; do not use it as store-readiness evidence by itself.
 
 #### Chrome Web Store
 1. Go to [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole)

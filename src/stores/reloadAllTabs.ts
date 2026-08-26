@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { bridgeApi } from '@/bridge'
 
 interface ReloadAllTabsSettings {
   shortcut: string
@@ -23,23 +24,7 @@ export const useReloadAllTabsStore = defineStore('reloadAllTabs', () => {
     
     try {
       console.log('[INFO] Starting tabs reload')
-      const tabs = await chrome.tabs.query({})
-      console.log(`[INFO] Found ${tabs.length} tabs to reload`)
-      
-      let successCount = 0
-      let errorCount = 0
-      
-      for (const tab of tabs) {
-        if (tab.id) {
-          try {
-            await chrome.tabs.reload(tab.id)
-            successCount++
-          } catch (err) {
-            console.error(`[ERROR] Failed to reload tab ${tab.id}:`, err)
-            errorCount++
-          }
-        }
-      }
+      const { successCount, errorCount } = await bridgeApi.reloadAllTabs()
       
       console.log(`[SUCCESS] Reloaded ${successCount} tabs successfully, ${errorCount} failures`)
       
@@ -127,4 +112,4 @@ export const useReloadAllTabsStore = defineStore('reloadAllTabs', () => {
     loadSettings,
     handleShortcut
   }
-}) 
+})

@@ -2,7 +2,6 @@
 import { homedir } from 'os'
 import { resolve } from 'path'
 import { existsSync } from 'fs'
-import { execSync } from 'child_process'
 
 export interface BrowserPaths {
   name: string
@@ -21,8 +20,6 @@ interface BrowserInfo {
   type: string
   command: string
 }
-
-type BinaryType = 'flatpak' | 'snap' | 'native'
 
 const getWinPaths = (subdir: string) => {
   const sysDrive = process.env['SystemDrive'] || 'C:'
@@ -62,52 +59,20 @@ const getLinuxPaths = (subdir: string) => {
   ]
 }
 
-const checkBinaryType = (path: string): BinaryType => {
-  const platform = process.platform
-
-  if (existsSync(path)) return 'native'
-
-  if (platform === 'linux') {
-    try {
-      const flatpakResult = execSync(`flatpak list --app | grep ${path}`)
-        .toString()
-        .trim()
-
-      if (flatpakResult) return 'flatpak'
-    } catch {}
-
-    try {
-      const snapResult = execSync(`snap list | grep ${path}`).toString().trim()
-
-      if (snapResult) return 'snap'
-    } catch {}
-  }
-
-  return 'native'
-}
-
 function getCommand(name: string, type: string, path: string) {
-  const binaryType = checkBinaryType(path)
+  if (!existsSync(path)) return undefined
 
-  switch (binaryType) {
-    case 'flatpak':
-      return `flatpak run ${path} --no-input --browser-console --devtools`
+  const browserPath = JSON.stringify(path)
 
-    case 'snap':
-      return `snap run ${path} --no-input --browser-console --devtools`
-
-    case 'native':
-      if (type === 'chrome') {
-        return `web-ext run --target chromium --chromium-binary ${path} --source-dir dist/chrome --no-input --browser-console --devtools`
-      }
-      if (type === 'firefox') {
-        return `web-ext run --firefox=${path} --source-dir dist/firefox --no-input --browser-console --devtools`
-      }
-      break
-
-    default:
-      break
+  if (type === 'chrome') {
+    return `pnpm exec web-ext run --target chromium --chromium-binary ${browserPath} --source-dir dist/chrome --no-input --browser-console --devtools`
   }
+
+  if (type === 'firefox') {
+    return `pnpm exec web-ext run --firefox=${browserPath} --source-dir dist/firefox --no-input --browser-console --devtools`
+  }
+
+  return undefined
 }
 
 export function GetInstalledBrowsers(): { [name: string]: BrowserInfo } {
@@ -129,6 +94,7 @@ export function GetInstalledBrowsers(): { [name: string]: BrowserInfo } {
         type: browser.type,
         command,
       }
+      break
     }
   }
   return installedBrowsers

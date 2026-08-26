@@ -303,7 +303,7 @@ UI Update
 #### Vite Plugins Stack
 1. **@vitejs/plugin-vue**: Vue 3 SFC compilation
 2. **@crxjs/vite-plugin**: Extension manifest handling
-3. **unplugin-vue-router**: File-based routing
+3. **vue-router/vite**: File-based routing integrated into Vue Router 5
 4. **unplugin-auto-import**: Auto-import Vue APIs
 5. **unplugin-vue-components**: Auto-import components
 6. **unplugin-icons**: Icon component system
@@ -346,6 +346,7 @@ dist/
 ```json
 {
   "permissions": [
+    "bookmarks",
     "storage",
     "tabs"
   ],
@@ -358,9 +359,11 @@ dist/
 }
 ```
 
-The base manifest intentionally keeps the content script available on ordinary pages because the toolbar is the product's primary surface. Store-review hardening now avoids redundant `host_permissions`, `scripting`, `activeTab`, and `webNavigation` declarations. Runtime dark-mode styling is relayed through existing content scripts instead of `chrome.scripting`, so broad host access is not needed for style injection.
+The base manifest intentionally keeps the content script available on ordinary pages because the toolbar is the product's primary surface. The `bookmarks` permission is required by the drag-open export that creates bookmark folders. Store-review hardening avoids redundant `host_permissions`, `scripting`, `activeTab`, and `webNavigation` declarations. Runtime dark-mode styling is relayed through existing content scripts instead of `chrome.scripting`, so broad host access is not needed for style injection.
 
-Firefox builds declare `browser_specific_settings.gecko.data_collection_permissions.required: ["none"]` while the extension remains local-only for data collection. Manifest icons use explicit 16, 24, 32, and 128 pixel PNG files under `src/assets/icons/`.
+Chrome adds the `sidePanel` API permission and `side_panel` manifest entry. Firefox maps the same UI to its native `sidebar_action`, and declares `browser_specific_settings.gecko.data_collection_permissions.required: ["none"]` while the extension remains local-only for data collection. Manifest icons use explicit 16, 24, 32, and 128 pixel PNG files under `src/assets/icons/`.
+
+Content scripts route privileged tab, window, reload, and bookmark operations through validated `webext-bridge` messages handled by the background service worker. Payloads reject non-HTTP(S) URLs and cap batch size and delay before invoking browser APIs.
 
 ### 6.3 Security Best Practices
 
@@ -490,9 +493,9 @@ Store    Store
 
 ### Core Technologies
 - **Vue 3.5**: Frontend framework
-- **TypeScript 5.7**: Type safety
-- **Vite 6**: Build tool
-- **Pinia 2.3**: State management
+- **TypeScript 5.9**: Type safety
+- **Vite 8**: Build tool
+- **Pinia 4**: State management
 
 ### UI & Styling
 - **Tailwind CSS 3.4**: Utility CSS
@@ -503,13 +506,13 @@ Store    Store
 ### Browser Extension
 - **webextension-polyfill 0.12**: Cross-browser APIs
 - **webext-bridge 6.0**: Context messaging
-- **@crxjs/vite-plugin 2.0**: Build integration
+- **@crxjs/vite-plugin 2.7**: Stable build integration
 
 ### Developer Tools
-- **ESLint 9**: Code linting
-- **Prettier 3.4**: Code formatting
+- **ESLint 10**: Code linting
+- **Prettier 3.9**: Code formatting
 - **Vitest 4.1**: Unit testing
-- **Playwright 1.59**: E2E testing
+- **Playwright 1.62**: E2E testing
 
 ---
 
@@ -526,8 +529,8 @@ Store    Store
 **Status**: Accepted
 
 ### ADR-003: File-Based Routing
-**Decision**: Use unplugin-vue-router for automatic routing
-**Rationale**: Reduces boilerplate, convention over configuration
+**Decision**: Use Vue Router 5's built-in Vite plugin for automatic routing
+**Rationale**: Preserves convention-based routes without the deprecated standalone plugin
 **Status**: Accepted
 
 ### ADR-004: Manifest V3
@@ -550,6 +553,7 @@ Store    Store
 3. **Advanced Caching**: Service worker strategies
 4. **GraphQL Integration**: Optional data layer
 5. **SSR Support**: For options page
+6. **Validated Major Migrations**: Evaluate PrimeVue 5, Tailwind 4, TypeScript 7, and Tesseract 7 only with focused UI/build/browser proof
 
 ### Scalability Considerations
 1. **Lazy Module Loading**: Further reduce bundle size
@@ -561,7 +565,7 @@ Store    Store
 
 **Document Control**
 **Version**: 1.0
-**Last Updated**: 2026-05-04
-**Next Review**: 2025-02-16
+**Last Updated**: 2026-08-26
+**Next Review**: 2026-11-26
 **Author**: Architecture Team
 **Approved By**: [Pending]
