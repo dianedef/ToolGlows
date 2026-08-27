@@ -4,7 +4,7 @@
 - Environment schema: `shipglows-project-environment/v2`
 - Server manager: `shipglows-devserver`
 - Project kind: `browser-extension`
-- Assigned port: `pending first ShipGlows start`
+- Assigned port: `3002`
 - Canonical local URL: `not applicable (browser extension)`
 - Browser target: `Chrome`
 - Unpacked Chrome directory: `dist/chrome`
