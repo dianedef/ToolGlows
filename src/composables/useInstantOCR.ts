@@ -24,6 +24,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { createWorker } from 'tesseract.js'
 import type { Worker } from 'tesseract.js'
+import { resolveDesignToken } from '@/utils/designTokens'
 
 interface OCROptions {
   enabled: boolean
@@ -227,13 +228,13 @@ export function useInstantOCR() {
       }
       .ocr-overlay span {
         position: absolute;
-        background: rgba(255, 255, 0, 0.2);
+        background: ${resolveDesignToken('--tg-ocr-highlight')};
         mix-blend-mode: multiply;
         cursor: text;
         pointer-events: auto;
       }
       .ocr-overlay span:hover {
-        background: rgba(255, 255, 0, 0.4);
+        background: ${resolveDesignToken('--tg-ocr-highlight-hover')};
       }
     `
     document.head.appendChild(style)

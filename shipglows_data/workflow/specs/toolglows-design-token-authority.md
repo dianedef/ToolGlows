@@ -61,7 +61,7 @@ As a ToolGlows user, I want light and dark interface states to use coherent them
 
 ## Authority And Invariants
 
-- `src/assets/main.css` is the canonical CSS token authority for extension UI; its semantic custom properties are consumed by content-script UI and components.
+- `src/assets/design-tokens.css` is the canonical CSS token authority for extension UI; its semantic custom properties are consumed by `main.css`, content-script UI and components.
 - Theme files supply base PrimeVue values; ToolGlows owns only semantic aliases and overrides.
 - No new component or composable visual literal is permitted outside the canonical token source unless registered as a deliberate exception.
 - Focus visibility, keyboard behavior, contrast and readable selected state are preserved in both themes.
@@ -70,7 +70,7 @@ As a ToolGlows user, I want light and dark interface states to use coherent them
 
 - [x] Create the design-system authority record and semantic token aliases.
 - [x] Repair global style precedence and migrate hover, selected, focus and scrollbar roles.
-- [ ] Migrate the element selector and other runtime-injected visual styles.
+- [x] Migrate the element selector and other runtime-injected visual styles.
 - [ ] Migrate component/composable style literals in coherent batches.
 - [ ] Add targeted configuration/tests and run visual, build and drift proof.
 
@@ -97,11 +97,12 @@ Update the design-system authority record and this spec. No public copy is chang
 |----------|-------|-------|--------|--------|-----------|
 | 2026-08-28 18:56 UTC | sg-design | Codex | Created from the accepted full token-remediation direction. | active | Establish authority and migrate visible interaction states. |
 | 2026-08-28 19:16 UTC | sg-design | Codex | Established semantic token authority, repaired active-state precedence and migrated the element selector. | implemented — first batch | Continue component and composable migration. |
+| 2026-08-28 19:35 UTC | sg-design | Codex | Replaced stale content-script overrides and migrated Auto Copy, OCR and Drag Open runtime highlights to semantic tokens. | implemented — runtime batch | Verify in Edge, then migrate components and remaining composables. |
 
 ## Current Chantier Flow
 
 - sg-design: active
 - readiness: ready
-- implementation: first batch complete
+- implementation: runtime batch complete
 - verification: pending
 - delivery: pending

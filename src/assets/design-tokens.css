@@ -19,6 +19,10 @@
   --tg-element-hover: color-mix(in srgb, var(--tg-action) 14%, transparent);
   --tg-element-selected: color-mix(in srgb, var(--tg-action) 22%, transparent);
   --tg-element-outline: var(--tg-action);
+  --tg-element-outline-width: 2px;
+  --tg-element-transition: background-color 0.2s ease-in-out, outline-color 0.2s ease-in-out;
+  --tg-ocr-highlight: color-mix(in srgb, #facc15 20%, transparent);
+  --tg-ocr-highlight-hover: color-mix(in srgb, #facc15 40%, transparent);
   --tg-radius-control: var(--border-radius);
   --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   --tg-radius-round: 999px;

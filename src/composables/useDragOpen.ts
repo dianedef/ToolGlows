@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { bridgeApi, type DragOpenAction } from '@/bridge'
+import { elementOutline, resolveDesignToken } from '@/utils/designTokens'
 
 interface DragOpenOptions {
   enabled: boolean
@@ -117,8 +118,8 @@ export function useDragOpen() {
     element.id = 'drag-open-selection'
     element.style.cssText = `
       position: fixed;
-      border: 2px solid #2196f3;
-      background: rgba(33, 150, 243, 0.1);
+      border: ${elementOutline('solid')};
+      background: ${resolveDesignToken('--tg-element-hover')};
       z-index: 9999;
       pointer-events: none;
     `

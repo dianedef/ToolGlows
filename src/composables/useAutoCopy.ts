@@ -2,6 +2,7 @@ import { ref, onMounted, onUnmounted, inject } from 'vue'
 import { useAutoCopyStore } from '@/stores/autoCopy'
 import { useToolGlowsStore } from '@/stores/toolglows'
 import { useToast } from 'primevue/usetoast'
+import { elementOutline, resolveDesignToken } from '@/utils/designTokens'
 
 export function useAutoCopy() {
   const store = useAutoCopyStore()
@@ -214,19 +215,19 @@ export function useAutoCopy() {
           el.dataset.originalOutline = el.style.outline
           el.dataset.originalTransition = el.style.transition
           el.dataset.originalBackground = el.style.backgroundColor
-          el.style.outline = '2px dashed #007bff'
-          el.style.transition = 'all 0.2s ease-in-out'
+          el.style.outline = elementOutline('dashed')
+          el.style.transition = resolveDesignToken('--tg-element-transition')
 
           // Add hover handlers
           el.addEventListener('mouseenter', () => {
             if (isAltMode.value) {
-              el.style.outline = '2px dashed #00ff00'
-              el.style.backgroundColor = 'rgba(0, 255, 0, 0.1)'
+              el.style.outline = elementOutline('solid')
+              el.style.backgroundColor = resolveDesignToken('--tg-element-hover')
             }
           })
           el.addEventListener('mouseleave', () => {
             if (isAltMode.value) {
-              el.style.outline = '2px dashed #007bff'
+              el.style.outline = elementOutline('dashed')
               el.style.backgroundColor = el.dataset.originalBackground || ''
             }
           })

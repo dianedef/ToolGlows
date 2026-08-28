@@ -20,6 +20,7 @@
  * - Non-blocking: Uses event capture to intercept before page handlers
  */
 import { ref, onMounted, onUnmounted } from 'vue'
+import { elementOutline, resolveDesignToken } from '@/utils/designTokens'
 
 interface ElementSelectorOptions {
   highlightColor?: string
@@ -41,11 +42,6 @@ export function useElementSelector(options: ElementSelectorOptions = {}) {
   const isActive = ref(false)
   const hoveredElement = ref<HTMLElement | null>(null)
   const highlightedElements = ref<HTMLElement[]>([])
-
-  const resolveToken = (token: string) => {
-    const root = document.getElementById('toolglows-root') ?? document.documentElement
-    return getComputedStyle(root).getPropertyValue(token).trim()
-  }
 
   /**
    * Checks if element should be excluded from selection
@@ -89,17 +85,17 @@ export function useElementSelector(options: ElementSelectorOptions = {}) {
 
   // Fonction pour appliquer le style de survol à un élément
   const applyHoverStyle = (element: HTMLElement) => {
-    element.style.outline = `2px dashed ${resolveToken('--tg-element-outline')}`
-    element.style.backgroundColor = hoverColor || resolveToken('--tg-element-hover')
-    element.style.transition = 'background-color 0.2s ease-in-out, outline-color 0.2s ease-in-out'
+    element.style.outline = elementOutline('dashed')
+    element.style.backgroundColor = hoverColor || resolveDesignToken('--tg-element-hover')
+    element.style.transition = resolveDesignToken('--tg-element-transition')
     element.style.cursor = 'pointer'
   }
 
   // Fonction pour appliquer le style de sélection à un élément
   const applySelectStyle = (element: HTMLElement) => {
-    element.style.outline = `2px solid ${resolveToken('--tg-element-outline')}`
-    element.style.backgroundColor = highlightColor || resolveToken('--tg-element-selected')
-    element.style.transition = 'background-color 0.2s ease-in-out, outline-color 0.2s ease-in-out'
+    element.style.outline = elementOutline('solid')
+    element.style.backgroundColor = highlightColor || resolveDesignToken('--tg-element-selected')
+    element.style.transition = resolveDesignToken('--tg-element-transition')
   }
 
   const handleMouseOver = (event: MouseEvent) => {
