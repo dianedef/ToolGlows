@@ -55,6 +55,16 @@ Statistiques du texte :
     }
   }
 
+  // Analyse la sélection courante sans interférer avec le menu contextuel.
+  // Cette fonction est utilisée par le panneau de statistiques lorsqu'il est
+  // ouvert depuis la barre d'outils.
+  const analyzeSelection = () => {
+    const selection = window.getSelection()
+    const text = selection?.toString().trim() ?? ''
+
+    stats.value = text ? analyzeText(text) : null
+  }
+
   // Analyser le texte sélectionné
   const analyzeText = (text: string): WordStats => {
     const words = text.trim().split(/\s+/).filter(word => word.length > 0)
@@ -141,7 +151,7 @@ Statistiques du texte :
     const text = selection.toString()
     
     if (text.trim().length > 0) {
-      stats.value = analyzeText(text)
+      analyzeSelection()
       position.value = {
         x: event.clientX,
         y: event.clientY
@@ -173,10 +183,11 @@ Statistiques du texte :
     stats,
     isVisible,
     position,
+    analyzeSelection,
     formatTime,
     init,
     options,
     updateOptions,
     copyStats
   }
-} 
+}

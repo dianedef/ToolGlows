@@ -277,8 +277,11 @@ onMessage('SETTINGS_UPDATED', async ({ data, sender }) => {
         settings: settings
       }, sourceTabId)
     }, 500)
+
+    return { success: true }
   } catch (error) {
     console.error('[ERROR] Settings update error:', error)
+    return { success: false }
   }
 })
 
@@ -313,8 +316,11 @@ onMessage('TOOLS_UPDATED', async ({ data, sender }) => {
     await broadcastToOtherTabs('SETTINGS_SYNC', {
       settings: updatedSettings
     }, sourceTabId)
+
+    return { success: true }
   } catch (error) {
     console.error('[ERROR] Tools update error:', error)
+    return { success: false }
   }
 })
 
@@ -322,7 +328,7 @@ onMessage('GET_INITIAL_STATE', async () => {
   try {
     // Récupérer l'état depuis le storage
     const result = await chrome.storage.sync.get('toolglowsSettings')
-    return { settings: result.toolglowsSettings }
+    return { settings: result.toolglowsSettings ?? null }
   } catch (error) {
     console.error('[ERROR] Failed to get initial state:', error)
     return { settings: null }

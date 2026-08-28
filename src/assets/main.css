@@ -11,6 +11,7 @@
 /* Styles pour la barre de défilement */
 #toolglows-app ::-webkit-scrollbar,
 #toolglows-extension ::-webkit-scrollbar,
+#toolglows-root ::-webkit-scrollbar,
 .p-dialog ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -19,6 +20,7 @@
 
 #toolglows-app ::-webkit-scrollbar-track,
 #toolglows-extension ::-webkit-scrollbar-track,
+#toolglows-root ::-webkit-scrollbar-track,
 .p-dialog ::-webkit-scrollbar-track {
   background: transparent;
   margin: 4px;
@@ -26,8 +28,9 @@
 
 #toolglows-app ::-webkit-scrollbar-thumb,
 #toolglows-extension ::-webkit-scrollbar-thumb,
+#toolglows-root ::-webkit-scrollbar-thumb,
 .p-dialog ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--primary-color) 35%, transparent);
+  background: color-mix(in srgb, var(--surface-card) 38%, transparent);
   border: 2px solid transparent;
   border-radius: 100px;
   background-clip: padding-box;
@@ -36,16 +39,17 @@
 
 #toolglows-app ::-webkit-scrollbar-thumb:hover,
 #toolglows-extension ::-webkit-scrollbar-thumb:hover,
+#toolglows-root ::-webkit-scrollbar-thumb:hover,
 .p-dialog ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--primary-color) 50%, transparent);
+  background: color-mix(in srgb, var(--surface-card) 55%, transparent);
   background-clip: padding-box;
   border-radius: 100px;
 }
 
 /* Pour Firefox */
-#toolglows-app *, #toolglows-extension *, .p-dialog * {
+#toolglows-app *, #toolglows-extension *, #toolglows-root *, .p-dialog * {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--primary-color) 35%, transparent) transparent;
+  scrollbar-color: color-mix(in srgb, var(--surface-card) 38%, transparent) transparent;
 }
 
 /* Styles communs */

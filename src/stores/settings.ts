@@ -22,7 +22,7 @@
  * Each tab receives update → Apply to local UI
  */
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { ref, toRaw, watch } from 'vue'
 import { bridgeApi, initBridgeListeners } from '@/bridge'
 import { useToolGlowsStore } from '@/stores/toolglows'
 import { useBrowserSyncStorage } from '@/composables/useBrowserStorage'
@@ -139,15 +139,16 @@ export const useSettingsStore = defineStore('settings', () => {
         applySettings(settings.value)
       } else {
         console.log('[INFO] No settings found in storage, using defaults')
+        // A fresh profile has no background state to request yet. Persist the
+        // local defaults first so toolbar initialization never waits on an
+        // empty bridge response.
+        await updateSettings(settings.value)
+        return
       }
 
-      // 2. Synchronise avec le background
-      const state = await bridgeApi.getInitialState()
-      if (state?.settings) {
-        settings.value = state.settings
-        console.log('[SUCCESS] Settings synced with background:', settings.value)
-        applySettings(settings.value)
-      }
+      // Storage is the durable source of truth. Cross-tab synchronization is
+      // received asynchronously through the bridge listeners and must not
+      // delay first render while a Manifest V3 worker wakes up.
     } catch (error) {
       console.error('[ERROR] Failed to load settings:', error)
     }
@@ -161,13 +162,11 @@ export const useSettingsStore = defineStore('settings', () => {
       ...newSettings
     }
 
-    try {
-      // Envoie au background
-      await bridgeApi.updateSettings(settings.value)
-      console.log('[SUCCESS] Settings update sent to background')
-    } catch (error) {
-      console.error('[ERROR] Failed to update settings:', error)
-    }
+    // The toolbar owns the local state. Background synchronization is a
+    // best-effort enhancement and must never prevent the UI from rendering.
+    void bridgeApi.updateSettings(settings.value)
+      .then(() => console.log('[SUCCESS] Settings update sent to background'))
+      .catch(error => console.error('[ERROR] Failed to update settings:', error))
   }
 
   /**
@@ -199,13 +198,9 @@ export const useSettingsStore = defineStore('settings', () => {
     // Optimistic local update
     settings.value.position = { x: boundedX, y: boundedY }
 
-    try {
-      // Persist and sync
-      await bridgeApi.updateSettings(settings.value)
-      console.log('[SUCCESS] Position update sent to background')
-    } catch (error) {
-      console.error('[ERROR] Failed to update position:', error)
-    }
+    void bridgeApi.updateSettings(settings.value)
+      .then(() => console.log('[SUCCESS] Position update sent to background'))
+      .catch(error => console.error('[ERROR] Failed to update position:', error))
   }
 
   const toggleTool = async (toolId: string) => {
@@ -217,13 +212,9 @@ export const useSettingsStore = defineStore('settings', () => {
       settings.value.activeTools.splice(index, 1)
     }
 
-    try {
-      // Forcer la sauvegarde et la synchronisation
-      await bridgeApi.updateSettings(settings.value)
-      console.log('[SUCCESS] Tool toggle synced with background')
-    } catch (error) {
-      console.error('[ERROR] Failed to sync tool toggle:', error)
-    }
+    void bridgeApi.updateSettings(settings.value)
+      .then(() => console.log('[SUCCESS] Tool toggle synced with background'))
+      .catch(error => console.error('[ERROR] Failed to sync tool toggle:', error))
   }
 
   /**

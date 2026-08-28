@@ -46,6 +46,7 @@
           v-if="toolglowsStore.activeTools.includes(tool.id)"
           class="p-button-rounded p-button-text"
           :aria-label="tool.name"
+          :title="tool.name"
           @click="() => {
             console.log('[INFO] Tool button clicked:', tool.id)
             isVisible[tool.id] = !isVisible[tool.id]
@@ -723,5 +724,20 @@ const closeSettings = () => {
   flex-direction: row;
   gap: 1rem;
   flex-wrap: wrap;
+  align-content: flex-start;
+  max-height: calc(100vh - 5rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .toolglows-bar {
+    max-width: calc(100vw - 2rem);
+  }
+
+  .toolglows-tools-container {
+    max-width: calc(100vw - 6rem);
+  }
 }
 </style>

@@ -142,6 +142,7 @@ const visible = computed({
 const {
   stats,
   options,
+  analyzeSelection,
   updateOptions,
   copyStats
 } = useWordCounter()
@@ -172,6 +173,14 @@ onMounted(async () => {
       isLoading: isLoading.value,
       storeInitialized: wordCounterStore.isInitialized
     })
+  }
+})
+
+// La boîte de dialogue est ouverte depuis la barre ToolGlows. Recalculer à
+// cette étape rend le compteur utile sans imposer un clic droit à l'utilisateur.
+watch(visible, (isOpen) => {
+  if (isOpen) {
+    analyzeSelection()
   }
 })
 
@@ -280,4 +289,4 @@ const closeDialog = () => {
   width: 1.25rem;
   height: 1.25rem;
 }
-</style> 
+</style>
