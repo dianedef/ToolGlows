@@ -1,7 +1,8 @@
 @import 'primeicons/primeicons.css';
+@import './design-tokens.css';
 
 /* Reset pour nos composants */
-#toolglows-app *, #toolglows-extension * {
+#toolglows-app *, #toolglows-extension *, #toolglows-root * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -13,9 +14,9 @@
 #toolglows-extension ::-webkit-scrollbar,
 #toolglows-root ::-webkit-scrollbar,
 .p-dialog ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  margin: 4px;
+  width: var(--tg-scrollbar-size);
+  height: var(--tg-scrollbar-size);
+  margin: var(--tg-scrollbar-track-inset);
 }
 
 #toolglows-app ::-webkit-scrollbar-track,
@@ -23,7 +24,7 @@
 #toolglows-root ::-webkit-scrollbar-track,
 .p-dialog ::-webkit-scrollbar-track {
   background: transparent;
-  margin: 4px;
+  margin: var(--tg-scrollbar-track-inset);
 }
 
 #toolglows-app ::-webkit-scrollbar-thumb,
@@ -31,10 +32,10 @@
 #toolglows-root ::-webkit-scrollbar-thumb,
 .p-dialog ::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--surface-card) 38%, transparent);
-  border: 2px solid transparent;
-  border-radius: 100px;
+  border: var(--tg-scrollbar-thumb-inset) solid transparent;
+  border-radius: var(--tg-radius-round);
   background-clip: padding-box;
-  margin: 2px;
+  margin: var(--tg-scrollbar-thumb-inset);
 }
 
 #toolglows-app ::-webkit-scrollbar-thumb:hover,
@@ -43,7 +44,7 @@
 .p-dialog ::-webkit-scrollbar-thumb:hover {
   background: color-mix(in srgb, var(--surface-card) 55%, transparent);
   background-clip: padding-box;
-  border-radius: 100px;
+  border-radius: var(--tg-radius-round);
 }
 
 /* Pour Firefox */
@@ -54,14 +55,14 @@
 
 /* Styles communs */
 .toolglows-control-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: var(--tg-size-control);
+  height: var(--tg-size-control);
+  border-radius: var(--tg-radius-round);
   border: none;
-  background: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  background: var(--tg-surface-raised);
+  box-shadow: var(--tg-shadow-control);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform var(--tg-motion-standard);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -69,50 +70,31 @@
 
 .toolglows-settings-panel {
   position: absolute;
-  right: 100%;
+  right: var(--tg-panel-inline-end);
   top: 0;
-  margin-right: 10px;
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  width: 300px;
+  margin-right: var(--tg-space-4);
+  background: var(--tg-surface-raised);
+  padding: var(--tg-space-5);
+  border-radius: var(--tg-radius-control);
+  box-shadow: var(--tg-shadow-card);
+  width: var(--tg-panel-width);
 }
 
 /* Animation pour les panneaux */
 .toolglows-settings-panel-enter-active,
 .toolglows-settings-panel-leave-active {
-  transition: opacity 0.3s, transform 0.3s;
+  transition: opacity var(--tg-motion-panel), transform var(--tg-motion-panel);
 }
 
 .toolglows-settings-panel-enter-from,
 .toolglows-settings-panel-leave-to {
   opacity: 0;
-  transform: translateX(20px);
-}
-
-:root {
-  /* Couleurs personnalisées */
-  --primary-color: #2196f3;
-  --primary-color-text: #ffffff;
-
-  /* Variables PrimeVue */
-  --surface-ground: #ffffff;
-  --surface-section: #ffffff;
-  --surface-card: #ffffff;
-  --surface-overlay: #ffffff;
-  --surface-border: #dfe7ef;
-  --text-color: #495057;
-  --text-color-secondary: #6c757d;
-
-  /* Ombres */
-  --card-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  --border-radius: 8px;
+  transform: translateX(var(--tg-space-5));
 }
 
 /* Style global pour les boutons */
 .p-button {
-  transition: all 0.3s ease;
+  transition: transform var(--tg-motion-standard);
 }
 
 .p-button:hover {
@@ -131,19 +113,19 @@
 
 /* Style pour les checkboxes */
 .p-checkbox {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: var(--tg-size-checkbox);
+  height: var(--tg-size-checkbox);
 }
 
 /* Style pour le dropdown */
 .p-dropdown {
-  width: 100%;
+  width: var(--tg-full-width);
 }
 
 /* Animations */
 .p-sidebar-enter-active,
 .p-sidebar-leave-active {
-  transition: transform 0.3s ease;
+  transition: transform var(--tg-motion-standard);
 }
 
 .p-sidebar-enter-from,
@@ -153,22 +135,22 @@
 
 /* Style spécifique pour le bouton principal */
 .toolglows-main-button.p-button {
-  width: 48px !important;
-  height: 48px !important;
-  font-size: 1.5rem !important;
-  background-color: white !important;
+  width: var(--tg-size-main-control) !important;
+  height: var(--tg-size-main-control) !important;
+  font-size: var(--tg-size-main-icon) !important;
+  background-color: var(--tg-surface-raised) !important;
   color: var(--text-color) !important;
   border: none !important;
   box-shadow: var(--card-shadow) !important;
-  margin: 10px !important;
-  transition: transform 0.3s ease !important;
+  margin: var(--tg-space-4) !important;
+  transition: transform var(--tg-motion-standard) !important;
   cursor: inherit !important;
 }
 
 .toolglows-main-button.p-button:hover,
 .toolglows-main-button.p-button:active,
 .toolglows-main-button.p-button:focus {
-  background-color: white !important;
+  background-color: var(--tg-surface-raised) !important;
   transform: scale(1.1);
   color: var(--text-color) !important;
   cursor: inherit !important;
@@ -177,15 +159,15 @@
 .toolglows-main-button.p-button.dragging {
   cursor: grabbing !important;
   transform: scale(1.1);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+  box-shadow: var(--tg-shadow-control-dragging) !important;
 }
 
 /* Style pour les boutons d'outils */
 .toolglows-tools-container .p-button {
-  width: 48px !important;
-  height: 48px !important;
-  font-size: 1.2rem !important;
-  background-color: white !important;
+  width: var(--tg-size-main-control) !important;
+  height: var(--tg-size-main-control) !important;
+  font-size: var(--tg-size-tool-icon) !important;
+  background-color: var(--tg-surface-raised) !important;
   color: var(--text-color) !important;
   border: none !important;
   box-shadow: var(--card-shadow) !important;
@@ -193,21 +175,21 @@
 }
 
 .toolglows-tools-container .p-button:hover {
-  background-color: white !important;
+  background-color: var(--tg-interaction-hover) !important;
   transform: scale(1.1);
 }
 
 .toolglows-tools-container .p-button.active {
   background-color: var(--primary-color) !important;
-  color: white !important;
+  color: var(--tg-action-on) !important;
 }
 
 /* Style pour le conteneur d'outils */
 .toolglows-tools-container {
-  background: white !important;
-  padding: 10px !important;
-  border-radius: 12px !important;
+  background: var(--tg-surface-raised) !important;
+  padding: var(--tg-space-4) !important;
+  border-radius: var(--tg-radius-control) !important;
   box-shadow: var(--card-shadow) !important;
-  margin: 10px !important;
+  margin: var(--tg-space-4) !important;
   cursor: default !important;
 }

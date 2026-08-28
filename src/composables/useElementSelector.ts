@@ -31,8 +31,8 @@ interface ElementSelectorOptions {
 
 export function useElementSelector(options: ElementSelectorOptions = {}) {
   const {
-    highlightColor = 'rgba(255, 0, 0, 0.2)',
-    hoverColor = 'rgba(255, 165, 0, 0.3)',
+    highlightColor,
+    hoverColor,
     excludeSelector = '.toolglows-bar, [data-component="toolglows-tool"]',
     onElementSelect = () => {},
     onElementHover = () => {}
@@ -41,6 +41,11 @@ export function useElementSelector(options: ElementSelectorOptions = {}) {
   const isActive = ref(false)
   const hoveredElement = ref<HTMLElement | null>(null)
   const highlightedElements = ref<HTMLElement[]>([])
+
+  const resolveToken = (token: string) => {
+    const root = document.getElementById('toolglows-root') ?? document.documentElement
+    return getComputedStyle(root).getPropertyValue(token).trim()
+  }
 
   /**
    * Checks if element should be excluded from selection
@@ -84,17 +89,17 @@ export function useElementSelector(options: ElementSelectorOptions = {}) {
 
   // Fonction pour appliquer le style de survol à un élément
   const applyHoverStyle = (element: HTMLElement) => {
-    element.style.outline = '2px dashed orange'
-    element.style.backgroundColor = hoverColor
-    element.style.transition = 'all 0.2s ease-in-out'
+    element.style.outline = `2px dashed ${resolveToken('--tg-element-outline')}`
+    element.style.backgroundColor = hoverColor || resolveToken('--tg-element-hover')
+    element.style.transition = 'background-color 0.2s ease-in-out, outline-color 0.2s ease-in-out'
     element.style.cursor = 'pointer'
   }
 
   // Fonction pour appliquer le style de sélection à un élément
   const applySelectStyle = (element: HTMLElement) => {
-    element.style.outline = '2px solid red'
-    element.style.backgroundColor = highlightColor
-    element.style.transition = 'all 0.2s ease-in-out'
+    element.style.outline = `2px solid ${resolveToken('--tg-element-outline')}`
+    element.style.backgroundColor = highlightColor || resolveToken('--tg-element-selected')
+    element.style.transition = 'background-color 0.2s ease-in-out, outline-color 0.2s ease-in-out'
   }
 
   const handleMouseOver = (event: MouseEvent) => {

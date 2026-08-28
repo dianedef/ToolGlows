@@ -141,8 +141,6 @@ const isShortcutEnabled = computed({
 
 // Configuration du sélecteur d'éléments
 const elementSelector = useElementSelector({
-  highlightColor: 'rgba(255, 0, 0, 0.2)',
-  hoverColor: 'rgba(255, 165, 0, 0.3)',
   onElementSelect: async (element) => {
     await hideElementStore.hideElement(element)
     elementSelector.stopSelecting()
@@ -256,27 +254,27 @@ onUnmounted(() => {
 
 <style scoped>
 .toolglows-hide-element-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 :deep(.p-message) {
-  width: 100%;
+  width: var(--tg-full-width);
 }
 
 .hidden-elements {
   border: 1px solid var(--surface-border);
   border-radius: var(--border-radius);
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .hidden-element-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
   background: var(--surface-ground);
   border-radius: var(--border-radius);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tg-space-2);
 
   &:last-child {
     margin-bottom: 0;
@@ -286,28 +284,28 @@ onUnmounted(() => {
 .hidden-element-info {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--tg-space-1);
   flex: 1;
   min-width: 0;
 }
 
 .element-name {
   font-family: monospace;
-  font-size: 0.9rem;
+  font-size: var(--tg-text-base);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .timestamp {
-  font-size: 0.8rem;
+  font-size: var(--tg-text-sm);
   color: var(--text-color-secondary);
 }
 
 .hidden-element-actions {
   display: flex;
-  gap: 0.5rem;
-  margin-left: 1rem;
+  gap: var(--tg-space-2);
+  margin-left: var(--tg-space-4);
 }
 
 .no-elements {
@@ -316,14 +314,14 @@ onUnmounted(() => {
   font-style: italic;
 
   p {
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--tg-space-2);
   }
 }
 
 .shortcut-settings {
   background: var(--surface-ground);
   border-radius: var(--border-radius);
-  padding: 1rem;
+  padding: var(--tg-space-4);
 
   h4 {
     margin: 0 0 1rem 0;
@@ -331,23 +329,23 @@ onUnmounted(() => {
 }
 
 .shortcut-input {
-  margin-top: 1rem;
+  margin-top: var(--tg-space-4);
 
   small {
     display: block;
-    margin-top: 0.5rem;
+    margin-top: var(--tg-space-2);
   }
 }
 
 .field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 h4 {
   margin: 0 0 1rem 0;
   color: var(--text-color);
-  font-size: 1.1rem;
+  font-size: var(--tg-text-lg);
 }
 </style>

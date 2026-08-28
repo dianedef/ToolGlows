@@ -83,7 +83,7 @@ export function useExcludeToolGlowsBar() {
 
       /* Styles pour le masque de dialogue */
       .p-dialog-mask {
-        background-color: rgba(0, 0, 0, 0.4) !important;
+        background-color: var(--tg-scrim) !important;
       }
 
       /* Styles pour les éléments de liste et grilles */
@@ -100,9 +100,18 @@ export function useExcludeToolGlowsBar() {
       /* Styles pour les éléments actifs */
       .toolglows-tool-item.active,
       .toolglows-setting-item.active,
-      .p-button.p-highlight,
-      .p-checkbox-checked .p-checkbox-box {
+      .p-button.p-highlight {
+        background-color: var(--highlight-bg) !important;
+        color: var(--highlight-text-color) !important;
+      }
+
+      .p-checkbox.p-highlight .p-checkbox-box {
         background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: var(--primary-color-text) !important;
+      }
+
+      .p-checkbox.p-highlight .p-checkbox-icon {
         color: var(--primary-color-text) !important;
       }
 

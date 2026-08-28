@@ -1,0 +1,51 @@
+/*
+ * ToolGlows semantic design tokens.
+ * PrimeVue provides the base light/dark palette; this layer maps it to the
+ * extension's interaction roles without hard-coding a second palette.
+ */
+:root,
+#toolglows-root {
+  --tg-surface-canvas: var(--surface-ground);
+  --tg-surface-raised: var(--surface-card);
+  --tg-surface-overlay: var(--surface-overlay);
+  --tg-text-primary: var(--text-color);
+  --tg-text-secondary: var(--text-color-secondary);
+  --tg-border-default: var(--surface-border);
+  --tg-action: var(--primary-color);
+  --tg-action-on: var(--primary-color-text);
+  --tg-interaction-hover: color-mix(in srgb, var(--tg-action) 8%, var(--tg-surface-raised));
+  --tg-interaction-selected: color-mix(in srgb, var(--tg-action) 14%, var(--tg-surface-raised));
+  --tg-interaction-focus: color-mix(in srgb, var(--tg-action) 28%, transparent);
+  --tg-element-hover: color-mix(in srgb, var(--tg-action) 14%, transparent);
+  --tg-element-selected: color-mix(in srgb, var(--tg-action) 22%, transparent);
+  --tg-element-outline: var(--tg-action);
+  --tg-radius-control: var(--border-radius);
+  --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --tg-radius-round: 999px;
+  --tg-scrollbar-size: 8px;
+  --tg-scrollbar-track-inset: 4px;
+  --tg-scrollbar-thumb-inset: 2px;
+  --tg-size-control: 40px;
+  --tg-size-main-control: 48px;
+  --tg-size-checkbox: 1.5rem;
+  --tg-size-tool-icon: 1.2rem;
+  --tg-size-main-icon: 1.5rem;
+  --tg-space-1: 0.25rem;
+  --tg-space-2: 0.5rem;
+  --tg-space-3: 0.75rem;
+  --tg-space-4: 1rem;
+  --tg-space-5: 1.5rem;
+  --tg-panel-width: 300px;
+  --tg-full-width: 100%;
+  --tg-panel-inline-end: 100%;
+  --tg-text-sm: 0.8rem;
+  --tg-text-base: 0.9rem;
+  --tg-text-lg: 1.1rem;
+  --tg-motion-fast: 0.2s ease-in-out;
+  --tg-motion-standard: 0.3s ease;
+  --tg-motion-panel: 0.3s;
+  --tg-shadow-control: 0 2px 5px rgba(0, 0, 0, 0.2);
+  --tg-shadow-control-dragging: 0 4px 15px rgba(0, 0, 0, 0.3);
+  --tg-shadow-card: var(--card-shadow);
+  --tg-scrim: rgba(0, 0, 0, 0.4);
+}
