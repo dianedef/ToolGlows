@@ -1,13 +1,13 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.1.1"
 project: "toolglows"
 created: "2026-08-26"
 created_at: "2026-08-26 21:06:58 UTC"
 updated: "2026-08-28"
-updated_at: "2026-08-28 10:51:21 UTC"
-status: active
+updated_at: "2026-08-28 10:53:06 UTC"
+status: completed
 source_skill: sg-maintenance
 source_model: "GPT-5.6"
 scope: "extension-toolchain-modernization"
@@ -35,7 +35,7 @@ linked_systems:
   - shipglows_data/technical/developer-guide.md
 depends_on: []
 supersedes: []
-next_step: "commit and push the verified ToolGlows modernization to origin/main"
+next_step: "operator loads dist/chrome as unpacked for manual feature acceptance; repair stale ShipGlows stderr logs in the separate CLI chantier"
 ---
 
 # Title
@@ -44,7 +44,7 @@ Extension Toolchain Modernization
 
 # Status
 
-Verified — delivery pending. After the initial implementation-only pass, the operator explicitly authorized validation through ShipGlows and ordinary delivery on `main`. Type checking, tests, lint without errors, Chrome and Firefox production builds, dependency installation, and the ShipGlows extension lifecycle now pass. Manual acceptance inside the personal Chrome profile and store publication remain intentionally outside agent control.
+Shipped for manual acceptance. After the initial implementation-only pass, the operator explicitly authorized validation through ShipGlows and ordinary delivery on `main`. Type checking, tests, lint without errors, Chrome and Firefox production builds, dependency installation, and the ShipGlows extension lifecycle pass, and commit `d95c227` is available on `origin/main`. Manual acceptance inside the personal Chrome profile and store publication remain intentionally outside agent control.
 
 # User Story
 
@@ -129,7 +129,7 @@ Update the README permission and command descriptions, the architecture dependen
 | sg-ready | done | Scope, risk boundary, deferred proof, and documentation obligations are explicit | sg-maintenance |
 | sg-maintenance | done | Toolchain, manifests, privileged bridge, launcher, pnpm 10 policy, generated types, and docs modernized | sg-verify |
 | sg-verify | done | Install, typecheck, tests, lint, Chrome/Firefox builds, audits, and ShipGlows start/status/open/stop pass | sg-ship |
-| sg-ship | pending | Exact owned diff is ready for an ordinary `main` push | push `origin/main` |
+| sg-ship | done | Commit `d95c227` pushed from `main` to `origin/main` | operator manual Chrome acceptance |
 
 # Skill Run History
 
@@ -138,3 +138,4 @@ Update the README permission and command descriptions, the architecture dependen
 | 2026-08-26 | sg-maintenance | GPT-5.6 | Captured and readied the approved modernization contract | ready | implement without runtime validation |
 | 2026-08-26 | sg-maintenance | GPT-5.6 | Modernized the approved scope and reduced dependency audit findings | implemented — unverified | operator build/browser validation |
 | 2026-08-28 | sg-maintenance | GPT-5.6 | Stabilized generated types and pnpm policy, repaired type/lint/test findings, built both targets, and exercised the ShipGlows extension lifecycle | verified — delivery pending | push exact owned diff to origin/main |
+| 2026-08-28 | sg-release | GPT-5.6 | Committed and pushed the exact verified modernization scope on `main` | shipped for manual acceptance (`d95c227`) | operator loads `dist/chrome` as unpacked |
