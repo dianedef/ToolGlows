@@ -31,7 +31,7 @@ const color = ref(settingsStore.settings.toolbarColor?.replace('#', '') || 'ff69
 
 // Pour l'affichage, on utilise toujours la couleur du store
 const displayColor = computed(() => {
-  const color = settingsStore.settings.toolbarColor || '#ff69b4'
+  const color = settingsStore.settings.toolbarColor || 'var(--tg-toolbar-color-default)'
   console.log('Displayed color:', color)
   return color
 })
@@ -72,10 +72,10 @@ function onHide() {
 }
 
 :deep(.p-colorpicker-panel) {
-  background: white;
+  background: var(--tg-surface-raised);
   border: none;
   box-shadow: var(--card-shadow);
   border-radius: var(--border-radius);
   padding: 0.5rem;
 }
-</style> 
+</style>

@@ -486,11 +486,11 @@ onUnmounted(() => {
 
 // Constantes pour les tailles
 const sizeClasses = {
-  'xs': { buttonSize: '2.5rem', fontSize: '1.2rem', emojiSize: '1.5rem' },
-  'sm': { buttonSize: '3rem', fontSize: '1.3rem', emojiSize: '1.7rem' },
-  'md': { buttonSize: '4rem', fontSize: '1.5rem', emojiSize: '2rem' },
-  'lg': { buttonSize: '5rem', fontSize: '1.7rem', emojiSize: '2.3rem' },
-  'xl': { buttonSize: '6rem', fontSize: '1.9rem', emojiSize: '2.6rem' }
+  'xs': { buttonSize: 'var(--tg-size-toolbar-xs)', fontSize: '1.2rem', emojiSize: '1.5rem' },
+  'sm': { buttonSize: 'var(--tg-size-toolbar-sm)', fontSize: '1.3rem', emojiSize: '1.7rem' },
+  'md': { buttonSize: 'var(--tg-size-toolbar-md)', fontSize: '1.5rem', emojiSize: '2rem' },
+  'lg': { buttonSize: 'var(--tg-size-toolbar-lg)', fontSize: '1.7rem', emojiSize: '2.3rem' },
+  'xl': { buttonSize: 'var(--tg-size-toolbar-xl)', fontSize: '1.9rem', emojiSize: '2.6rem' }
 }
 
 // Computed style qui combine le style du drag et les autres styles
@@ -501,7 +501,7 @@ const toolbarStyle = computed(() => {
     position: 'fixed' as const,
     left: `${position.value.x}px`,
     top: `${position.value.y}px`,
-    backgroundColor: settingsStore.settings.toolbarColor || '#ff69b4',
+    backgroundColor: settingsStore.settings.toolbarColor || 'var(--tg-toolbar-color-default)',
     '--button-size': size.buttonSize,
     '--font-size': size.fontSize,
     '--emoji-size': size.emojiSize,
@@ -646,9 +646,9 @@ const closeSettings = () => {
   bottom: 20px;
   left: 20px;
   padding: 10px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  border-radius: 8px;
+  background: var(--tg-loading-surface);
+  color: var(--tg-action-on);
+  border-radius: var(--tg-radius-control);
   z-index: 2147483647;
 }
 

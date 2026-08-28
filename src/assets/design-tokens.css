@@ -31,6 +31,11 @@
   --tg-scrollbar-thumb-inset: 2px;
   --tg-size-control: 40px;
   --tg-size-main-control: 48px;
+  --tg-size-toolbar-xs: 2.5rem;
+  --tg-size-toolbar-sm: 3rem;
+  --tg-size-toolbar-md: 4rem;
+  --tg-size-toolbar-lg: 5rem;
+  --tg-size-toolbar-xl: 6rem;
   --tg-size-checkbox: 1.5rem;
   --tg-size-tool-icon: 1.2rem;
   --tg-size-main-icon: 1.5rem;
@@ -45,6 +50,8 @@
   --tg-text-sm: 0.8rem;
   --tg-text-base: 0.9rem;
   --tg-text-lg: 1.1rem;
+  --tg-toolbar-color-default: #ff69b4;
+  --tg-loading-surface: color-mix(in srgb, #000 70%, transparent);
   --tg-motion-fast: 0.2s ease-in-out;
   --tg-motion-standard: 0.3s ease;
   --tg-motion-panel: 0.3s;
