@@ -145,7 +145,7 @@ const executeAction = async (actionId: string) => {
 }
 
 .quick-actions-content {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .shortcuts-section,
@@ -154,7 +154,7 @@ const executeAction = async (actionId: string) => {
 }
 
 h3 {
-  margin-bottom: 1rem;
+  margin-bottom: var(--tg-space-4);
   color: var(--primary-color);
 }
 
@@ -162,23 +162,23 @@ h3 {
 .action-item {
   display: flex;
   align-items: center;
-  margin-bottom: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 4px;
+  margin-bottom: var(--tg-space-2);
+  padding: var(--tg-space-2);
+  border-radius: var(--tg-radius-sm);
   background-color: var(--surface-ground);
 }
 
 .shortcut-key {
   background-color: var(--surface-card);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  margin-right: 1rem;
+  padding: var(--tg-space-1) 0.5rem;
+  border-radius: var(--tg-radius-sm);
+  margin-right: var(--tg-space-4);
   font-family: monospace;
 }
 
 .action-name {
   font-weight: bold;
-  margin-right: 1rem;
+  margin-right: var(--tg-space-4);
 }
 
 .shortcut-description,
@@ -187,13 +187,13 @@ h3 {
 }
 
 .action-icon {
-  margin-right: 0.5rem;
+  margin-right: var(--tg-space-2);
   font-size: 1.1rem;
   color: var(--primary-color);
 }
 
 h4 {
-  margin: 1rem 0 0.5rem;
+  margin: var(--tg-space-4) 0 0.5rem;
   color: var(--text-color-secondary);
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -203,9 +203,9 @@ h4 {
 .action-item {
   display: flex;
   align-items: center;
-  margin-bottom: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 4px;
+  margin-bottom: var(--tg-space-2);
+  padding: var(--tg-space-2);
+  border-radius: var(--tg-radius-sm);
   background-color: var(--surface-ground);
   cursor: pointer;
   transition: background-color 0.2s;

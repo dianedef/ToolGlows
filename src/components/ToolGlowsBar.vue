@@ -605,13 +605,13 @@ const closeSettings = () => {
 .toolglows-bar {
   display: flex;
   flex-direction: row;
-  gap: 1rem;
+  gap: var(--tg-space-4);
   border-radius: 3rem;
   box-shadow: var(--card-shadow);
   user-select: none;
   cursor: move;
   min-width: fit-content;
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
   touch-action: none;
 
   &.toolglows-expanded {
@@ -643,9 +643,9 @@ const closeSettings = () => {
 
 .toolglows-loading {
   position: fixed;
-  bottom: 20px;
-  left: 20px;
-  padding: 10px;
+  bottom: var(--tg-space-5);
+  left: var(--tg-space-5);
+  padding: var(--tg-space-2);
   background: var(--tg-loading-surface);
   color: var(--tg-action-on);
   border-radius: var(--tg-radius-control);
@@ -665,7 +665,7 @@ const closeSettings = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: var(--tg-space-4);
 
   h3 {
     margin: 0;
@@ -673,20 +673,20 @@ const closeSettings = () => {
 }
 
 .toolglows-settings-content {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .toolglows-tools-grid {
   display: grid;
-  gap: 1rem;
+  gap: var(--tg-space-4);
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
 .toolglows-tool-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
+  gap: var(--tg-space-3);
+  padding: var(--tg-space-2);
   background: var(--surface-ground);
   border-radius: var(--border-radius);
 }
@@ -694,7 +694,7 @@ const closeSettings = () => {
 .toolglows-tool-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
   flex: 1;
 }
 
@@ -706,8 +706,8 @@ const closeSettings = () => {
 .toolglows-setting-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
+  gap: var(--tg-space-3);
+  padding: var(--tg-space-2);
   background: var(--surface-ground);
   border-radius: var(--border-radius);
   flex-wrap: wrap;
@@ -715,20 +715,20 @@ const closeSettings = () => {
 
 .toolglows-settings-dialog {
   :deep(.p-dialog-content) {
-    padding: 1.5rem;
+    padding: var(--tg-space-5);
   }
 }
 
 .toolglows-tools-container {
   display: flex;
   flex-direction: row;
-  gap: 1rem;
+  gap: var(--tg-space-4);
   flex-wrap: wrap;
   align-content: flex-start;
   max-height: calc(100vh - 5rem);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-right: 0.25rem;
+  padding-right: var(--tg-space-1);
 }
 
 @media (max-width: 640px) {

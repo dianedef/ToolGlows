@@ -149,7 +149,7 @@ onUnmounted(() => {
 
 <style scoped>
 .toolglows-reload-tabs-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 :deep(.p-message) {
@@ -159,8 +159,8 @@ onUnmounted(() => {
 .shortcut-settings {
   background: var(--surface-ground);
   border-radius: var(--border-radius);
-  padding: 1rem;
-  margin-bottom: 1rem;
+  padding: var(--tg-space-4);
+  margin-bottom: var(--tg-space-4);
 
   h4 {
     margin: 0 0 1rem 0;
@@ -168,18 +168,18 @@ onUnmounted(() => {
 }
 
 .shortcut-input {
-  margin-top: 1rem;
+  margin-top: var(--tg-space-4);
 
   small {
     display: block;
-    margin-top: 0.5rem;
+    margin-top: var(--tg-space-2);
   }
 }
 
 .field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 h4 {

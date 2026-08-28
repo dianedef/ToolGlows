@@ -80,28 +80,28 @@ onMounted(async () => {
 
 <style scoped>
 .toolglows-scroll-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .toolglows-field {
-  margin-bottom: 1rem;
+  margin-bottom: var(--tg-space-4);
 }
 
 .toolglows-field h4 {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tg-space-2);
   color: var(--text-color);
 }
 
 .toolglows-field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .toolglows-threshold-slider {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .toolglows-small {

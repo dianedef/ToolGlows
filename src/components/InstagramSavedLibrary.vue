@@ -263,38 +263,38 @@ const closeDialog = () => {
 
 <style scoped>
 .instagram-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .field {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--tg-space-5);
 }
 
 .field h4 {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--tg-space-3);
   color: var(--text-color);
 }
 
 .collections-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .collection-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
   background: var(--surface-card);
-  border-radius: 6px;
+  border-radius: var(--tg-radius-md);
   border: 1px solid var(--surface-border);
 }
 
 .collection-info {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .collection-icon {
@@ -317,19 +317,19 @@ const closeDialog = () => {
 
 .collection-actions {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--tg-space-1);
 }
 
 .field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .field-slider {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .field-slider label,
@@ -337,7 +337,7 @@ const closeDialog = () => {
 .field-dropdown label {
   font-size: 0.875rem;
   color: var(--text-color);
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--tg-space-1);
 }
 
 .field-slider small {
@@ -349,6 +349,6 @@ const closeDialog = () => {
 .field-dropdown {
   display: flex;
   flex-direction: column;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tg-space-2);
 }
 </style> 

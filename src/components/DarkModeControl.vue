@@ -246,15 +246,15 @@ const onTimeChange = (value: unknown, isStart: boolean) => {
 
 <style scoped>
 .toolglows-dark-mode-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .toolglows-field {
-  margin-bottom: 1rem;
+  margin-bottom: var(--tg-space-4);
 }
 
 .toolglows-field h4 {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tg-space-2);
   color: var(--text-color);
 }
 
@@ -263,25 +263,25 @@ const onTimeChange = (value: unknown, isStart: boolean) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--tg-space-4);
 }
 
 .toolglows-field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .toolglows-schedule {
-  margin-top: 1rem;
-  padding-left: 1.5rem;
+  margin-top: var(--tg-space-4);
+  padding-left: var(--tg-space-5);
 }
 
 .toolglows-time-picker {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--tg-space-4);
 }
 
 .toolglows-excluded-domains {
@@ -295,7 +295,7 @@ const onTimeChange = (value: unknown, isStart: boolean) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem;
+    padding: var(--tg-space-2);
     background: var(--surface-ground);
     border-radius: var(--border-radius);
   }

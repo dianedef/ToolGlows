@@ -305,28 +305,28 @@ const closeDialog = () => {
 
 <style scoped>
 .drag-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .field {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--tg-space-5);
 }
 
 .field h4 {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--tg-space-3);
   color: var(--text-color);
 }
 
 .field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .field-slider {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .field-slider label {
@@ -342,23 +342,23 @@ const closeDialog = () => {
 .file-types {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
   align-items: center;
 }
 
 .custom-actions {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .custom-action-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
   background: var(--surface-card);
-  border-radius: 6px;
+  border-radius: var(--tg-radius-md);
   border: 1px solid var(--surface-border);
 }
 
@@ -378,6 +378,6 @@ const closeDialog = () => {
 
 .action-buttons {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--tg-space-1);
 }
 </style>

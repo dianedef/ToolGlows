@@ -216,43 +216,43 @@ const previewQuery = computed(() => {
 .advanced-search-panel {
   background: var(--surface-card);
   border-radius: var(--border-radius);
-  padding: 1.5rem;
+  padding: var(--tg-space-5);
   max-width: 600px;
   margin: 0 auto;
 }
 
 .search-options {
   display: grid;
-  gap: 1rem;
+  gap: var(--tg-space-4);
 }
 
 .option-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .excluded-words {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .number-range {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 :deep(.p-panel) {
@@ -260,12 +260,12 @@ const previewQuery = computed(() => {
 }
 
 :deep(.p-panel .p-panel-header) {
-  padding: 1rem;
-  font-size: 1rem;
+  padding: var(--tg-space-4);
+  font-size: var(--tg-space-4);
 }
 
 :deep(.p-panel .p-panel-content) {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 :deep(.p-float-label) {

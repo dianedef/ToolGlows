@@ -132,31 +132,31 @@ onMounted(() => {
   background: var(--surface-card);
   border-radius: var(--border-radius);
   box-shadow: var(--card-shadow);
-  padding: 1rem;
+  padding: var(--tg-space-4);
   z-index: 1000;
 }
 
 .setting-group {
-  margin-bottom: 1rem;
+  margin-bottom: var(--tg-space-4);
 }
 
 .setting-group h4 {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tg-space-2);
   color: var(--text-color);
 }
 
 .option-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: var(--tg-space-2);
+  margin-bottom: var(--tg-space-2);
 }
 
 .width-row {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  gap: var(--tg-space-2);
+  margin-top: var(--tg-space-4);
 }
 
 .width-row label {
@@ -175,7 +175,7 @@ onMounted(() => {
 }
 
 :deep(.p-card .p-card-content) {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 :deep(.p-checkbox) {
@@ -184,6 +184,6 @@ onMounted(() => {
 }
 
 :deep(.p-slider) {
-  margin: 0.5rem 0;
+  margin: var(--tg-space-2) 0;
 }
 </style> 

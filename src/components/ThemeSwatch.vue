@@ -48,8 +48,8 @@ function onHide() {
 
 <style scoped>
 .theme-swatch {
-  width: 24px;
-  height: 24px;
+  width: var(--tg-space-5);
+  height: var(--tg-space-5);
   position: relative;
   display: inline-block;
 }
@@ -76,6 +76,6 @@ function onHide() {
   border: none;
   box-shadow: var(--card-shadow);
   border-radius: var(--border-radius);
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
 }
 </style>

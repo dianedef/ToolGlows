@@ -144,30 +144,30 @@ const closeDialog = () => {
 
 <style scoped>
 .copy-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .field {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--tg-space-5);
 }
 
 .field h4 {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--tg-space-3);
   color: var(--text-color);
 }
 
 .formats-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .format-item {
   display: flex;
   align-items: center;
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
   background: var(--surface-card);
-  border-radius: 6px;
+  border-radius: var(--tg-radius-md);
   border: 1px solid var(--surface-border);
   cursor: pointer;
   transition: all 0.2s;
@@ -185,7 +185,7 @@ const closeDialog = () => {
 .format-info {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .format-icon {
@@ -209,6 +209,6 @@ const closeDialog = () => {
 .field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 </style>

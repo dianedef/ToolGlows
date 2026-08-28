@@ -200,7 +200,7 @@ const closeDialog = () => {
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  gap: 1rem;
+  gap: var(--tg-space-4);
   color: var(--text-color-secondary);
 }
 
@@ -211,7 +211,7 @@ const closeDialog = () => {
 .stats-group {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: var(--tg-space-4);
   text-align: center;
 }
 
@@ -222,14 +222,14 @@ const closeDialog = () => {
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: var(--tg-space-5);
   font-weight: bold;
   color: var(--primary-color);
 }
 
 .reading-time {
   text-align: center;
-  padding: 0.5rem 0;
+  padding: var(--tg-space-2) 0;
 }
 
 .reading-time h4 {
@@ -242,7 +242,7 @@ const closeDialog = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
   color: var(--text-color-secondary);
 }
 
@@ -255,8 +255,8 @@ const closeDialog = () => {
 .option-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: var(--tg-space-2);
+  margin-bottom: var(--tg-space-2);
 }
 
 .frequent-words h4 {
@@ -268,13 +268,13 @@ const closeDialog = () => {
 .words-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .dialog-footer {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--tg-space-4);
 }
 
 :deep(.p-dialog-content) {

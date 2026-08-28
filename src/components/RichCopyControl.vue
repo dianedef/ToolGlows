@@ -295,38 +295,38 @@ const closeDialog = () => {
 
 <style scoped>
 .copy-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .field {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--tg-space-5);
 }
 
 .field h4 {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--tg-space-3);
   color: var(--text-color);
 }
 
 .formats-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .format-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
   background: var(--surface-card);
-  border-radius: 6px;
+  border-radius: var(--tg-radius-md);
   border: 1px solid var(--surface-border);
 }
 
 .format-info {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .format-icon {
@@ -349,19 +349,19 @@ const closeDialog = () => {
 
 .format-actions {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--tg-space-1);
 }
 
 .field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .field-slider {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .field-slider label {
@@ -377,43 +377,43 @@ const closeDialog = () => {
 .replacements-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .replacement-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
   background: var(--surface-card);
-  border-radius: 6px;
+  border-radius: var(--tg-radius-md);
   border: 1px solid var(--surface-border);
 }
 
 .replacement-pattern {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .search-text,
 .replace-text {
   font-family: monospace;
-  padding: 0.25rem 0.5rem;
+  padding: var(--tg-space-1) 0.5rem;
   background: var(--surface-ground);
-  border-radius: 4px;
+  border-radius: var(--tg-radius-sm);
 }
 
 .add-replacement {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
   align-items: center;
 }
 
 .replacement-inputs {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
   flex: 1;
 }
 
@@ -422,13 +422,13 @@ const closeDialog = () => {
 }
 
 .pi {
-  font-size: 1rem;
+  font-size: var(--tg-space-4);
   line-height: 1;
   vertical-align: middle;
 }
 
 .p-button .pi {
-  margin-right: 0.5rem;
+  margin-right: var(--tg-space-2);
 }
 
 .p-button-icon-only .pi {

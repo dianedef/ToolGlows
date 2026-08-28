@@ -125,13 +125,13 @@ onMounted(async () => {
 
 <style scoped>
 .toolglows-reader-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 .toolglows-field {
-  margin-bottom: 1rem;
+  margin-bottom: var(--tg-space-4);
 }
 .toolglows-field label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tg-space-2);
 }
 </style>

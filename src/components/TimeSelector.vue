@@ -21,7 +21,7 @@ defineEmits<{
 
 <style scoped>
 .time-selector input {
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
   border-radius: var(--border-radius);
   border: 1px solid var(--surface-border);
   background: var(--surface-ground);

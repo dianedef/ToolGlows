@@ -133,7 +133,7 @@ onMounted(async () => {
 
 <style scoped>
 .ocr-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .loading-state {
@@ -142,29 +142,29 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  gap: 1rem;
+  gap: var(--tg-space-4);
   color: var(--text-color-secondary);
 }
 
 .field {
-  margin-bottom: 1rem;
+  margin-bottom: var(--tg-space-4);
 }
 
 .field h4 {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tg-space-2);
   color: var(--text-color);
 }
 
 .field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 small {
   color: var(--text-color-secondary);
   display: block;
   text-align: center;
-  margin-top: 0.5rem;
+  margin-top: var(--tg-space-2);
 }
 </style> 

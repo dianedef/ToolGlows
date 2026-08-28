@@ -192,36 +192,36 @@ function saveEngine() {
 
 <style scoped>
 .toolglows-search-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .toolglows-field {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--tg-space-5);
 }
 
 .toolglows-field h4 {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--tg-space-3);
   color: var(--text-color);
 }
 
 .toolglows-engines-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .toolglows-engine-item {
   display: flex;
   align-items: center;
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
   background: var(--surface-card);
-  border-radius: 6px;
+  border-radius: var(--tg-radius-md);
   border: 1px solid var(--surface-border);
 }
 
 .toolglows-engine-icon {
   font-size: 1.2rem;
-  margin-right: 0.5rem;
+  margin-right: var(--tg-space-2);
 }
 
 .toolglows-engine-name {
@@ -230,26 +230,26 @@ function saveEngine() {
 
 .toolglows-engine-actions {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--tg-space-1);
 }
 
 .toolglows-field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .toolglows-color-pickers {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: var(--tg-space-4);
 }
 
 .toolglows-color-field {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .toolglows-color-field label {

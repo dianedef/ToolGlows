@@ -59,7 +59,7 @@ onUnmounted(() => {
 :deep(.p-menu) {
   position: fixed !important;
   margin: 0;
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
   background: var(--surface-overlay);
   border: 1px solid var(--surface-border);
   border-radius: var(--border-radius);
@@ -67,7 +67,7 @@ onUnmounted(() => {
 }
 
 :deep(.p-menuitem) {
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--tg-space-1);
 }
 
 :deep(.p-menuitem:last-child) {
@@ -75,16 +75,16 @@ onUnmounted(() => {
 }
 
 :deep(.p-menuitem-link) {
-  padding: 0.5rem 0.75rem;
+  padding: var(--tg-space-2) 0.75rem;
   border-radius: var(--border-radius);
   transition: background-color 0.2s;
 }
 
 :deep(.p-menuitem-icon) {
-  margin-right: 0.5rem;
+  margin-right: var(--tg-space-2);
 }
 
 :deep(.p-submenu-icon) {
-  margin-left: 0.5rem;
+  margin-left: var(--tg-space-2);
 }
 </style> 

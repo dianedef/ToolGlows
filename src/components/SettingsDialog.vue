@@ -28,7 +28,7 @@ import ThemeSwatch from './ThemeSwatch.vue'
 <style scoped>
 .toolglows-settings-dialog {
   :deep(.p-dialog-header) {
-    padding: 1rem;
+    padding: var(--tg-space-4);
   }
 
   .dialog-header {
@@ -49,7 +49,7 @@ import ThemeSwatch from './ThemeSwatch.vue'
 
     :deep(.theme-swatch) {
       position: static; /* Override la position absolute */
-      margin-right: 10px;
+      margin-right: var(--tg-space-2);
     }
   }
 }

@@ -616,15 +616,15 @@ const closeDialog = () => {
 
 <style scoped>
 .toolglows-gmail-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .toolglows-field {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--tg-space-5);
 }
 
 .toolglows-field h4 {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tg-space-2);
   color: var(--text-color);
 }
 
@@ -633,7 +633,7 @@ const closeDialog = () => {
 .toolglows-filters-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .toolglows-label-item,
@@ -642,9 +642,9 @@ const closeDialog = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
   background: var(--surface-card);
-  border-radius: 6px;
+  border-radius: var(--tg-radius-md);
   border: 1px solid var(--surface-border);
 }
 
@@ -653,12 +653,12 @@ const closeDialog = () => {
 .toolglows-filter-info {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .toolglows-label-color {
-  width: 1rem;
-  height: 1rem;
+  width: var(--tg-space-4);
+  height: var(--tg-space-4);
   border-radius: 50%;
 }
 
@@ -684,19 +684,19 @@ const closeDialog = () => {
 .toolglows-shortcut-actions,
 .toolglows-filter-actions {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--tg-space-1);
 }
 
 .toolglows-field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .toolglows-field-slider {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .toolglows-field-slider label,
@@ -705,7 +705,7 @@ const closeDialog = () => {
 .toolglows-field-spinner label {
   font-size: 0.875rem;
   color: var(--text-color);
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--tg-space-1);
 }
 
 .toolglows-field-slider small {
@@ -718,35 +718,35 @@ const closeDialog = () => {
 .toolglows-field-spinner {
   display: flex;
   flex-direction: column;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tg-space-2);
 }
 
 .toolglows-shortcut-key {
   font-family: monospace;
-  padding: 0.25rem 0.5rem;
+  padding: var(--tg-space-1) 0.5rem;
   background: var(--surface-ground);
-  border-radius: 4px;
+  border-radius: var(--tg-radius-sm);
   font-size: 0.875rem;
 }
 
 .toolglows-condition-row,
 .toolglows-action-row {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: var(--tg-space-2);
+  margin-bottom: var(--tg-space-2);
   align-items: center;
 }
 
 .toolglows-filter-conditions {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--tg-space-1);
 }
 
 .toolglows-filter-condition {
   font-family: monospace;
   padding: 0.125rem 0.25rem;
   background: var(--surface-ground);
-  border-radius: 4px;
+  border-radius: var(--tg-radius-sm);
 }
 </style>

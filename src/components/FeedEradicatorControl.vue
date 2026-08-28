@@ -151,52 +151,52 @@ onMounted(async () => {
 
 <style scoped>
 .feed-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .field {
-  margin-bottom: 1rem;
+  margin-bottom: var(--tg-space-4);
 }
 
 .field h4 {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tg-space-2);
   color: var(--text-color);
 }
 
 .sites-list {
-  margin-bottom: 1rem;
+  margin-bottom: var(--tg-space-4);
 }
 
 .site-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem;
+  padding: var(--tg-space-2);
   background: var(--surface-hover);
   border-radius: var(--border-radius);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tg-space-2);
 }
 
 .add-site {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .field-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .notification-options {
-  margin-top: 0.5rem;
-  padding-left: 1.5rem;
+  margin-top: var(--tg-space-2);
+  padding-left: var(--tg-space-5);
 }
 
 .notification-duration {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--tg-space-4);
 }
 </style> 

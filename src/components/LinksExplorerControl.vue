@@ -215,13 +215,13 @@ const handleCopy = async () => {
 .toolglows-links-explorer-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--tg-space-5);
 }
 
 .toolglows-links-explorer-settings {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--tg-space-5);
 }
 
 .toolglows-settings-group {
@@ -231,7 +231,7 @@ const handleCopy = async () => {
 
   h3 {
     margin: 0 0 1rem 0;
-    font-size: 1rem;
+    font-size: var(--tg-space-4);
     color: var(--text-color);
     font-weight: 600;
   }
@@ -248,22 +248,22 @@ const handleCopy = async () => {
 .toolglows-checkbox-wrapper {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--tg-space-3);
   min-width: 200px;
 
   :deep(.p-checkbox) {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: var(--tg-space-5);
+    height: var(--tg-space-5);
   }
 
   :deep(.p-checkbox-box) {
-    width: 1.5rem;
-    height: 1.5rem;
-    border-radius: 4px;
+    width: var(--tg-space-5);
+    height: var(--tg-space-5);
+    border-radius: var(--tg-radius-sm);
   }
 
   :deep(.p-checkbox-icon) {
-    font-size: 1rem;
+    font-size: var(--tg-space-4);
   }
 
   label {
@@ -275,7 +275,7 @@ const handleCopy = async () => {
 .toolglows-depth-control {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--tg-space-3);
   min-width: 200px;
 
   label {
@@ -290,14 +290,14 @@ const handleCopy = async () => {
 .toolglows-format-control {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--tg-space-3);
   min-width: 200px;
 }
 
 .toolglows-label-with-hint {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--tg-space-1);
 }
 
 .toolglows-format-hint {
@@ -307,7 +307,7 @@ const handleCopy = async () => {
 
 .toolglows-links-explorer-actions {
   display: flex;
-  gap: 1rem;
+  gap: var(--tg-space-4);
   flex-wrap: wrap;
 }
 
@@ -332,7 +332,7 @@ const handleCopy = async () => {
   background-color: var(--primary-color) !important;
   color: white !important;
   border: none !important;
-  padding: 0.75rem 1.25rem !important;
+  padding: var(--tg-space-3) 1.25rem !important;
   font-weight: 600 !important;
   transition: all 0.3s ease !important;
 }

@@ -316,7 +316,7 @@ watch(dialogVisible, (newValue) => {
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--tg-space-2);
     font-size: 1.2rem;
   }
 }
@@ -329,7 +329,7 @@ watch(dialogVisible, (newValue) => {
 
 .toolglows-social-analysis-actions {
   display: flex;
-  gap: 1rem;
+  gap: var(--tg-space-4);
   flex-wrap: wrap;
 }
 
@@ -342,7 +342,7 @@ watch(dialogVisible, (newValue) => {
 .toolglows-stats-card {
   background: var(--surface-ground);
   border-radius: var(--border-radius);
-  padding: 1.5rem;
+  padding: var(--tg-space-5);
 
   h4 {
     margin: 0 0 1rem 0;
@@ -353,7 +353,7 @@ watch(dialogVisible, (newValue) => {
 .toolglows-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+  gap: var(--tg-space-5);
 }
 
 .toolglows-stat-item {
@@ -361,7 +361,7 @@ watch(dialogVisible, (newValue) => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .toolglows-stat-value {
@@ -384,20 +384,20 @@ watch(dialogVisible, (newValue) => {
 .toolglows-sentiment-column {
   h5 {
     margin: 0 0 1rem 0;
-    font-size: 1rem;
+    font-size: var(--tg-space-4);
   }
 }
 
 .toolglows-sentiment-bars {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--tg-space-4);
 }
 
 .toolglows-sentiment-bar {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--tg-space-4);
 }
 
 .toolglows-sentiment-label {
@@ -406,9 +406,9 @@ watch(dialogVisible, (newValue) => {
 
 .toolglows-progress-bar {
   flex: 1;
-  height: 24px;
+  height: var(--tg-space-5);
   background: var(--surface-card);
-  border-radius: 12px;
+  border-radius: var(--tg-space-3);
   overflow: hidden;
 }
 
@@ -450,7 +450,7 @@ watch(dialogVisible, (newValue) => {
 }
 
 .toolglows-gender-badge {
-  padding: 0.25rem 0.5rem;
+  padding: var(--tg-space-1) 0.5rem;
   border-radius: var(--border-radius);
   font-size: 0.9rem;
 
@@ -495,7 +495,7 @@ watch(dialogVisible, (newValue) => {
   background-color: var(--primary-color) !important;
   color: white !important;
   border: none !important;
-  padding: 0.75rem 1.25rem !important;
+  padding: var(--tg-space-3) 1.25rem !important;
   font-weight: 600 !important;
   transition: all 0.3s ease !important;
 

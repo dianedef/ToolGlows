@@ -63,22 +63,22 @@ onMounted(async () => {
 
 <style scoped>
 .speed-options {
-  padding: 1rem;
+  padding: var(--tg-space-4);
 }
 
 .field {
-  margin-bottom: 1rem;
+  margin-bottom: var(--tg-space-4);
 }
 
 .field h4 {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--tg-space-2);
   color: var(--text-color);
 }
 
 .slider-container {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--tg-space-4);
 }
 
 .slider-value {

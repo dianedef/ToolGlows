@@ -40,10 +40,16 @@
   --tg-size-tool-icon: 1.2rem;
   --tg-size-main-icon: 1.5rem;
   --tg-space-1: 0.25rem;
+  --tg-space-1-5: 0.375rem;
   --tg-space-2: 0.5rem;
   --tg-space-3: 0.75rem;
   --tg-space-4: 1rem;
   --tg-space-5: 1.5rem;
+  --tg-space-6: 2rem;
+  --tg-size-icon-sm: 0.875rem;
+  --tg-size-icon-md: 1.2rem;
+  --tg-radius-sm: 4px;
+  --tg-radius-md: 6px;
   --tg-panel-width: 300px;
   --tg-full-width: 100%;
   --tg-panel-inline-end: 100%;

@@ -48,8 +48,8 @@ const version = __VERSION__
 .update-header {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--tg-space-4);
+  margin-bottom: var(--tg-space-4);
 }
 
 :deep(.p-card) {
