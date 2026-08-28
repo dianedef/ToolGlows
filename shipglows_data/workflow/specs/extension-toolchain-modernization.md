@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: "toolglows"
 created: "2026-08-26"
 created_at: "2026-08-26 21:06:58 UTC"
-updated: "2026-08-26"
-updated_at: "2026-08-26 21:19:02 UTC"
+updated: "2026-08-28"
+updated_at: "2026-08-28 10:51:21 UTC"
 status: active
 source_skill: sg-maintenance
 source_model: "GPT-5.6"
@@ -35,7 +35,7 @@ linked_systems:
   - shipglows_data/technical/developer-guide.md
 depends_on: []
 supersedes: []
-next_step: "implement without runtime validation, then return to the ShipGlows extension-support chantier"
+next_step: "commit and push the verified ToolGlows modernization to origin/main"
 ---
 
 # Title
@@ -44,7 +44,7 @@ Extension Toolchain Modernization
 
 # Status
 
-Implemented — unverified. The operator approved direct local changes on `main`, local commits, and explicitly deferred tests, builds, servers, and browser validation to a later manual pass. The dependency, manifest, privileged-API bridge, launcher, and documentation changes are present, but the chantier is not verified or release-ready until that deferred proof is completed.
+Verified — delivery pending. After the initial implementation-only pass, the operator explicitly authorized validation through ShipGlows and ordinary delivery on `main`. Type checking, tests, lint without errors, Chrome and Firefox production builds, dependency installation, and the ShipGlows extension lifecycle now pass. Manual acceptance inside the personal Chrome profile and store publication remain intentionally outside agent control.
 
 # User Story
 
@@ -72,8 +72,8 @@ Success is a coherent dependency and manifest configuration, a regenerated pnpm 
 
 - PrimeVue 5, Tailwind 4, TypeScript 7, or Tesseract 7 migrations that require runtime/UI validation.
 - Reducing `<all_urls>` or changing the product promise that the toolbar is available across ordinary pages.
-- Product redesign, store publication, deployment, push, tests, builds, servers, or browser execution.
-- Claiming Chrome/Firefox runtime compatibility before the operator's later validation.
+- Product redesign, store publication, or deployment.
+- Automatic installation into a personal Chrome profile or claiming store/runtime acceptance before the operator's manual browser check.
 
 # Implementation Tasks
 
@@ -82,7 +82,7 @@ Success is a coherent dependency and manifest configuration, a regenerated pnpm 
 3. Correct shared and browser-specific manifest permissions/sidebar declarations.
 4. Harden launch and installed-browser discovery scripts without changing their user-facing purpose.
 5. Align README and canonical technical documentation with the new contract and deferred migrations.
-6. Run read-only dependency audits and static Git/diff inspection only; commit exact owned paths locally.
+6. Run dependency audits, static checks, builds, and the ShipGlows-managed Chrome extension lifecycle; commit and push exact owned paths to `origin/main`.
 
 # Acceptance Criteria
 
@@ -91,7 +91,7 @@ Success is a coherent dependency and manifest configuration, a regenerated pnpm 
 - Chrome declares `sidePanel`; both browser manifests receive `bookmarks`; Firefox uses `sidebar_action` rather than Chrome's `side_panel`; content scripts no longer call privileged tab/window/bookmark APIs directly.
 - Launcher starts only requested build targets, validates config paths, waits for a fresh manifest, and tears down child processes.
 - Audit before/after counts and deferred major migrations are documented without a security-complete claim.
-- `ENVIRONMENT.md` remains untracked and untouched.
+- `ENVIRONMENT.md` records the ShipGlows browser-extension workflow, durable port, unpacked directory, and personal-profile safety boundary.
 
 # Risks And ZOMBIES Coverage
 
@@ -113,8 +113,13 @@ Update the README permission and command descriptions, the architecture dependen
 - Before: 3 critical, 38 high, 14 moderate, and 5 low advisories across the full dependency graph; the production-filtered audit also reported findings.
 - After: 0 critical, 2 high, 0 moderate, and 0 low advisories in the full graph; 0 findings in the production-filtered graph.
 - Residual: two high advisories identify `image-size@2.0.2` through `web-ext > addons-linter`; the registry reports no patched `image-size` release, so removing them would currently require removing the maintained Firefox lint/browser-launch toolchain.
-- Static checks only: package metadata parses, the lockfile resolves without peer warnings, `git diff --check` is clean, and no content-side source directly calls `chrome.tabs`, `chrome.windows`, or `chrome.bookmarks`.
-- Deferred by operator request: tests, typecheck, lint, builds, manifest lint, server, launcher execution, and browser validation.
+- `pnpm install --frozen-lockfile`, `pnpm typecheck`, and 4 Vitest tests pass; ESLint reports 0 errors and 138 historical warnings.
+- Chrome and Firefox production builds complete and produce their unpacked directories and zip archives. Both report one non-blocking large-chunk warning for the 869.68 kB main bundle.
+- `pnpm audit --prod --audit-level high` reports no known production vulnerability. The full graph retains the two documented `image-size@2.0.2` advisories through the maintained `web-ext > addons-linter` development path, with no patched registry version.
+- Generated auto-import, component, and typed-router declarations are deterministic across repeated ShipGlows starts and are retained as versioned generated sources.
+- `s start`, `s status`, `s open`, and `s stop` recognize ToolGlows as a Chrome Manifest V3 extension on HMR port 3002, open `chrome://extensions` plus `dist\chrome`, and release the port on stop.
+- Direct execution of the exact Vite development command is warning-free. ShipGlows can nevertheless surface an old Vite HMR warning from `stderr.log` after a clean restart because redirected logs are not reliably truncated; this is a ShipGlows DevServer defect to repair in the separate CLI chantier, not a ToolGlows runtime failure.
+- Manual remaining proof: choose **Load unpacked** in the user's Chrome profile and exercise extension features; ShipGlows intentionally does not automate that privileged profile mutation.
 
 # Current Chantier Flow
 
@@ -122,9 +127,9 @@ Update the README permission and command descriptions, the architecture dependen
 |-------|--------|----------|------|
 | sg-spec | done | Approved modernization captured as an autonomous contract | sg-ready |
 | sg-ready | done | Scope, risk boundary, deferred proof, and documentation obligations are explicit | sg-maintenance |
-| sg-maintenance | done | Toolchain, manifests, privileged bridge, launcher, lockfile, and docs modernized | operator validation |
-| sg-verify | deferred | Operator explicitly requested no tests/build/browser validation in this run | operator validation |
-| sg-ship | local-only | Local commits authorized; push explicitly excluded | ShipGlows extension-support chantier |
+| sg-maintenance | done | Toolchain, manifests, privileged bridge, launcher, pnpm 10 policy, generated types, and docs modernized | sg-verify |
+| sg-verify | done | Install, typecheck, tests, lint, Chrome/Firefox builds, audits, and ShipGlows start/status/open/stop pass | sg-ship |
+| sg-ship | pending | Exact owned diff is ready for an ordinary `main` push | push `origin/main` |
 
 # Skill Run History
 
@@ -132,3 +137,4 @@ Update the README permission and command descriptions, the architecture dependen
 |----------|-------|-------|--------|--------|-----------|
 | 2026-08-26 | sg-maintenance | GPT-5.6 | Captured and readied the approved modernization contract | ready | implement without runtime validation |
 | 2026-08-26 | sg-maintenance | GPT-5.6 | Modernized the approved scope and reduced dependency audit findings | implemented — unverified | operator build/browser validation |
+| 2026-08-28 | sg-maintenance | GPT-5.6 | Stabilized generated types and pnpm policy, repaired type/lint/test findings, built both targets, and exercised the ShipGlows extension lifecycle | verified — delivery pending | push exact owned diff to origin/main |

@@ -371,7 +371,8 @@ onMessage('GET_TABS', async ({ data }) => {
       ? String(data.scope)
       : ''
 
-  const queryByScope: Record<string, chrome.tabs.QueryInfo> = {
+  type TabQueryInfo = Parameters<typeof chrome.tabs.query>[0]
+  const queryByScope: Record<string, TabQueryInfo> = {
     current: { active: true, currentWindow: true },
     window: { currentWindow: true },
     all: {},

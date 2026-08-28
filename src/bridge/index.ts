@@ -171,9 +171,15 @@ export const bridgeApi = {
     links: DragOpenLink[],
     openDelay: number
   ) => {
+    const payload: BridgeObject = {
+      action,
+      links: links.map(link => ({ title: link.title, url: link.url })),
+      openDelay
+    }
+
     return sendMessage(
       'DRAG_OPEN_ACTION',
-      { action, links, openDelay },
+      payload,
       'background'
     )
   },
@@ -181,8 +187,10 @@ export const bridgeApi = {
     const response = await sendMessage('GET_TABS', { scope }, 'background')
     if (!Array.isArray(response)) throw new Error('Invalid tabs response')
 
-    return response.filter((tab): tab is TabSummary =>
+    return response.flatMap(tab =>
       isRecord(tab) && typeof tab.title === 'string' && typeof tab.url === 'string'
+        ? [{ title: tab.title, url: tab.url }]
+        : []
     )
   },
   reloadAllTabs: async () => {

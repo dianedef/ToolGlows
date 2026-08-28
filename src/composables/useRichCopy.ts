@@ -85,7 +85,7 @@ export function useRichCopy() {
   // Copier les liens filtrés
   const copyFilteredLinks = async (format: CopyFormat = 'text') => {
     const links = filteredLinks.value
-    let formattedText = ''
+    let formattedText: string
 
     switch (format) {
       case 'html':

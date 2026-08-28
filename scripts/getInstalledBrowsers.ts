@@ -1,4 +1,3 @@
-/* eslint-disable no-empty */
 import { homedir } from 'os'
 import { resolve } from 'path'
 import { existsSync } from 'fs'

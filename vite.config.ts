@@ -18,17 +18,11 @@ import "dotenv/config"
 const PORT = Number(process.env.PORT || "") || 4000
 
 function getImmediateDirectories(dirPath: string): string[] {
-  try {
-    // Read the directory contents synchronously
-    const items = fs.readdirSync(dirPath, { withFileTypes: true })
+  const items = fs.readdirSync(dirPath, { withFileTypes: true })
 
-    // Filter and map to get only directory names
-    return items
-      .filter((item): item is fs.Dirent => item.isDirectory()) // Type guard
-      .map((item) => item.name)
-  } catch (err) {
-    throw new Error(`Error reading directories: ${(err as Error).message}`)
-  }
+  return items
+    .filter((item): item is fs.Dirent => item.isDirectory())
+    .map((item) => item.name)
 }
 
 // https://vitejs.dev/config/
@@ -43,15 +37,9 @@ export default defineConfig({
     extensions: ['.js', '.ts', '.jsx', '.tsx', '.json']
   },
 
-  esbuild: {
-    loader: 'ts',
-    target: 'es2020'
-  },
-
   css: {
     preprocessorOptions: {
       scss: {
-        api: "modern",
         // additionalData: `@use "/src/assets/base.scss";`,
         additionalData: (content, filePath) => {
           // do not include base.scss (tailwind etc) in content-script iframe as it will be affect main page styles
@@ -179,9 +167,11 @@ export default defineConfig({
     port: PORT,
     strictPort: true,
     hmr: {
+      overlay: true,
+    },
+    ws: {
       host: "localhost",
       clientPort: PORT,
-      overlay: true,
       protocol: "ws",
       port: PORT,
     },

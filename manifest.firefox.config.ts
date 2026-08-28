@@ -1,5 +1,5 @@
 import { defineManifest } from "@crxjs/vite-plugin"
-import ManifestConfig from "./manifest.config"
+import ManifestConfig from "./manifest.config.ts"
 
 const { side_panel: _chromeSidePanel, ...FirefoxManifestConfig } = ManifestConfig
 

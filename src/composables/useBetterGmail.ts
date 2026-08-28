@@ -344,7 +344,7 @@ export function useBetterGmail() {
     const author = document.querySelector('.gD')?.textContent || 'Original message'
     const timestamp = document.querySelector('.g3')?.textContent || new Date().toLocaleString()
 
-    let quotedText = ''
+    let quotedText: string
     switch (quoteOptions.value.quoteStyle) {
       case 'markdown':
         quotedText = `> ${text.split('\n').join('\n> ')}\n`
