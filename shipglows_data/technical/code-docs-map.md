@@ -1,73 +1,58 @@
 ---
-artifact: technical_guidelines
+artifact: code_docs_map
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "toolglows"
-created: "2026-05-04"
-updated: "2026-05-04"
-status: draft
-source_skill: sf-build
-scope: code-docs-map
-owner: "operator"
-confidence: medium
+created: "2026-08-28"
+updated: "2026-08-28"
+status: reviewed
+source_skill: sg-docs
+scope: code-navigation
+owner: "Diane"
+confidence: high
 risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
+  - src/
+  - manifest.config.ts
   - package.json
-  - pnpm-lock.yaml
-  - .npmrc
-  - vite.config.ts
-  - vite.chrome.config.ts
-  - vite.firefox.config.ts
-  - README.md
-  - shipglows_data/technical/developer-guide.md
   - shipglows_data/technical/architecture.md
+  - shipglows_data/technical/developer-guide.md
 depends_on:
-  - artifact: "shipglows_data/workflow/specs/dependency-security-second-pass.md"
-    artifact_version: "0.1.0"
-    required_status: ready
+  - artifact: shipglows_data/technical/architecture.md
+    artifact_version: "1.0.0"
+    required_status: reviewed
 supersedes: []
 evidence:
-  - "Dependency security work changes package, lockfile, build, and documentation contracts."
-next_review: "2026-06-04"
-next_step: "/sf-docs technical audit"
+  - "Current source directories, manifests and entrypoints were inspected on 2026-08-28."
+next_review: "2026-11-28"
+next_step: "Update when a source root, context or validation responsibility moves."
 ---
 
-# Code Docs Map
+# ToolGlows Code Documentation Map
 
-## Purpose
+| Area | Primary paths | Responsibility | Read with | Validation trigger |
+| --- | --- | --- | --- | --- |
+| Shared manifest | `manifest.config.ts` | MV3 common entrypoints, content-script matching, permissions, icons and web-accessible resources | Architecture and claim register | Both builds; Firefox manifest lint when relevant |
+| Chrome and Firefox variants | `manifest.chrome.config.ts`, `manifest.firefox.config.ts` | Browser-specific manifest deltas | Architecture | Targeted browser build; Firefox lint for Firefox |
+| Build system | `vite*.config.ts`, `define.config.mjs`, `package.json` | Vite/CRXJS configuration and scripts | Developer guide and README | Typecheck, tests and both builds |
+| Background worker | `src/background/` | Lifecycle, privileged browser APIs and synchronization | Architecture | Focused tests where possible; manual browser proof of privileged effects |
+| Bridge | `src/bridge/` | Serializable cross-context messages and payload validation | Architecture | Sender/receiver boundary review plus focused proof |
+| Injected toolbar | `src/content-script/`, `src/components/ToolGlowsBar.vue` | Page injection, toolbar mount, registered tools and host-page coexistence | Architecture and product context | Manual page proof and relevant automated test |
+| Tool implementations | `src/components/`, `src/stores/`, `src/composables/` | Individual reading, navigation, focus and experimental social capabilities | Product context | Focused behavior proof; browser test for DOM-dependent tools |
+| Extension UIs | `src/ui/` | Popup, options, side panel, setup and DevTools surfaces | Architecture | Targeted build and manual surface proof |
+| Shared UI runtime | `src/utils/`, `src/locales/`, `src/assets/`, `src/types/` | Router, Pinia, notifications, i18n, styling and type contracts | Developer guide | Typecheck and affected UI proof |
+| Tests | `tests/`, `src/**/__tests__/` | Automated policy and store-level proof | Developer guide | `pnpm exec vitest run` |
 
-This map tells implementation and verification agents which documentation surfaces must be considered when code or dependency contracts change.
+## Terms that need care
 
-## Mapped Surfaces
+- **Tool**: a user-facing toolbar capability registered in `ToolGlowsBar.vue`; it is not merely a component file.
+- **Content script**: the isolated extension context that can access the page DOM. It is not the page’s own JavaScript context.
+- **Background worker**: the Manifest V3 worker that owns privileged browser APIs and can be suspended between events.
+- **Bridge**: the typed, serializable message boundary between extension contexts; it is not an arbitrary event bus.
+- **Experimental integration**: behavior depending on a third-party website’s DOM. It requires browser proof before becoming a stable product claim.
 
-| Code Surface | Primary Docs | Required Validation | Docs Update Trigger |
-| --- | --- | --- | --- |
-| `package.json`, `pnpm-lock.yaml`, `.npmrc` | `README.md`, `shipglows_data/technical/developer-guide.md`, `shipglows_data/technical/architecture.md` | `pnpm install --lockfile-only`, `pnpm audit --audit-level high`, `pnpm audit --prod --audit-level high` | Dependency versions, Node/pnpm engines, overrides, or package-manager policy changes |
-| `vite.config.ts`, `vite.chrome.config.ts`, `vite.firefox.config.ts` | `shipglows_data/technical/architecture.md`, `shipglows_data/technical/developer-guide.md` | `pnpm run build:chrome`, `pnpm run build:firefox`, `pnpm run build` | Build plugin, dev server, output, manifest, or zip packaging changes |
-| `manifest*.config.ts`, `scripts/launch.ts`, `scripts/getInstalledBrowsers.ts`, `src/assets/icons/*` | `README.md`, `shipglows_data/technical/developer-guide.md` | `pnpm run lint:manifest`, targeted launch command inspection | Extension lint, browser launch, manifest, icons, permissions, or packaging command changes |
-| `src/background/index.ts`, `src/content-script/**`, `src/stores/darkMode.ts` | `shipglows_data/technical/architecture.md`, `shipglows_data/technical/developer-guide.md` | `pnpm run typecheck`, `pnpm run build`, `pnpm run lint:manifest` | Content-script bridge behavior, dark-mode injection, or permission model changes |
-| `src/ui/options*/**` | `shipglows_data/technical/architecture.md`, `shipglows_data/technical/developer-guide.md` | `pnpm run build`, `pnpm run typecheck` | Options-page settings behavior or form dependency changes |
-| `src/assets/base.scss`, `tailwind.config.cjs`, `postcss.config.cjs` | `shipglows_data/technical/architecture.md`, `shipglows_data/technical/developer-guide.md` | `pnpm run build` | Tailwind, PostCSS, DaisyUI, or global style pipeline changes |
+## Update rules
 
-## Documentation Update Plan Format
-
-```markdown
-## Documentation Update Plan
-
-- Code changed: `<paths>`
-- Subsystem: `<dependency/build/docs/options-style>`
-- Primary technical doc: `<doc path or none>`
-- Secondary docs: `<doc paths or none>`
-- Required action: `none | review | update | create`
-- Priority: `low | medium | high`
-- Reason: `<why>`
-- Owner role: `executor | integrator`
-- Parallel-safe: `yes | no`
-- Notes: `<constraints>`
-```
-
-## Maintenance Rule
-
-When a mapped code surface changes, update the listed docs or record a no-impact justification in the final implementation report.
+Update this map together with the affected canonical documentation when a path, runtime owner, public tool, permission, build command or validation expectation changes. This map routes readers; it does not replace source-level comments for non-obvious invariants or payload validation.

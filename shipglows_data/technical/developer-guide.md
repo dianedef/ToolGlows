@@ -1,718 +1,102 @@
-# Developer Guide
-# ToolGlows Browser Extension Framework
-
-**Version**: 1.0
-**Date**: 2025-12-16
-**Audience**: Developers building with ToolGlows
-
+---
+artifact: developer_guide
+metadata_schema_version: "1.0"
+artifact_version: "1.0.0"
+project: "toolglows"
+created: "2026-08-28"
+updated: "2026-08-28"
+status: reviewed
+source_skill: sg-docs
+scope: maintainer-workflow
+owner: "Diane"
+confidence: high
+risk_level: high
+security_impact: yes
+docs_impact: yes
+linked_systems:
+  - package.json
+  - ENVIRONMENT.md
+  - manifest.config.ts
+  - shipglows_data/technical/architecture.md
+  - shipglows_data/technical/code-docs-map.md
+depends_on:
+  - artifact: shipglows_data/technical/architecture.md
+    artifact_version: "1.0.0"
+    required_status: reviewed
+supersedes:
+  - "ToolGlows Browser Extension Framework developer guide"
+evidence:
+  - "package.json pins pnpm 10.33.2 and defines the build, typecheck and manifest-lint commands."
+  - "ENVIRONMENT.md defines the local browser-extension loading workflow."
+next_review: "2026-11-28"
+next_step: "Refresh when the toolchain, validation baseline or browser workflow changes."
 ---
 
-## Table of Contents
-1. [Getting Started](#1-getting-started)
-2. [Development Workflow](#2-development-workflow)
-3. [Project Structure](#3-project-structure)
-4. [Component Development](#4-component-development)
-5. [State Management](#5-state-management)
-6. [Routing](#6-routing)
-7. [Styling](#7-styling)
-8. [Internationalization](#8-internationalization)
-9. [Testing](#9-testing)
-10. [Build & Deployment](#10-build--deployment)
-11. [Best Practices](#11-best-practices)
-12. [Troubleshooting](#12-troubleshooting)
+# ToolGlows Maintainer Guide
 
----
+## Prerequisites
 
-## 1. Getting Started
-
-### Prerequisites
-- Node.js `^20.19.0 || ^22.13.0 || >=24.0.0` installed
-- pnpm `10.33.2` package manager
-- Basic knowledge of Vue 3 and TypeScript
-- Understanding of browser extensions
-
-### Installation
+Use a Node.js version compatible with the declared engine (`^20.19.0 || ^22.13.0 || >=24.0.0`) and pnpm `10.33.2`. The repository already contains its lockfile; do not substitute another package manager.
 
 ```bash
-# From your local ToolGlows checkout
-cd /path/to/toolglows
-
-# Install dependencies
+corepack enable
 pnpm install
-
-# Start development server
-pnpm dev
-
-# Or run specific browser dev mode
-pnpm dev:chrome   # Chrome only
-pnpm dev:firefox  # Firefox only
-
-# Or build, wait for a fresh manifest, and launch a detected browser
-pnpm launch              # Chrome by default
-pnpm launch -- --firefox # Firefox only
-pnpm launch -- --edge    # Edge only, sharing the Chromium build
-pnpm launch:all          # All selected browsers detected on the machine
 ```
 
-### First Run
+## Development and loading
 
-After starting the dev server:
+Run `pnpm dev` to build Chrome and Firefox development outputs concurrently. For a single target, use `pnpm dev:chrome` or `pnpm dev:firefox`.
 
-1. **Chrome**:
-   - Navigate to `chrome://extensions`
-   - Enable "Developer mode"
-   - Click "Load unpacked"
-   - Select the `dist/chrome` folder
+Load the generated directory manually in the browser extension manager:
 
-2. **Firefox**:
-   - Navigate to `about:debugging#/runtime/this-firefox`
-   - Click "Load Temporary Add-on"
-   - Select any file in `dist/firefox` folder
+- Chrome: `dist/chrome`
+- Firefox: `dist/firefox`
 
----
+The ShipGlows local-server tooling may open the extension manager and generated directory, but it must not install the extension into a personal browser profile. `ENVIRONMENT.md` is the durable reference for that workflow.
 
-## 2. Development Workflow
+## Commands
 
-### Daily Development Cycle
+| Command | Use |
+| --- | --- |
+| `pnpm typecheck` | Type-check Vue and TypeScript without emitting files. |
+| `pnpm exec vitest run` | Run automated tests. |
+| `pnpm build` | Produce Chrome and Firefox production builds. |
+| `pnpm lint:manifest` | Lint the built Firefox extension manifest. |
+| `pnpm launch` | Build a development Chrome output and open the configured launch flow. |
+| `pnpm launch -- --firefox` | Launch the Firefox flow. |
+| `pnpm launch:all` | Launch all detected browser targets. |
+
+`pnpm lint` currently fixes files and caches results; do not use it as a read-only proof command in an audit.
+
+## Safe change sequence
+
+1. Identify the browser context and source entrypoint in the code map.
+2. For a user-facing tool, change its component/store/composable together with its registry and relevant settings contract.
+3. For a privileged action, define a bounded bridge payload, validate it in the receiver, and keep the browser API call in the background worker.
+4. Run focused checks, then build both browser targets when shared manifests, extension contexts or packaged assets change.
+5. Load the appropriate unpacked build manually for behavior that automated tests cannot prove.
+6. Update the canonical documentation when product behavior, permissions, commands or public claims change.
+
+## Store-review baseline
+
+Before any store submission, run the following from a clean, reviewed worktree:
 
 ```bash
-# 1. Start development server (auto-rebuilds on file changes)
-pnpm dev
-
-# 2. Make changes to source files in src/
-
-# 3. Test changes in browser
-#    - Extension auto-reloads in most cases
-#    - Some changes require manual reload
-
-# 4. Run linting and formatting
-pnpm lint          # Lint and fix issues
-pnpm format        # Format code with Prettier
-
-# 5. Type check
-pnpm typecheck     # Check TypeScript types
-
-# 6. Manifest lint after a build
-pnpm lint:manifest # Lint dist/firefox with web-ext
-```
-
-### Hot Module Replacement (HMR)
-
-HMR works for most file changes:
-- ✅ Vue components
-- ✅ CSS/SCSS files
-- ✅ JavaScript/TypeScript modules
-- ❌ Manifest changes (requires reload)
-- ❌ Background script changes (requires reload)
-
----
-
-## 3. Project Structure
-
-### Directory Organization
-
-```
-src/
-├── assets/              # Global assets (images, styles)
-│   ├── base.css        # Base styles
-│   └── primevue/       # PrimeVue theme
-│
-├── background/          # Background service worker
-│   └── index.ts        # Background script entry
-│
-├── bridge/             # Cross-context communication
-│   └── index.ts        # Message bridge setup
-│
-├── components/         # Shared Vue components
-│   ├── state/         # State-related components
-│   ├── Header.vue
-│   ├── Footer.vue
-│   └── ...
-│
-├── composables/        # Vue composables
-│   ├── useBrowserStorage.ts
-│   ├── useLocale.ts
-│   ├── useTheme.ts
-│   └── ...
-│
-├── content-script/     # Content scripts
-│   └── index.ts       # Content script entry
-│
-├── devtools/          # DevTools panel
-│   └── index.ts       # DevTools entry
-│
-├── locales/           # i18n translation files
-│   ├── en.yaml
-│   ├── fr.yaml
-│   └── ...
-│
-├── offscreen/         # Offscreen pages
-│   └── index.html
-│
-├── stores/            # Pinia stores
-│   ├── settings.ts
-│   └── ...
-│
-├── types/             # TypeScript type definitions
-│   └── index.ts
-│
-├── ui/                # UI pages
-│   ├── action-popup/  # Browser toolbar popup
-│   ├── options/       # Options page
-│   ├── side-panel/    # Chrome side panel
-│   ├── devtools-panel/# DevTools UI
-│   ├── setup/         # Install/update pages
-│   └── common/        # Shared pages
-│
-└── utils/             # Utility functions
-    └── index.ts
-```
-
-### Key Configuration Files
-
-```
-├── manifest.config.ts         # Base manifest configuration
-├── manifest.chrome.config.ts  # Chrome-specific manifest
-├── manifest.firefox.config.ts # Firefox-specific manifest
-├── vite.config.ts            # Base Vite config
-├── vite.chrome.config.ts     # Chrome Vite config
-├── vite.firefox.config.ts    # Firefox Vite config
-├── tailwind.config.cjs       # Tailwind configuration
-├── tsconfig.json             # TypeScript config
-└── package.json              # Dependencies and scripts
-```
-
----
-
-## 4. Component Development
-
-### Creating a New Component
-
-```vue
-<!-- src/components/MyComponent.vue -->
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-
-// Props
-interface Props {
-  title: string
-  count?: number
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  count: 0
-})
-
-// Emits
-interface Emits {
-  (e: 'update', value: number): void
-}
-
-const emit = defineEmits<Emits>()
-
-// State
-const localCount = ref(props.count)
-
-// Computed
-const displayText = computed(() => `${props.title}: ${localCount.value}`)
-
-// Methods
-const increment = () => {
-  localCount.value++
-  emit('update', localCount.value)
-}
-</script>
-
-<template>
-  <div class="my-component">
-    <h3>{{ displayText }}</h3>
-    <button @click="increment">Increment</button>
-  </div>
-</template>
-
-<style scoped>
-.my-component {
-  @apply p-4 rounded-lg border;
-}
-</style>
-```
-
-### Auto-Import
-
-Components in `src/components/` are auto-imported:
-
-```vue
-<template>
-  <!-- No import needed! -->
-  <Header />
-  <MyComponent title="Count" :count="5" />
-  <Footer />
-</template>
-```
-
-### Using Icons
-
-Icons from Iconify are available via `unplugin-icons`:
-
-```vue
-<script setup lang="ts">
-// Icons auto-imported from configured icon sets
-import IconMdiHeart from '~icons/mdi/heart'
-import IconCarbonUser from '~icons/carbon/user'
-</script>
-
-<template>
-  <IconMdiHeart class="text-red-500" />
-  <IconCarbonUser />
-</template>
-```
-
----
-
-## 5. State Management
-
-### Creating a Store
-
-```typescript
-// src/stores/myStore.ts
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-
-export const useMyStore = defineStore('myStore', () => {
-  // State
-  const count = ref(0)
-  const items = ref<string[]>([])
-
-  // Getters
-  const doubleCount = computed(() => count.value * 2)
-  const itemCount = computed(() => items.value.length)
-
-  // Actions
-  function increment() {
-    count.value++
-  }
-
-  function addItem(item: string) {
-    items.value.push(item)
-  }
-
-  return {
-    // State
-    count,
-    items,
-    // Getters
-    doubleCount,
-    itemCount,
-    // Actions
-    increment,
-    addItem
-  }
-})
-```
-
-### Persistent Store
-
-```typescript
-// src/stores/settings.ts
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
-
-export const useSettingsStore = defineStore('settings', () => {
-  const theme = ref<'light' | 'dark'>('light')
-  const locale = ref('en')
-
-  function setTheme(newTheme: 'light' | 'dark') {
-    theme.value = newTheme
-  }
-
-  function setLocale(newLocale: string) {
-    locale.value = newLocale
-  }
-
-  return {
-    theme,
-    locale,
-    setTheme,
-    setLocale
-  }
-}, {
-  persist: {
-    storage: 'sync', // or 'local'
-    key: 'settings'
-  }
-})
-```
-
-### Using Stores in Components
-
-```vue
-<script setup lang="ts">
-import { useMyStore } from '@/stores/myStore'
-import { storeToRefs } from 'pinia'
-
-const myStore = useMyStore()
-
-// Reactive refs from store
-const { count, doubleCount } = storeToRefs(myStore)
-
-// Actions can be called directly
-const handleClick = () => {
-  myStore.increment()
-}
-</script>
-```
-
----
-
-## 6. Routing
-
-### File-Based Routing
-
-Routes are automatically generated from file structure:
-
-```
-src/ui/action-popup/pages/
-├── index.vue          → /
-├── settings.vue       → /settings
-└── about.vue          → /about
-```
-
-### Creating a Page
-
-```vue
-<!-- src/ui/action-popup/pages/settings.vue -->
-<script setup lang="ts">
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-const goBack = () => {
-  router.back()
-}
-</script>
-
-<template>
-  <div>
-    <h1>Settings</h1>
-    <button @click="goBack">Back</button>
-  </div>
-</template>
-```
-
-### Navigation
-
-```vue
-<script setup lang="ts">
-import { useRouter, useRoute } from 'vue-router'
-
-const router = useRouter()
-const route = useRoute()
-
-// Programmatic navigation
-router.push('/settings')
-router.push({ name: 'settings', params: { id: '123' } })
-
-// Current route
-console.log(route.path)
-console.log(route.params)
-</script>
-
-<template>
-  <!-- Declarative navigation -->
-  <router-link to="/settings">Settings</router-link>
-  <router-link :to="{ name: 'about' }">About</router-link>
-</template>
-```
-
----
-
-## 7. Styling
-
-### Tailwind CSS
-
-Use utility classes for styling:
-
-```vue
-<template>
-  <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-      Hello World
-    </h1>
-    <button class="btn btn-primary">
-      Click Me
-    </button>
-  </div>
-</template>
-```
-
-### DaisyUI Components
-
-DaisyUI provides pre-styled components:
-
-```vue
-<template>
-  <!-- Button variations -->
-  <button class="btn btn-primary">Primary</button>
-  <button class="btn btn-secondary">Secondary</button>
-  <button class="btn btn-accent">Accent</button>
-
-  <!-- Card -->
-  <div class="card bg-base-100 shadow-xl">
-    <div class="card-body">
-      <h2 class="card-title">Card Title</h2>
-      <p>Card content goes here</p>
-    </div>
-  </div>
-
-  <!-- Modal -->
-  <dialog class="modal">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">Modal Title</h3>
-      <p>Modal content</p>
-    </div>
-  </dialog>
-</template>
-```
-
-### Dark Mode
-
-Dark mode is automatically handled:
-
-```vue
-<template>
-  <!-- Automatically switches based on theme -->
-  <div class="bg-white dark:bg-gray-900">
-    <p class="text-black dark:text-white">
-      This text adapts to theme
-    </p>
-  </div>
-</template>
-```
-
----
-
-## 8. Internationalization
-
-### Adding Translations
-
-```yaml
-# src/locales/en.yaml
-common:
-  welcome: Welcome
-  settings: Settings
-  save: Save
-  cancel: Cancel
-
-errors:
-  generic: Something went wrong
-  network: Network error occurred
-```
-
-### Using Translations
-
-```vue
-<script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-
-const { t, locale } = useI18n()
-
-const changeLanguage = (lang: string) => {
-  locale.value = lang
-}
-</script>
-
-<template>
-  <div>
-    <h1>{{ t('common.welcome') }}</h1>
-    <p>{{ t('errors.generic') }}</p>
-
-    <button @click="changeLanguage('fr')">
-      Français
-    </button>
-  </div>
-</template>
-```
-
----
-
-## 9. Testing
-
-### Unit Tests (Vitest)
-
-```typescript
-// tests/unit/components/MyComponent.spec.ts
-import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
-import MyComponent from '@/components/MyComponent.vue'
-
-describe('MyComponent', () => {
-  it('renders properly', () => {
-    const wrapper = mount(MyComponent, {
-      props: { title: 'Test', count: 5 }
-    })
-
-    expect(wrapper.text()).toContain('Test: 5')
-  })
-
-  it('increments count on click', async () => {
-    const wrapper = mount(MyComponent, {
-      props: { title: 'Test', count: 0 }
-    })
-
-    await wrapper.find('button').trigger('click')
-    expect(wrapper.emitted('update')).toBeTruthy()
-    expect(wrapper.emitted('update')?.[0]).toEqual([1])
-  })
-})
-```
-
-### E2E Tests (Playwright)
-
-```typescript
-// tests/e2e/popup.spec.ts
-import { test, expect } from '@playwright/test'
-
-test('popup loads correctly', async ({ page }) => {
-  await page.goto('chrome-extension://[extension-id]/popup.html')
-
-  await expect(page.locator('h1')).toContainText('Welcome')
-
-  await page.click('text=Settings')
-  await expect(page).toHaveURL(/.*settings/)
-})
-```
-
----
-
-## 10. Build & Deployment
-
-### Building for Production
-
-```bash
-# Build for both browsers
-pnpm build
-
-# Build for specific browser
-pnpm build:chrome
-pnpm build:firefox
-```
-
-### Output Structure
-
-```
-dist/
-├── chrome/
-│   ├── manifest.json
-│   ├── [bundle files]
-│   └── chrome.zip      # Ready for Chrome Web Store
-└── firefox/
-    ├── manifest.json
-    ├── [bundle files]
-    └── firefox.zip     # Ready for Firefox Add-ons
-```
-
-### Submitting to Stores
-
-Before uploading either store package, run the local store-review checks:
-
-```bash
-pnpm run typecheck
-pnpm exec eslint .
+pnpm typecheck
 pnpm exec vitest run
 pnpm audit --audit-level high
-pnpm run build
-pnpm run lint:manifest
-rg -n "cdn\\.jsdelivr|https://cdn" src manifest*.ts dist/chrome dist/firefox
+pnpm build
+pnpm lint:manifest
+rg -n "cdn\\.jsdelivr|https://cdn" src manifest.config.ts manifest.chrome.config.ts manifest.firefox.config.ts dist/chrome dist/firefox
 ```
 
-The expected shared manifest permission baseline is `bookmarks`, `storage`, and `tabs`, plus the static content-script match for the toolbar surface. `bookmarks` is required by the drag-open bookmark export. Chrome adds `sidePanel`; Firefox exposes the equivalent page through `sidebar_action`. Do not reintroduce `host_permissions`, `scripting`, `activeTab`, or `webNavigation` without a feature-specific justification and validation. Dark-mode CSS should be applied by content-script messaging, not by `chrome.scripting`.
+Passing these checks is not store approval. Real-browser proof is still required for each capability, particularly third-party page integrations, and release claims must remain within the claim register.
 
-Privileged tab, window, reload, and bookmark operations belong in the background service worker. Content scripts must use the maintained bridge methods; new privileged messages require bounded payload validation before they call browser APIs.
+## Documentation ownership
 
-The packaged extension should not contain CDN fallback URLs. Options pages use native Vue controls so FormKit is not part of the runtime bundle. Firefox builds must keep `browser_specific_settings.gecko.data_collection_permissions.required: ["none"]` unless product behavior changes to collect or transmit data. The August 2026 toolchain modernization remains unverified until the full commands above and real-browser checks are run; do not use it as store-readiness evidence by itself.
+- `architecture.md` explains runtime boundaries, permissions and validation triggers.
+- `code-docs-map.md` routes a code change to its owner docs and proof.
+- `README.md` explains the product and local setup to repository readers.
+- `shipglows_data/editorial/claim-register.md` controls readiness, compatibility and security claims.
 
-#### Chrome Web Store
-1. Go to [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole)
-2. Upload `dist/chrome.zip`
-3. Fill in store listing details
-4. Submit for review
-
-#### Firefox Add-ons
-1. Go to [Firefox Add-on Developer Hub](https://addons.mozilla.org/developers/)
-2. Upload `dist/firefox.zip`
-3. Fill in listing information
-4. Submit for review
-
----
-
-## 11. Best Practices
-
-### Code Organization
-- One component per file
-- Keep components small and focused
-- Use composables for reusable logic
-- Group related files together
-
-### TypeScript
-- Always define prop types
-- Use interfaces over types when possible
-- Enable strict mode
-- Avoid `any` type
-
-### Performance
-- Lazy load routes
-- Use `v-show` for frequently toggled content
-- Memoize expensive computations
-- Debounce user inputs
-
-### State Management
-- Keep stores focused and modular
-- Use getters for derived state
-- Actions for async operations
-- Persist only necessary data
-
----
-
-## 12. Troubleshooting
-
-### Extension Not Loading
-- Check manifest.json syntax
-- Verify all required files exist
-- Check browser console for errors
-- Try reloading the extension
-
-### HMR Not Working
-- Restart dev server
-- Clear browser cache
-- Check for syntax errors
-- Verify Vite config
-
-### Build Errors
-- Clear `node_modules` and reinstall: `rm -rf node_modules && pnpm install`
-- Clear build cache: `rm -rf dist`
-- Check TypeScript errors: `pnpm typecheck`
-
-### Storage Issues
-- Check permissions in manifest
-- Verify manifest icon paths point to real 16, 24, 32, and 128 pixel PNG files
-- Verify storage API usage
-- Check storage quotas
-- Use browser DevTools → Application → Storage
-
----
-
-## Resources
-
-- [Vue 3 Documentation](https://vuejs.org/)
-- [Vite Documentation](https://vitejs.dev/)
-- [Pinia Documentation](https://pinia.vuejs.org/)
-- [Chrome Extension Docs](https://developer.chrome.com/docs/extensions/)
-- [Firefox Extension Docs](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [DaisyUI](https://daisyui.com/)
-
----
-
-**Document Version**: 1.0
-**Last Updated**: 2026-05-04
-**For Issues**: Open a GitHub issue
+Update the smallest canonical owner; do not duplicate technical truth in tracker entries or generated output.

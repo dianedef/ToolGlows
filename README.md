@@ -89,8 +89,10 @@ La documentation canonique se trouve dans `shipglows_data/` :
 - `editorial/` : surfaces publiques et règles de claims ;
 - `workflow/` : spécifications, audits et historique de travail.
 
+Les règles de contribution et les contraintes propres à l’extension sont décrites dans `AGENT.md`. La cartographie technique et le guide de maintenance se trouvent dans `shipglows_data/technical/`.
+
 ## État du produit
 
 ToolGlows est en développement actif. Le socle multi-navigateur, la barre et les principaux outils sont implémentés, mais toutes les fonctions ne disposent pas encore du même niveau de validation en conditions réelles. La version du package reste pré-1.0.
 
-La modernisation du toolchain d'août 2026 est implémentée mais reste à valider par build et dans les navigateurs avant toute publication.
+La modernisation du toolchain d'août 2026 est implémentée, mais le produit ne doit être considéré prêt pour un store qu’après les builds, la validation du manifeste et les preuves réelles dans les deux navigateurs.

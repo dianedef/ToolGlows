@@ -7,7 +7,7 @@ created: "2026-08-26"
 created_at: "2026-08-26 21:06:58 UTC"
 updated: "2026-08-28"
 updated_at: "2026-08-28 10:53:06 UTC"
-status: completed
+status: reviewed
 source_skill: sg-maintenance
 source_model: "GPT-5.6"
 scope: "extension-toolchain-modernization"
@@ -35,6 +35,10 @@ linked_systems:
   - shipglows_data/technical/developer-guide.md
 depends_on: []
 supersedes: []
+user_story: "As the ToolGlows maintainer, I want the extension foundation modernized before ShipGlows learns from it, so ShipGlows does not encode obsolete or internally inconsistent extension conventions."
+evidence:
+  - "The status section records type checking, automated tests, lint, Chrome and Firefox production builds, dependency installation, and the ShipGlows extension lifecycle as completed proof."
+  - "Manual acceptance inside a personal Chrome profile and store publication remain explicitly outside agent control."
 next_step: "operator loads dist/chrome as unpacked for manual feature acceptance; repair stale ShipGlows stderr logs in the separate CLI chantier"
 ---
 
