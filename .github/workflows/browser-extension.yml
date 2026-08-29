@@ -1,0 +1,47 @@
+name: Browser extension artifact
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "manifest*.ts"
+      - "vite*.ts"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/browser-extension.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "manifest*.ts"
+      - "vite*.ts"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/browser-extension.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chrome:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm build:chrome
+      - name: Validate Manifest V3 artifact
+        run: node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('dist/chrome/manifest.json','utf8'));if(m.manifest_version!==3||!m.name||!m.version)process.exit(1)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toolglows-chrome-unpacked
+          path: dist/chrome
+          if-no-files-found: error
+          retention-days: 14
