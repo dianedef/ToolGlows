@@ -2,7 +2,7 @@ name: Browser extension artifact
 
 on:
   push:
-    branches: [main]
+    branches: [main, "codex/**"]
     paths:
       - "src/**"
       - "manifest*.ts"
