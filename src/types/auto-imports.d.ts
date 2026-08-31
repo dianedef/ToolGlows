@@ -6,8 +6,11 @@
 // biome-ignore lint: disable
 export {}
 declare global {
+  const CONTENT_SCRIPT_STATUS_MESSAGE: typeof import('../utils/contentScriptStatus')['CONTENT_SCRIPT_STATUS_MESSAGE']
+  const DEFAULT_CUSTOM_PALETTE: typeof import('../stores/darkModePalette')['DEFAULT_CUSTOM_PALETTE']
   const EffectScope: typeof import('vue')['EffectScope']
   const ErrorSource: typeof import('../composables/useErrorHandling')['ErrorSource']
+  const GRAPHITE_PALETTE: typeof import('../stores/darkModePalette')['GRAPHITE_PALETTE']
   const Notification: typeof import('notivue')['Notification']
   const Notivue: typeof import('notivue')['Notivue']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
@@ -45,6 +48,8 @@ declare global {
   const effectScope: typeof import('vue')['effectScope']
   const elementOutline: typeof import('../utils/designTokens')['elementOutline']
   const extendRef: typeof import('@vueuse/core')['extendRef']
+  const extensionDetailsUrl: typeof import('../utils/contentScriptStatus')['extensionDetailsUrl']
+  const fromPickerHex: typeof import('../utils/colorPicker')['fromPickerHex']
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
@@ -60,6 +65,7 @@ declare global {
   const isReactive: typeof import('vue')['isReactive']
   const isReadonly: typeof import('vue')['isReadonly']
   const isRef: typeof import('vue')['isRef']
+  const isSupportedPageUrl: typeof import('../utils/contentScriptStatus')['isSupportedPageUrl']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
   const mapActions: typeof import('pinia')['mapActions']
   const mapGetters: typeof import('pinia')['mapGetters']
@@ -109,9 +115,11 @@ declare global {
   const refThrottled: typeof import('@vueuse/core')['refThrottled']
   const refWithControl: typeof import('@vueuse/core')['refWithControl']
   const resolveComponent: typeof import('vue')['resolveComponent']
+  const resolveDarkModePalettePreferences: typeof import('../stores/darkModePalette')['resolveDarkModePalettePreferences']
   const resolveDesignToken: typeof import('../utils/designTokens')['resolveDesignToken']
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
+  const scopeToolGlowsCss: typeof import('../utils/scopeCss')['scopeToolGlowsCss']
   const setActivePinia: typeof import('pinia')['setActivePinia']
   const setMapStoreSuffix: typeof import('pinia')['setMapStoreSuffix']
   const setupPrimeVue: typeof import('../utils/setupPrimeVue')['setupPrimeVue']
@@ -119,12 +127,14 @@ declare global {
   const shallowReadonly: typeof import('vue')['shallowReadonly']
   const shallowRef: typeof import('vue')['shallowRef']
   const storeToRefs: typeof import('pinia')['storeToRefs']
+  const switchDarkModePalette: typeof import('../stores/darkModePalette')['switchDarkModePalette']
   const syncRef: typeof import('@vueuse/core')['syncRef']
   const syncRefs: typeof import('@vueuse/core')['syncRefs']
   const t: typeof import('vue-i18n')['t']
   const templateRef: typeof import('@vueuse/core')['templateRef']
   const throttledRef: typeof import('@vueuse/core')['throttledRef']
   const throttledWatch: typeof import('@vueuse/core')['throttledWatch']
+  const toPickerHex: typeof import('../utils/colorPicker')['toPickerHex']
   const toRaw: typeof import('vue')['toRaw']
   const toReactive: typeof import('@vueuse/core')['toReactive']
   const toRef: typeof import('vue')['toRef']
@@ -386,11 +396,17 @@ declare global {
   export type { SearchEngine } from '../composables/searchEngines'
   import('../composables/searchEngines')
   // @ts-ignore
+  export type { DarkModePalettePreset, DarkModePaletteColors, DarkModePalettePreferences } from '../stores/darkModePalette'
+  import('../stores/darkModePalette')
+  // @ts-ignore
   export type { HideElementSettings } from '../stores/hideElement'
   import('../stores/hideElement')
   // @ts-ignore
   export type { ToolGlowsSettings } from '../stores/settings'
   import('../stores/settings')
+  // @ts-ignore
+  export type { ContentScriptStatus } from '../utils/contentScriptStatus'
+  import('../utils/contentScriptStatus')
 }
 
 // for vue template auto import
@@ -398,8 +414,11 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
+    readonly CONTENT_SCRIPT_STATUS_MESSAGE: UnwrapRef<typeof import('../utils/contentScriptStatus')['CONTENT_SCRIPT_STATUS_MESSAGE']>
+    readonly DEFAULT_CUSTOM_PALETTE: UnwrapRef<typeof import('../stores/darkModePalette')['DEFAULT_CUSTOM_PALETTE']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly ErrorSource: UnwrapRef<typeof import('../composables/useErrorHandling')['ErrorSource']>
+    readonly GRAPHITE_PALETTE: UnwrapRef<typeof import('../stores/darkModePalette')['GRAPHITE_PALETTE']>
     readonly Notification: UnwrapRef<typeof import('notivue')['Notification']>
     readonly Notivue: UnwrapRef<typeof import('notivue')['Notivue']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
@@ -437,6 +456,8 @@ declare module 'vue' {
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly elementOutline: UnwrapRef<typeof import('../utils/designTokens')['elementOutline']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
+    readonly extensionDetailsUrl: UnwrapRef<typeof import('../utils/contentScriptStatus')['extensionDetailsUrl']>
+    readonly fromPickerHex: UnwrapRef<typeof import('../utils/colorPicker')['fromPickerHex']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
@@ -452,6 +473,7 @@ declare module 'vue' {
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
+    readonly isSupportedPageUrl: UnwrapRef<typeof import('../utils/contentScriptStatus')['isSupportedPageUrl']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
@@ -501,9 +523,11 @@ declare module 'vue' {
     readonly refThrottled: UnwrapRef<typeof import('@vueuse/core')['refThrottled']>
     readonly refWithControl: UnwrapRef<typeof import('@vueuse/core')['refWithControl']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
+    readonly resolveDarkModePalettePreferences: UnwrapRef<typeof import('../stores/darkModePalette')['resolveDarkModePalettePreferences']>
     readonly resolveDesignToken: UnwrapRef<typeof import('../utils/designTokens')['resolveDesignToken']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
+    readonly scopeToolGlowsCss: UnwrapRef<typeof import('../utils/scopeCss')['scopeToolGlowsCss']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
     readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
     readonly setupPrimeVue: UnwrapRef<typeof import('../utils/setupPrimeVue')['setupPrimeVue']>
@@ -511,12 +535,14 @@ declare module 'vue' {
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
     readonly storeToRefs: UnwrapRef<typeof import('pinia')['storeToRefs']>
+    readonly switchDarkModePalette: UnwrapRef<typeof import('../stores/darkModePalette')['switchDarkModePalette']>
     readonly syncRef: UnwrapRef<typeof import('@vueuse/core')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
     readonly t: UnwrapRef<typeof import('vue-i18n')['t']>
     readonly templateRef: UnwrapRef<typeof import('@vueuse/core')['templateRef']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('@vueuse/core')['throttledWatch']>
+    readonly toPickerHex: UnwrapRef<typeof import('../utils/colorPicker')['toPickerHex']>
     readonly toRaw: UnwrapRef<typeof import('vue')['toRaw']>
     readonly toReactive: UnwrapRef<typeof import('@vueuse/core')['toReactive']>
     readonly toRef: UnwrapRef<typeof import('vue')['toRef']>

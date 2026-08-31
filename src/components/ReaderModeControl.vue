@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-if="!isLoading"
     v-model:visible="readerModeStore.isActive"
     :modal="true"
@@ -98,13 +98,13 @@
         <label>Afficher les URLs des liens</label>
       </div>
     </div>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useReaderModeStore } from '@/stores/readerMode'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Dropdown from 'primevue/dropdown'
 import Slider from 'primevue/slider'
 import RadioButton from 'primevue/radiobutton'

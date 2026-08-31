@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="dragStore.isActive"
     :header="'Drag & Open'"
     :modal="true"
@@ -132,7 +132,7 @@
       </div>
     </div>
 
-    <Dialog
+    <ToolGlowsDialog
       v-model:visible="showAddFileTypeDialog"
       header="Ajouter un type de fichier"
       :modal="true"
@@ -157,9 +157,9 @@
           @click="addFileType"
         />
       </template>
-    </Dialog>
+    </ToolGlowsDialog>
 
-    <Dialog
+    <ToolGlowsDialog
       v-model:visible="showAddActionDialog"
       :header="editingAction ? 'Modifier l\'action' : 'Ajouter une action'"
       :modal="true"
@@ -209,14 +209,14 @@
           @click="saveCustomAction"
         />
       </template>
-    </Dialog>
-  </Dialog>
+    </ToolGlowsDialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useDragOpenStore } from '@/stores/dragOpen'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Checkbox from 'primevue/checkbox'
@@ -330,7 +330,7 @@ const closeDialog = () => {
 }
 
 .field-slider label {
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
   color: var(--text-color);
 }
 
@@ -372,7 +372,7 @@ const closeDialog = () => {
 }
 
 .action-pattern {
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
   color: var(--text-color-secondary);
 }
 
@@ -381,3 +381,4 @@ const closeDialog = () => {
   gap: var(--tg-space-1);
 }
 </style>
+

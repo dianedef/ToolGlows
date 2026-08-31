@@ -32,6 +32,7 @@ export interface Settings {
   position: { x: number; y: number }
   activeTools: string[]
   isPinned: boolean
+  interfaceTheme?: 'light' | 'dark'
   toolbarColor?: string
   toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   darkMode?: {
@@ -40,7 +41,6 @@ export interface Settings {
       textColor: string
       linkColor: string
       contrastLevel: number
-      invertImages: boolean
       autoEnable: boolean
       scheduleStart: string
       scheduleEnd: string
@@ -194,7 +194,9 @@ export const bridgeApi = {
     )
   },
   reloadAllTabs: async () => {
-    const response = await sendMessage('RELOAD_ALL_TABS', {}, 'background')
+    const response: unknown = await chrome.runtime.sendMessage({
+      type: 'TOOLGLOWS_RELOAD_ALL_TABS'
+    })
     if (
       !isRecord(response) ||
       typeof response.successCount !== 'number' ||

@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="isDialogVisible"
     :modal="true"
     :dismissable-mask="true"
@@ -61,13 +61,13 @@
         />
       </div>
     </div>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { useReloadAllTabsStore } from '@/stores/reloadAllTabs'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Checkbox from 'primevue/checkbox'
@@ -153,7 +153,7 @@ onUnmounted(() => {
 }
 
 :deep(.p-message) {
-  width: 100%;
+  width: var(--tg-full-width);
 }
 
 .shortcut-settings {
@@ -185,6 +185,7 @@ onUnmounted(() => {
 h4 {
   margin: 0 0 1rem 0;
   color: var(--text-color);
-  font-size: 1.1rem;
+  font-size: var(--tg-text-lg);
 }
 </style>
+

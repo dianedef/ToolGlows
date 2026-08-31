@@ -98,11 +98,15 @@ Update the design-system authority record and this spec. No public copy is chang
 | 2026-08-28 18:56 UTC | sg-design | Codex | Created from the accepted full token-remediation direction. | active | Establish authority and migrate visible interaction states. |
 | 2026-08-28 19:16 UTC | sg-design | Codex | Established semantic token authority, repaired active-state precedence and migrated the element selector. | implemented — first batch | Continue component and composable migration. |
 | 2026-08-28 19:35 UTC | sg-design | Codex | Replaced stale content-script overrides and migrated Auto Copy, OCR and Drag Open runtime highlights to semantic tokens. | implemented — runtime batch | Verify in Edge, then migrate components and remaining composables. |
+| 2026-08-28 20:29 UTC | sg-design | Codex | Added the persisted ToolGlows light/dark interface switch and tested the change in Edge. | implemented — interface theme switch | Resolve remaining drift findings. |
+| 2026-08-29 10:04 UTC | 006-sg-design | Codex | Started the approved shared-dialog system: canonical modal layering, stacked overlays and toolbar-matched shell radius. | in progress | Implement the shared wrapper, migrate dialogs and collect automated plus rendered proof. |
+| 2026-08-29 15:29 UTC | 006-sg-design | Codex | Migrated all 28 product dialog instances to one wrapper, restored automatic modal stacking above the toolbar and centralized the shared shell radius. | implemented — rendered proof pending | Reload the unpacked Edge extension, then verify stacked dialogs in light and dark modes. |
+| 2026-08-29 15:34 UTC | 006-sg-design | Codex | Verified two stacked dialogs above the toolbar in Edge, with identical 48px shell radii in light and dark themes; restored the original dark and unpinned preferences afterward. | validated — shared dialog system | Continue the remaining pre-existing token-drift remediation separately. |
 
 ## Current Chantier Flow
 
 - sg-design: active
 - readiness: ready
-- implementation: runtime batch complete
-- verification: pending
+- implementation: shared-dialog migration complete
+- verification: shared-dialog system validated in stacked light/dark Edge states; 31 tests, typecheck, Chrome/Firefox builds and manifest lint pass; drift scan still reports pre-existing project findings
 - delivery: pending

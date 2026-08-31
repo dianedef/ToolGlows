@@ -1,10 +1,10 @@
 ---
 artifact: technical_architecture
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: "toolglows"
 created: "2026-08-28"
-updated: "2026-08-28"
+updated: "2026-08-29"
 status: reviewed
 source_skill: sg-docs
 scope: extension-architecture
@@ -30,6 +30,7 @@ supersedes:
 evidence:
   - "Manifest V3 configuration declares the Chrome and Firefox entrypoints and permission baseline."
   - "The content script mounts the Vue toolbar and the background worker owns privileged browser actions."
+  - "The packaged Dark Reader engine applies the configurable dynamic dark theme inside each content-script context."
 next_review: "2026-11-28"
 next_step: "Refresh after a manifest, bridge or browser-context change."
 ---
@@ -51,7 +52,7 @@ ToolGlows is one Vue 3 and TypeScript codebase built by Vite/CRXJS for Chrome an
 | Setup pages | `src/ui/setup/` | Install and update guidance opened by the background worker. |
 | DevTools and offscreen | `src/devtools/`, `src/offscreen/` | Auxiliary extension contexts; validate them separately before relying on them for user-facing capability. |
 
-The content script runs at `document_end` in all frames on the manifest match pattern. This broad page reach is part of the toolbar promise and must remain justified when reviewing store permissions and disclosure.
+The toolbar content script runs at `document_end` in the top-level document only, ensuring one ToolGlows instance and one command dispatch per tab. Frame-wide behavior belongs in dedicated lightweight entries, such as the dark-mode bootstrap, rather than duplicating the toolbar in every iframe.
 
 ## Extension flow
 
@@ -65,6 +66,10 @@ web page DOM
 ```
 
 `ToolGlowsBar.vue` is the current registry of the user-facing tools. Its components use dedicated stores and composables for individual capabilities; a tool added outside that registry is not part of the toolbar promise.
+
+The round ToolGlows button owns both primary gestures: a pointer movement drags the toolbar, while a press and release without movement opens or closes it. Document-level dialogs and tooltips do not count as outside clicks for collapse.
+
+The dark-mode store persists activation, schedule, system preference, palette preset, custom colors, contrast and per-domain exclusions. Graphite is the coherent default preset; switching to Custom restores the last custom color triplet without loss, and legacy saved colors are preserved as that custom triplet during migration. Setting controls update and persist their values atomically. A dedicated lightweight entry runs at `document_start` and installs a bounded cached pre-render canvas before the main toolbar bundle runs at `document_end`. The validated `darkreader` theme then handles page content while the canvas remains underneath it to prevent late site hydration from restoring a white root background. A small RGB range table softens residual near-white neutral, beige and pale-blue control or panel surfaces after hydration; it excludes media and all ToolGlows UI, observes newly inserted UI, and removes its markers when dark mode stops. Narrow hostname-scoped overrides may still correct third-party surfaces that need deterministic selectors; Oscaro currently covers its filter panel, bright controls and product-image glare. The content script evaluates its own hostname exclusion and uses the packaged engine to update stylesheets, CSS variables and dynamic DOM content. Disabling the tool removes every theme layer. Images and videos remain excluded from DarkReader image analysis so they are not inverted.
 
 ## Browser variants and permissions
 

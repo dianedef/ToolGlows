@@ -1,81 +1,16 @@
 <template>
-  <div class="theme-swatch">
-    <div 
-      class="color-preview" 
-      :style="`background-color: ${displayColor} !important`"
-      @click="showColorPicker = true"
-    ></div>
-    
-    <ColorPicker
-      v-model="color"
-      v-model:visible="showColorPicker"
-      format="hex"
-      append-to="body"
-      :inline="false"
-      class="p-colorpicker-overlay"
-      @hide="onHide"
-    />
-  </div>
+  <ToolGlowsColorPicker v-model="toolbarColor" />
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useSettingsStore } from '@/stores/settings'
-import ColorPicker from 'primevue/colorpicker'
+import ToolGlowsColorPicker from './ToolGlowsColorPicker.vue'
 
 const settingsStore = useSettingsStore()
-const showColorPicker = ref(false)
 
-// Initialisation avec la couleur du store ou la couleur par défaut
-const color = ref(settingsStore.settings.toolbarColor?.replace('#', '') || 'ff69b4')
-
-// Pour l'affichage, on utilise toujours la couleur du store
-const displayColor = computed(() => {
-  const color = settingsStore.settings.toolbarColor || 'var(--tg-toolbar-color-default)'
-  console.log('Displayed color:', color)
-  return color
+const toolbarColor = computed({
+  get: () => settingsStore.settings.toolbarColor || '#ff69b4',
+  set: value => settingsStore.updateSettings({ toolbarColor: value })
 })
-
-// On met à jour la couleur seulement quand on ferme le picker
-function onHide() {
-  const newColor = `#${color.value}`
-  if (newColor !== settingsStore.settings.toolbarColor) {
-    console.log('Updating color:', newColor)
-    settingsStore.updateSettings({ toolbarColor: newColor })
-  }
-}
 </script>
-
-<style scoped>
-.theme-swatch {
-  width: var(--tg-space-5);
-  height: var(--tg-space-5);
-  position: relative;
-  display: inline-block;
-}
-
-.color-preview {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid var(--surface-border);
-  background-color: var(--primary-color);
-}
-
-:deep(.p-colorpicker) {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  z-index: 999999;
-}
-
-:deep(.p-colorpicker-panel) {
-  background: var(--tg-surface-raised);
-  border: none;
-  box-shadow: var(--card-shadow);
-  border-radius: var(--border-radius);
-  padding: var(--tg-space-2);
-}
-</style>

@@ -30,6 +30,12 @@ export default {
   content_scripts: [
     {
       all_frames: true,
+      js: ["src/content-script/darkModeBootstrapEntry.ts"],
+      matches: ["<all_urls>"],
+      run_at: "document_start",
+    },
+    {
+      all_frames: false,
       js: ["src/content-script/index.ts"],
       matches: ["<all_urls>"],
       run_at: "document_end",

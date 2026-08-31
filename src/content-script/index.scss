@@ -1,7 +1,7 @@
 #toolglows-root {
   all: initial;
   position: fixed !important;
-  z-index: 2147483647 !important;
+  z-index: var(--tg-z-extension) !important;
   inset: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
@@ -10,11 +10,6 @@
   > * {
     pointer-events: auto !important;
   }
-}
-
-.p-dialog,
-.p-dialog-mask {
-  z-index: 2147483647 !important;
 }
 
 .p-dialog-mask {

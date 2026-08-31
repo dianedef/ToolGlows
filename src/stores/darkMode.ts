@@ -2,16 +2,24 @@ import { defineStore } from 'pinia'
 import { watch, ref, computed } from 'vue'
 import { sendMessage } from 'webext-bridge/content-script'
 import { onMessage } from 'webext-bridge/background'
+import { applyDarkMode as applyDarkModeEngine, type DarkModeMessage } from '@/content-script/darkMode'
+import {
+  resolveDarkModePalettePreferences,
+  switchDarkModePalette,
+  type DarkModePaletteColors,
+  type DarkModePalettePreset
+} from './darkModePalette'
 
 // Type pour la sérialisation JSON
 type JsonValue = string | number | boolean | { [key: string]: JsonValue } | JsonValue[]
 
 interface DarkModeOptions {
+  palettePreset: DarkModePalettePreset
+  customColors: DarkModePaletteColors
   backgroundColor: string
   textColor: string
   linkColor: string
   contrastLevel: number
-  invertImages: boolean
   autoEnable: boolean
   scheduleStart: string
   scheduleEnd: string
@@ -27,25 +35,9 @@ interface SyncMessage {
   options: DarkModeOptions
 }
 
-// Messages pour le content script
-interface ContentMessage {
-  [key: string]: string | number | boolean
-  styles: string
-  isActive: boolean
-  backgroundColor: string
-  textColor: string
-  linkColor: string
-  invertImages: boolean
-  contrastLevel: number
-  transitionDuration: number
-}
-
 const defaultOptions: DarkModeOptions = {
-  backgroundColor: '#1a1a1a',
-  textColor: '#e0e0e0',
-  linkColor: '#4a9eff',
+  ...resolveDarkModePalettePreferences({}),
   contrastLevel: 1,
-  invertImages: false,
   autoEnable: false,
   scheduleStart: '20:00',
   scheduleEnd: '07:00',
@@ -54,11 +46,41 @@ const defaultOptions: DarkModeOptions = {
   syncWithSystem: false
 }
 
+function normalizeHexColor(value: unknown, fallback: string): string {
+  if (typeof value !== 'string') return fallback
+  const normalized = value.startsWith('#') ? value : `#${value}`
+  return /^#[0-9a-f]{6}$/i.test(normalized) ? normalized.toLowerCase() : fallback
+}
+
+function getMinutes(time: string): number | null {
+  const [hours, minutes] = time.split(':').map(Number)
+  if (!Number.isInteger(hours) || !Number.isInteger(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    return null
+  }
+
+  return hours * 60 + minutes
+}
+
+function isWithinSchedule(now: Date, start: string, end: string): boolean {
+  const startMinutes = getMinutes(start)
+  const endMinutes = getMinutes(end)
+  if (startMinutes === null || endMinutes === null) return false
+
+  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+  if (startMinutes === endMinutes) return true
+  if (startMinutes < endMinutes) return currentMinutes >= startMinutes && currentMinutes <= endMinutes
+
+  return currentMinutes >= startMinutes || currentMinutes <= endMinutes
+}
+
 export const useDarkModeStore = defineStore('darkMode', () => {
   const options = ref({ ...defaultOptions })
   const isActive = ref(false)
   const isInitialized = ref(false)
   const currentDomain = ref('')
+  const systemPrefersDark = ref<boolean | null>(null)
+  let systemMediaQuery: MediaQueryList | null = null
+  let scheduleTimer: ReturnType<typeof setInterval> | null = null
 
   const isDomainExcluded = computed(() => {
     return Array.isArray(options.value.excludedDomains) &&
@@ -66,22 +88,65 @@ export const useDarkModeStore = defineStore('darkMode', () => {
   })
 
   const shouldActivateDarkMode = computed(() => {
-    if (!options.value.autoEnable) return isActive.value
+    if (options.value.syncWithSystem && systemPrefersDark.value !== null) {
+      return systemPrefersDark.value
+    }
 
-    const now = new Date()
-    const currentTime = now.getHours() * 100 + now.getMinutes()
-    const startTime = parseInt(options.value.scheduleStart.replace(':', ''))
-    const endTime = parseInt(options.value.scheduleEnd.replace(':', ''))
+    if (options.value.autoEnable) {
+      return isWithinSchedule(new Date(), options.value.scheduleStart, options.value.scheduleEnd)
+    }
 
-    return currentTime >= startTime || currentTime <= endTime
+    return isActive.value
   })
 
   // Watcher pour appliquer automatiquement les changements
-  watch([isActive, options], () => {
+  watch([isActive, options, systemPrefersDark], () => {
     if (isInitialized.value) {
       applyDarkMode()
     }
   }, { deep: true })
+
+  function syncWithSystemPreference() {
+    if (!options.value.syncWithSystem) {
+      systemPrefersDark.value = null
+      return
+    }
+
+    try {
+      if (!systemMediaQuery) {
+        systemMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+        systemMediaQuery.addEventListener('change', (event) => {
+          systemPrefersDark.value = event.matches
+        })
+      }
+
+      systemPrefersDark.value = systemMediaQuery.matches
+    } catch (error) {
+      console.warn('[WARN] Unable to read system color preference:', error)
+      systemPrefersDark.value = null
+    }
+  }
+
+  watch(() => options.value.syncWithSystem, () => {
+    if (isInitialized.value) syncWithSystemPreference()
+  })
+
+  function syncScheduleTimer() {
+    if (scheduleTimer) {
+      clearInterval(scheduleTimer)
+      scheduleTimer = null
+    }
+
+    if (options.value.autoEnable) {
+      scheduleTimer = setInterval(() => {
+        if (isInitialized.value) applyDarkMode()
+      }, 30_000)
+    }
+  }
+
+  watch(() => options.value.autoEnable, () => {
+    syncScheduleTimer()
+  })
 
   async function loadOptions() {
     if (isInitialized.value) return
@@ -89,12 +154,24 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     try {
       const result = await chrome.storage.sync.get('darkModeOptions')
       if (result.darkModeOptions) {
-        const savedOptions = result.darkModeOptions
-        savedOptions.excludedDomains = Array.isArray(savedOptions.excludedDomains)
-          ? savedOptions.excludedDomains
-          : []
+        const savedOptions = result.darkModeOptions as Partial<DarkModeOptions> & { invertImages?: unknown }
+        const {
+          invertImages: _legacyInvertImages,
+          excludedDomains,
+          ...savedOptionsWithoutLegacyImageInversion
+        } = savedOptions
 
-        options.value = { ...defaultOptions, ...savedOptions }
+        const palettePreferences = resolveDarkModePalettePreferences(savedOptions)
+        options.value = {
+          ...defaultOptions,
+          ...savedOptionsWithoutLegacyImageInversion,
+          ...palettePreferences,
+          excludedDomains: Array.isArray(excludedDomains) ? excludedDomains : []
+        }
+
+        if ('invertImages' in savedOptions || savedOptions.palettePreset === undefined) {
+          await chrome.storage.sync.set({ darkModeOptions: options.value })
+        }
       }
 
       const activeState = await chrome.storage.local.get('darkModeActive')
@@ -109,13 +186,8 @@ export const useDarkModeStore = defineStore('darkMode', () => {
         currentDomain.value = ''
       }
 
-      if (options.value.syncWithSystem) {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
-        isActive.value = prefersDark.matches
-        prefersDark.addEventListener('change', (e) => {
-          isActive.value = e.matches
-        })
-      }
+      syncWithSystemPreference()
+      syncScheduleTimer()
     } catch (error) {
       console.error('[ERROR] Failed to load dark mode options:', error)
       options.value = { ...defaultOptions }
@@ -131,9 +203,26 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     }
 
     try {
+      options.value.backgroundColor = normalizeHexColor(options.value.backgroundColor, defaultOptions.backgroundColor)
+      options.value.textColor = normalizeHexColor(options.value.textColor, defaultOptions.textColor)
+      options.value.linkColor = normalizeHexColor(options.value.linkColor, defaultOptions.linkColor)
+      if (options.value.palettePreset === 'custom') {
+        options.value.customColors = {
+          backgroundColor: options.value.backgroundColor,
+          textColor: options.value.textColor,
+          linkColor: options.value.linkColor
+        }
+      }
+
       await Promise.all([
         chrome.storage.sync.set({ darkModeOptions: options.value }),
-        chrome.storage.local.set({ darkModeActive: isActive.value })
+        chrome.storage.local.set({
+          darkModeActive: isActive.value,
+          toolglowsDarkModeBootstrap: {
+            isActive: isActive.value,
+            options: options.value
+          }
+        })
       ])
 
       console.log('[SUCCESS] Dark mode options saved and synced')
@@ -151,8 +240,62 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     await saveOptions()
   }
 
-  function setActive(value: boolean) {
+  async function setActive(value: boolean) {
+    // A manual action is an explicit override. Leaving an automation enabled
+    // here would immediately undo the user's click and make the toggle lie.
+    options.value.autoEnable = false
+    options.value.syncWithSystem = false
     isActive.value = value
+    await saveOptions()
+    // Do not rely solely on Vue's async watcher: removal from activeTools must
+    // synchronously retire DarkReader, the bootstrap canvas and DOM markers.
+    if (!value) applyDarkModeEngine({
+      isActive: false,
+      options: {
+        backgroundColor: options.value.backgroundColor,
+        textColor: options.value.textColor,
+        linkColor: options.value.linkColor,
+        contrastLevel: options.value.contrastLevel,
+        transitionDuration: options.value.transitionDuration,
+        excludedDomains: [...options.value.excludedDomains]
+      }
+    })
+  }
+
+  async function setPalettePreset(preset: DarkModePalettePreset) {
+    options.value = {
+      ...options.value,
+      ...switchDarkModePalette(options.value, preset)
+    }
+    await saveOptions()
+  }
+
+  async function setPaletteColor(color: keyof DarkModePaletteColors, value: string) {
+    const fallback = options.value.customColors[color]
+    const normalizedValue = normalizeHexColor(value, fallback)
+    options.value = {
+      ...options.value,
+      palettePreset: 'custom',
+      [color]: normalizedValue,
+      customColors: {
+        ...options.value.customColors,
+        [color]: normalizedValue
+      }
+    }
+    await saveOptions()
+  }
+
+  function setSyncWithSystem(value: boolean) {
+    options.value.syncWithSystem = value
+    if (value) options.value.autoEnable = false
+    syncWithSystemPreference()
+    saveOptions()
+  }
+
+  function setAutoEnable(value: boolean) {
+    options.value.autoEnable = value
+    if (value) options.value.syncWithSystem = false
+    syncScheduleTimer()
     saveOptions()
   }
 
@@ -179,199 +322,31 @@ export const useDarkModeStore = defineStore('darkMode', () => {
   async function applyDarkMode() {
     console.log('[DARK MODE STORE] 🎨 Applying dark mode with options:', options.value)
 
-    const styles = `
-      /* Styles de base */
-      html, body {
-        background-color: ${options.value.backgroundColor} !important;
-        color: ${options.value.textColor} !important;
+    const shouldApply = shouldActivateDarkMode.value && !isDomainExcluded.value
+    const message: DarkModeMessage = {
+      isActive: shouldApply,
+      options: {
+        backgroundColor: normalizeHexColor(options.value.backgroundColor, defaultOptions.backgroundColor),
+        textColor: normalizeHexColor(options.value.textColor, defaultOptions.textColor),
+        linkColor: normalizeHexColor(options.value.linkColor, defaultOptions.linkColor),
+        contrastLevel: options.value.contrastLevel,
+        transitionDuration: options.value.transitionDuration,
+        excludedDomains: [...options.value.excludedDomains]
       }
-
-      /* Styles des scrollbars pour Webkit (Chrome, Safari, etc.) */
-      ::-webkit-scrollbar {
-        width: 12px !important;
-        height: 12px !important;
-        background-color: ${options.value.backgroundColor} !important;
-      }
-
-      ::-webkit-scrollbar-track {
-        background-color: ${options.value.backgroundColor} !important;
-        border-radius: 8px !important;
-      }
-
-      ::-webkit-scrollbar-thumb {
-        background-color: #444 !important;
-        border: 2px solid ${options.value.backgroundColor} !important;
-        border-radius: 8px !important;
-      }
-
-      ::-webkit-scrollbar-thumb:hover {
-        background-color: #666 !important;
-      }
-
-      ::-webkit-scrollbar-corner {
-        background-color: ${options.value.backgroundColor} !important;
-      }
-
-      /* Styles des scrollbars pour Firefox */
-      * {
-        scrollbar-color: #444 ${options.value.backgroundColor} !important;
-        scrollbar-width: thin !important;
-      }
-
-      /* Reste des styles... */
-      html {
-        background: ${options.value.backgroundColor} !important;
-      }
-
-      body {
-        background: ${options.value.backgroundColor} !important;
-        margin-color: ${options.value.backgroundColor} !important;
-      }
-
-      * {
-        transition: background-color ${options.value.transitionDuration}ms ease,
-                    color ${options.value.transitionDuration}ms ease !important;
-      }
-
-      /* Éléments de base */
-      div, section, article, aside, nav, header, footer, main,
-      table, tr, td, th, thead, tbody, tfoot,
-      form, fieldset, legend,
-      pre, code, blockquote,
-      ul, ol, li, dl, dt, dd,
-      details, summary, i, em {
-        background-color: ${options.value.backgroundColor} !important;
-        color: ${options.value.textColor} !important;
-        background: ${options.value.backgroundColor} !important;
-      }
-
-      /* Gestion des marges et bordures */
-      body::before,
-      body::after,
-      div::before,
-      div::after,
-      main::before,
-      main::after,
-      article::before,
-      article::after,
-      section::before,
-      section::after,
-      nav::before,
-      nav::after,
-      details::before,
-      details::after,
-      summary::before,
-      summary::after,
-      i::before,
-      i::after {
-        background: ${options.value.backgroundColor} !important;
-        background-color: ${options.value.backgroundColor} !important;
-        border-color: #444 !important;
-      }
-
-      /* Bordures et marges des tableaux */
-      table, th, td {
-        border-color: #444 !important;
-      }
-
-      /* Bordures des conteneurs */
-      div, section, article, aside, nav, header, footer, main,
-      .container, .content, .wrapper, .main,
-      [class*="container"], [class*="content"], [class*="wrapper"],
-      [class*="main"], [class*="body"], [class*="section"],
-      details, summary {
-        border-color: #444 !important;
-        outline-color: #444 !important;
-        background: ${options.value.backgroundColor} !important;
-      }
-
-      /* Suppression des marges blanches */
-      [class*="bg-"],
-      [class*="background"],
-      [style*="background"],
-      [style*="bg-"],
-      [style*="margin"],
-      [style*="padding"] {
-        background: ${options.value.backgroundColor} !important;
-        background-color: ${options.value.backgroundColor} !important;
-      }
-
-      /* Liens */
-      a, a:visited, a:hover, a:active {
-        color: ${options.value.linkColor} !important;
-      }
-
-      /* Images et vidéos */
-      img, video, picture, svg {
-        filter: ${options.value.invertImages ? 'invert(1)' : 'none'}
-               brightness(${options.value.contrastLevel}) !important;
-      }
-
-      /* Formulaires et contrôles */
-      input, textarea, select, button,
-      [type="text"], [type="password"], [type="email"], [type="number"],
-      [type="tel"], [type="url"], [type="search"], [type="date"],
-      [type="time"], [type="datetime-local"], [type="month"],
-      [type="week"], [type="color"], [type="file"],
-      [type="submit"], [type="reset"], [type="button"] {
-        background-color: ${options.value.backgroundColor} !important;
-        color: ${options.value.textColor} !important;
-        border-color: #444 !important;
-      }
-
-      /* Conteneurs spécifiques */
-      .container, .content, .wrapper, .main,
-      [class*="container"], [class*="content"], [class*="wrapper"],
-      [class*="main"], [class*="body"], [class*="section"] {
-        background-color: ${options.value.backgroundColor} !important;
-        color: ${options.value.textColor} !important;
-        background: ${options.value.backgroundColor} !important;
-      }
-
-      /* Gestion des iframes */
-      iframe {
-        border-color: #444 !important;
-      }
-
-      /* Gestion des éléments avec des ombres */
-      [class*="shadow"],
-      [class*="card"],
-      [style*="box-shadow"] {
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) !important;
-      }
-
-      /* Styles pour les icônes */
-      i[class*="icon"],
-      i[class*="fa-"],
-      i[class*="material"],
-      i[class*="pi-"],
-      span[class*="icon"],
-      span[class*="fa-"],
-      span[class*="material"],
-      span[class*="pi-"] {
-        color: ${options.value.textColor} !important;
-        background-color: #2a2a2a !important;
-        background: #2a2a2a !important;
-      }
-
-      /* Styles spécifiques pour les icônes sans classe */
-      i, span[class*="icon"] {
-        background-color: #2a2a2a !important;
-        background: #2a2a2a !important;
-      }
-    `
-
-    try {
-      // Envoyer au background script pour diffusion via les content scripts.
-      await sendMessage('INJECT_DARK_MODE', {
-        styles,
-        isActive: isActive.value
-      }, 'background')
-
-      console.log('[DARK MODE STORE] ✅ Dark mode update sent to background')
-    } catch (error) {
-      console.error('[DARK MODE STORE] ❌ Failed to send dark mode update:', error)
     }
+    const applied = applyDarkModeEngine(message)
+
+    if (!applied) return
+
+    // La page courante est mise à jour immédiatement. La diffusion aux autres
+    // onglets reste une synchronisation secondaire, qui ne doit jamais bloquer
+    // l'action demandée par la personne sur le site qu'elle visite.
+    void sendMessage('INJECT_DARK_MODE', {
+      ...message,
+      isActive: shouldActivateDarkMode.value
+    } as unknown as JsonValue, 'background')
+      .then(() => console.log('[DARK MODE STORE] ✅ Dark mode update sent to background'))
+      .catch(error => console.warn('[DARK MODE STORE] ⚠️ Background sync unavailable:', error))
   }
 
   // Écouter les mises à jour depuis d'autres onglets
@@ -398,7 +373,11 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     loadOptions,
     saveOptions,
     updateOptions,
+    setPalettePreset,
+    setPaletteColor,
     setActive,
+    setSyncWithSystem,
+    setAutoEnable,
     toggleDarkMode,
     excludeDomain,
     includeDomain,

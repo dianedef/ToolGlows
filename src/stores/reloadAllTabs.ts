@@ -31,6 +31,11 @@ export const useReloadAllTabsStore = defineStore('reloadAllTabs', () => {
       if (errorCount > 0) {
         error.value = `${errorCount} tab(s) failed to reload`
       }
+
+      // Reload only after the background has accepted the command. Keeping
+      // this final navigation in the initiating page avoids relying on a
+      // service-worker timer that Edge may discard as soon as it goes idle.
+      window.location.reload()
     } catch (err) {
       console.error('[ERROR] Failed to reload tabs:', err)
       error.value = 'Error during tabs reload'

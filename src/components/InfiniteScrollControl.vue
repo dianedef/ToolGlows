@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="scrollStore.isActive"
     :modal="true"
     :dismissable-mask="true"
@@ -56,13 +56,13 @@
         <small class="toolglows-small">Nombre maximum de pages à charger</small>
       </div>
     </div>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useToolGlowsInfiniteScrollStore } from '@/stores/infiniteScroll'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Slider from 'primevue/slider'
 import Checkbox from 'primevue/checkbox'
 import InputNumber from 'primevue/inputnumber'

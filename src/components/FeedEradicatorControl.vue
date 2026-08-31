@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="feedStore.isActive"
     :modal="true"
     :header="'Éradicateur de flux'"
@@ -108,13 +108,13 @@
         </div>
       </div>
     </div>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useFeedEradicatorStore } from '@/stores/feedEradicator'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'

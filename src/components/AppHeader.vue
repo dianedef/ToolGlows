@@ -36,7 +36,7 @@
             </div>
             <ul
               tabindex="0"
-              class="dropdown-content menu bg-white rounded-box z-[1] shadow-lg"
+              class="dropdown-content toolglows-header-menu"
             >
               <li><ThemeSwitch /></li>
               <li></li>
@@ -58,3 +58,4 @@
 </template>
 
 <style scoped></style>
+

@@ -8,15 +8,24 @@
       'toolglows-expanded': isExpanded || settingsStore.settings.isPinned,
       'toolglows-dragging': isDragging
     }"
+    @pointerdown.capture="startToolbarPointer"
+    @pointermove.capture="moveToolbarPointer"
+    @pointerup.capture="finishToolbarPointer"
+    @pointercancel.capture="finishToolbarPointer"
+    @click.capture="suppressDraggedClick"
+    @contextmenu.capture="openToolSettings"
   >
     <Toast position="bottom-right" />
     <!-- Bouton principal -->
     <Button
       class="toolglows-main-button p-button-rounded"
-      :icon="isExpanded || settingsStore.settings.isPinned ? 'pi pi-times' : 'pi pi-bars'"
+      :class="{ dragging: isDragging }"
+      :icon="isExpanded ? 'pi pi-times' : 'pi pi-bars'"
       text
       raised
       aria-label="ToolGlows"
+      data-toolglows-main
+      v-tooltip.bottom="'ToolGlows'"
       @click.stop="handleMainButtonClick"
     >
       <span class="toolglows-tool-emoji">🔧</span>
@@ -32,26 +41,30 @@
         class="p-button-rounded p-button-text"
         severity="secondary"
         aria-label="Paramètres"
+        data-toolglows-settings
+        v-tooltip.top="'Paramètres'"
         @click="showSettings = !showSettings"
       >
         <span class="toolglows-tool-emoji">⚙️</span>
       </Button>
 
-      <!-- Boutons des outils actifs -->
+      <!-- Tous les outils restent visibles ; leur apparence reflète leur activation. -->
       <template
         v-for="tool in toolglowsStore.tools"
         :key="tool.id"
       >
         <Button
-          v-if="toolglowsStore.activeTools.includes(tool.id)"
-          class="p-button-rounded p-button-text"
-          :aria-label="tool.name"
-          :title="tool.name"
-          @click="() => {
-            console.log('[INFO] Tool button clicked:', tool.id)
-            isVisible[tool.id] = !isVisible[tool.id]
-            console.log('[INFO] Tool visibility updated:', tool.id, isVisible[tool.id])
+          class="toolglows-tool-button p-button-rounded p-button-text"
+          :class="{
+            'toolglows-tool-button-active': isToolEnabled(tool.id),
+            'toolglows-tool-button-inactive': !isToolEnabled(tool.id)
           }"
+          :aria-label="tool.name"
+          :aria-pressed="tool.interaction === 'command' ? undefined : isToolEnabled(tool.id)"
+          :title="toolButtonTitle(tool)"
+          :data-tool-id="tool.id"
+          v-tooltip.top="tool.name"
+          @click="toggleToolActivation(tool.id)"
         >
           <span class="toolglows-tool-emoji">{{ tool.emoji }}</span>
         </Button>
@@ -65,7 +78,7 @@
     >
       <component
         :is="tool.component"
-        v-if="toolglowsStore.activeTools.includes(tool.id)"
+        v-if="toolglowsStore.activeTools.includes(tool.id) || isVisible[tool.id]"
         v-model="isVisible[tool.id]"
         :visible="isVisible[tool.id]"
         data-component="toolglows-tool"
@@ -81,7 +94,7 @@
   </div>
 
   <!-- Panneau des paramètres -->
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="showSettings"
     modal
     :dismissable-mask="true"
@@ -99,22 +112,23 @@
         <h3>🔧 Général</h3>
         <ThemeSwatch />
       </div>
-      <div class="toolglows-setting-item">
+      <label class="toolglows-setting-item toolglows-clickable-setting">
         <Checkbox
-          v-model="autoHide"
+          :model-value="isInterfaceDark"
           :binary="true"
-          input-id="autoHide"
+          input-id="interfaceTheme"
+          @update:model-value="toggleInterfaceTheme"
         />
-        <label for="autoHide">Masquer automatiquement</label>
-      </div>
-      <div class="toolglows-setting-item">
+        <span>Mode sombre de ToolGlows</span>
+      </label>
+      <label class="toolglows-setting-item toolglows-clickable-setting">
         <Checkbox
           v-model="settingsStore.settings.isPinned"
           :binary="true"
           input-id="pinBar"
         />
-        <label for="pinBar">Épingler la barre d'outils</label>
-      </div>
+        <span>Épingler la barre d'outils</span>
+      </label>
 
       <div class="toolglows-setting-item">
         <label for="toolbarSize">Taille de la barre d'outils</label>
@@ -134,12 +148,12 @@
       </div>
 
       <!-- Gestion des outils -->
-      <h3>🛠️ Outils actifs</h3>
+      <h3>🛠️ Outils chargés dans la page</h3>
       <div class="toolglows-tools-grid">
-        <div
+        <label
           v-for="tool in toolglowsStore.tools"
           :key="tool.id"
-          class="toolglows-tool-item"
+          class="toolglows-tool-item toolglows-clickable-setting"
         >
           <Checkbox
             :model-value="toolglowsStore.activeTools.includes(tool.id)"
@@ -149,15 +163,12 @@
           />
           <div class="toolglows-tool-header">
             <span class="toolglows-tool-emoji">{{ tool.emoji }}</span>
-            <label
-              :for="'tool-' + tool.id"
-              class="toolglows-tool-name"
-            >{{ tool.name }}</label>
+            <span class="toolglows-tool-name">{{ tool.name }}</span>
           </div>
-        </div>
+        </label>
       </div>
     </div>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
@@ -168,6 +179,11 @@ import { useToolGlowsStore } from '@/stores/toolglows'
 import { useInstantOCRStore } from '@/stores/instantOCR'
 import { useWordCounterStore } from '@/stores/wordCounter'
 import { useAutoCopyStore } from '@/stores/autoCopy'
+import { useDarkModeStore } from '@/stores/darkMode'
+import { useLinksExplorerStore } from '@/stores/linksExplorer'
+import { useSocialAnalysisStore } from '@/stores/socialAnalysis'
+import { useReloadAllTabsStore } from '@/stores/reloadAllTabs'
+import { useHideElementStore } from '@/stores/hideElement'
 import WordCounterPopup from './WordCounterPopup.vue'
 import InstantOCRControl from './InstantOCRControl.vue'
 import DarkModeControl from './DarkModeControl.vue'
@@ -186,23 +202,27 @@ import LinksExplorerControl from './LinksExplorerControl.vue'
 import SocialAnalysisControl from './SocialAnalysisControl.vue'
 import ReloadAllTabsControl from './ReloadAllTabsControl.vue'
 import HideElementControl from './HideElementControl.vue'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import Dropdown from 'primevue/dropdown'
-import { useDraggable, onClickOutside } from '@vueuse/core'
+import { onClickOutside } from '@vueuse/core'
 import Toast from 'primevue/toast'
 import { useExcludeToolGlowsBar } from '@/composables/excludeToolGlowsBar'
 import ThemeSwatch from './ThemeSwatch.vue'
+import Tooltip from 'primevue/tooltip'
+
+const vTooltip = Tooltip
 import { useDebounceFn } from '@vueuse/core'
 
 // États locaux
 const isExpanded = ref(false)
 const showSettings = ref(false)
-const autoHide = ref(false)
 const isLoading = ref(true)
 const isVisible = ref<Record<string, boolean>>({})
 const toolbarRef = ref<HTMLElement | null>(null)
+const isDragging = ref(false)
+const settingsLoaded = ref(false)
 
 // Injection des stores avec typage
 const settingsStore = inject('settingsStore') as ReturnType<typeof useSettingsStore>
@@ -210,6 +230,19 @@ const toolglowsStore = inject('toolglowsStore') as ReturnType<typeof useToolGlow
 const ocrStore = inject('ocrStore') as ReturnType<typeof useInstantOCRStore>
 const wordCounterStore = inject('wordCounterStore') as ReturnType<typeof useWordCounterStore>
 const autoCopyStore = useAutoCopyStore()
+const darkModeStore = useDarkModeStore()
+const linksExplorerStore = useLinksExplorerStore()
+const socialAnalysisStore = useSocialAnalysisStore()
+const reloadAllTabsStore = useReloadAllTabsStore()
+const hideElementStore = useHideElementStore()
+
+const isInterfaceDark = computed(() => settingsStore.settings.interfaceTheme === 'dark')
+
+const toggleInterfaceTheme = () => {
+  void settingsStore.updateSettings({
+    interfaceTheme: isInterfaceDark.value ? 'light' : 'dark'
+  })
+}
 
 if (!settingsStore || !toolglowsStore || !ocrStore || !wordCounterStore) {
   throw new Error('Les stores requis n\'ont pas été injectés')
@@ -223,7 +256,8 @@ const initialTools: Tool[] = [
     component: markRaw(WordCounterPopup),
     icon: 'pi pi-calculator',
     emoji: '📝',
-    category: 'reading'
+    category: 'reading',
+    interaction: 'panel'
   },
   {
     id: 'ocr',
@@ -231,7 +265,7 @@ const initialTools: Tool[] = [
     component: markRaw(InstantOCRControl),
     icon: 'pi pi-camera',
     emoji: '📸',
-    category: 'reading'
+    category: 'reading', interaction: 'panel'
   },
   {
     id: 'darkMode',
@@ -239,7 +273,7 @@ const initialTools: Tool[] = [
     component: markRaw(DarkModeControl),
     icon: 'pi pi-moon',
     emoji: '🌙',
-    category: 'appearance'
+    category: 'appearance', interaction: 'toggle'
   },
   {
     id: 'speedBrowsing',
@@ -247,7 +281,7 @@ const initialTools: Tool[] = [
     component: markRaw(SpeedBrowsingControl),
     icon: 'pi pi-forward',
     emoji: '⚡',
-    category: 'navigation'
+    category: 'navigation', interaction: 'panel'
   },
   {
     id: 'infiniteScroll',
@@ -255,7 +289,7 @@ const initialTools: Tool[] = [
     component: markRaw(InfiniteScrollControl),
     icon: 'pi pi-arrow-down',
     emoji: '♾️',
-    category: 'navigation'
+    category: 'navigation', interaction: 'panel'
   },
   {
     id: 'feedEradicator',
@@ -263,7 +297,7 @@ const initialTools: Tool[] = [
     component: markRaw(FeedEradicatorControl),
     icon: 'pi pi-ban',
     emoji: '🚫',
-    category: 'social'
+    category: 'social', interaction: 'panel'
   },
   {
     id: 'readerMode',
@@ -271,7 +305,7 @@ const initialTools: Tool[] = [
     component: markRaw(ReaderModeControl),
     icon: 'pi pi-book',
     emoji: '📖',
-    category: 'reading'
+    category: 'reading', interaction: 'panel'
   },
   {
     id: 'searchJumper',
@@ -279,7 +313,7 @@ const initialTools: Tool[] = [
     component: markRaw(SearchJumperUI),
     icon: 'pi pi-search',
     emoji: '🔍',
-    category: 'navigation'
+    category: 'navigation', interaction: 'panel'
   },
   {
     id: 'dragOpen',
@@ -287,7 +321,7 @@ const initialTools: Tool[] = [
     component: markRaw(DragOpenControl),
     icon: 'pi pi-arrows-alt',
     emoji: '🔄',
-    category: 'navigation'
+    category: 'navigation', interaction: 'panel'
   },
   {
     id: 'instagramSaved',
@@ -295,7 +329,7 @@ const initialTools: Tool[] = [
     component: markRaw(InstagramSavedLibrary),
     icon: 'pi pi-instagram',
     emoji: '📸',
-    category: 'social'
+    category: 'social', interaction: 'panel'
   },
   {
     id: 'richCopy',
@@ -303,7 +337,7 @@ const initialTools: Tool[] = [
     component: markRaw(RichCopyControl),
     icon: 'pi pi-copy',
     emoji: '📋',
-    category: 'reading'
+    category: 'reading', interaction: 'panel'
   },
   {
     id: 'betterGmail',
@@ -311,7 +345,7 @@ const initialTools: Tool[] = [
     component: markRaw(BetterGmailControl),
     icon: 'pi pi-envelope',
     emoji: '📧',
-    category: 'social'
+    category: 'social', interaction: 'panel'
   },
   {
     id: 'quickActions',
@@ -319,7 +353,7 @@ const initialTools: Tool[] = [
     component: markRaw(QuickActionsControl),
     icon: 'pi pi-bolt',
     emoji: '⚡',
-    category: 'navigation'
+    category: 'navigation', interaction: 'panel'
   },
   {
     id: 'autoCopy',
@@ -327,7 +361,7 @@ const initialTools: Tool[] = [
     component: markRaw(AutoCopyControl),
     icon: 'pi pi-copy',
     emoji: '✂️',
-    category: 'reading'
+    category: 'reading', interaction: 'toggle'
   },
   {
     id: 'linksExplorer',
@@ -335,7 +369,7 @@ const initialTools: Tool[] = [
     component: markRaw(LinksExplorerControl),
     icon: 'pi pi-link',
     emoji: '🔗',
-    category: 'navigation'
+    category: 'navigation', interaction: 'command'
   },
   {
     id: 'socialAnalysis',
@@ -343,7 +377,7 @@ const initialTools: Tool[] = [
     component: markRaw(SocialAnalysisControl),
     icon: 'pi pi-users',
     emoji: '👥',
-    category: 'social'
+    category: 'social', interaction: 'command'
   },
   {
     id: 'reloadAllTabs',
@@ -351,7 +385,7 @@ const initialTools: Tool[] = [
     component: markRaw(ReloadAllTabsControl),
     icon: 'pi pi-refresh',
     emoji: '🔄',
-    category: 'navigation'
+    category: 'navigation', interaction: 'command'
   },
   {
     id: 'hideElement',
@@ -359,17 +393,24 @@ const initialTools: Tool[] = [
     component: markRaw(HideElementControl),
     icon: 'pi pi-eye-slash',
     emoji: '👁️',
-    category: 'appearance'
+    category: 'appearance', interaction: 'toggle'
   }
 ]
 
 // Fonction pour calculer les limites de position
+const toolbarSafeMargin = Number.parseFloat(
+  getComputedStyle(document.documentElement).getPropertyValue('--tg-size-20').trim() || '20'
+) || 20
+const toolbarDefaultOffset = Number.parseFloat(
+  getComputedStyle(document.documentElement).getPropertyValue('--tg-size-50').trim() || '100'
+) || 100
+
 const calculateBoundaries = (x: number, y: number) => {
   if (!toolbarRef.value) return { x, y }
 
   // Obtenir les dimensions réelles de la barre
   const rect = toolbarRef.value.getBoundingClientRect()
-  const margin = 20 // Marge de sécurité
+  const margin = toolbarSafeMargin // Marge de sécurité
 
   // Calculer les limites en s'assurant que la barre reste entièrement visible
   const maxX = Math.max(margin, Math.min(window.innerWidth - rect.width - margin, x))
@@ -390,7 +431,7 @@ const calculateBoundaries = (x: number, y: number) => {
 
 // Configuration du drag and drop
 const position = ref({
-  x: settingsStore.settings.position.x || window.innerWidth - 100,
+  x: settingsStore.settings.position.x || window.innerWidth - toolbarDefaultOffset,
   y: settingsStore.settings.position.y || 20
 })
 
@@ -416,46 +457,177 @@ watch([
   }
 }, { deep: true })
 
-const { isDragging } = useDraggable(toolbarRef, {
-  initialValue: position.value,
-  onMove: ({ x, y }) => {
+const dragThreshold = 5
+let suppressNextClick = false
+let pointerState: {
+  pointerId: number
+  startX: number
+  startY: number
+  originX: number
+  originY: number
+  moved: boolean
+} | null = null
+
+const persistToolbarPosition = async () => {
+  const maxRetries = 3
+  let retryCount = 0
+
+  while (retryCount < maxRetries) {
     try {
-      const boundedPosition = calculateBoundaries(x, y)
-      position.value = boundedPosition
+      await settingsStore.updateSettings({
+        ...settingsStore.settings,
+        position: position.value
+      })
+      return
     } catch (error) {
-      console.error('[ERROR] Failed to update position during drag:', error)
-    }
-  },
-  onEnd: async ({ x, y }) => {
-    try {
-      const boundedPosition = calculateBoundaries(x, y)
-      position.value = boundedPosition
-
-      // Mise à jour des settings avec retry
-      const maxRetries = 3
-      let retryCount = 0
-
-      while (retryCount < maxRetries) {
-        try {
-          await settingsStore.updateSettings({
-            ...settingsStore.settings,
-            position: boundedPosition
-          })
-          break
-        } catch (error) {
-          retryCount++
-          if (retryCount === maxRetries) {
-            console.error('[ERROR] Failed to update settings after retries:', error)
-          } else {
-            await new Promise(resolve => setTimeout(resolve, 100 * retryCount))
-          }
-        }
+      retryCount++
+      if (retryCount === maxRetries) {
+        console.error('[ERROR] Failed to update settings after retries:', error)
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 100 * retryCount))
       }
-    } catch (error) {
-      console.error('[ERROR] Failed to handle drag end:', error)
     }
   }
-})
+}
+
+const startToolbarPointer = (event: PointerEvent) => {
+  if (event.button !== 0) return
+
+  pointerState = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    originX: position.value.x,
+    originY: position.value.y,
+    moved: false
+  }
+  suppressNextClick = false
+}
+
+const moveToolbarPointer = (event: PointerEvent) => {
+  if (!pointerState || event.pointerId !== pointerState.pointerId) return
+
+  const deltaX = event.clientX - pointerState.startX
+  const deltaY = event.clientY - pointerState.startY
+  if (!pointerState.moved && Math.hypot(deltaX, deltaY) < dragThreshold) return
+
+  pointerState.moved = true
+  ;(event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId)
+  isDragging.value = true
+  position.value = calculateBoundaries(
+    pointerState.originX + deltaX,
+    pointerState.originY + deltaY
+  )
+}
+
+const finishToolbarPointer = (event: PointerEvent) => {
+  if (!pointerState || event.pointerId !== pointerState.pointerId) return
+
+  suppressNextClick = pointerState.moved
+  const shouldPersist = pointerState.moved
+  pointerState = null
+  isDragging.value = false
+  const toolbar = event.currentTarget as HTMLElement
+  if (toolbar.hasPointerCapture?.(event.pointerId)) {
+    toolbar.releasePointerCapture(event.pointerId)
+  }
+
+  if (shouldPersist) void persistToolbarPosition()
+}
+
+const suppressDraggedClick = (event: MouseEvent) => {
+  if (!suppressNextClick) return
+  suppressNextClick = false
+  event.preventDefault()
+  event.stopImmediatePropagation()
+}
+
+const openToolSettings = (event: MouseEvent) => {
+  const target = event.target instanceof Element
+    ? event.target.closest<HTMLElement>('[data-tool-id], [data-toolglows-main], [data-toolglows-settings]')
+    : null
+  if (!target) return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  const toolId = target.dataset.toolId
+  if (toolId) {
+    isVisible.value[toolId] = true
+    return
+  }
+
+  showSettings.value = true
+}
+
+const isToolEnabled = (toolId: string) => {
+  if (toolId === 'darkMode') return darkModeStore.isActive
+  if (toolId === 'autoCopy') return toolglowsStore.activeTools.includes(toolId)
+  if (toolId === 'hideElement') return hideElementStore.settings.isSelectingElement
+  const tool = toolglowsStore.tools.find(candidate => candidate.id === toolId)
+  if (tool?.interaction === 'panel') return Boolean(isVisible.value[toolId])
+  if (tool?.interaction === 'command') return true
+  return toolglowsStore.activeTools.includes(toolId)
+}
+
+const toolButtonTitle = (tool: Tool) => {
+  if (tool.interaction === 'command') return `${tool.name} — exécuter`
+  return `${tool.name} — ${isToolEnabled(tool.id) ? 'actif' : 'inactif'}`
+}
+
+const syncRegisteredToolState = async (toolId: string, enabled: boolean) => {
+  if (toolglowsStore.activeTools.includes(toolId) !== enabled) {
+    await toolglowsStore.toggleTool(toolId)
+  }
+}
+
+watch(
+  () => toolglowsStore.activeTools.includes('darkMode'),
+  async isRegistered => {
+    if (settingsLoaded.value && !isRegistered && darkModeStore.isActive) {
+      await darkModeStore.setActive(false)
+    }
+  }
+)
+
+const toggleToolActivation = async (toolId: string) => {
+  const tool = toolglowsStore.tools.find(candidate => candidate.id === toolId)
+  if (!tool) return
+
+  if (tool.interaction === 'panel') {
+    isVisible.value[toolId] = !isVisible.value[toolId]
+    return
+  }
+
+  if (tool.interaction === 'command') {
+    if (toolId === 'reloadAllTabs') await reloadAllTabsStore.reloadAllTabs()
+    if (toolId === 'linksExplorer') {
+      await linksExplorerStore.exploreLinks()
+      isVisible.value[toolId] = true
+    }
+    if (toolId === 'socialAnalysis') {
+      await socialAnalysisStore.analyzeComments()
+      isVisible.value[toolId] = true
+    }
+    return
+  }
+
+  const enabled = !isToolEnabled(toolId)
+
+  if (toolId === 'darkMode') {
+    await darkModeStore.setActive(enabled)
+    await syncRegisteredToolState(toolId, enabled)
+    return
+  }
+
+  if (toolId === 'hideElement') {
+    await syncRegisteredToolState(toolId, enabled)
+    hideElementStore.settings.isSelectingElement = enabled
+    return
+  }
+
+  await toolglowsStore.toggleTool(toolId)
+}
 
 // Gestionnaire de redimensionnement de la fenêtre avec debounce
 const handleResize = useDebounceFn(async () => {
@@ -486,11 +658,11 @@ onUnmounted(() => {
 
 // Constantes pour les tailles
 const sizeClasses = {
-  'xs': { buttonSize: 'var(--tg-size-toolbar-xs)', fontSize: '1.2rem', emojiSize: '1.5rem' },
-  'sm': { buttonSize: 'var(--tg-size-toolbar-sm)', fontSize: '1.3rem', emojiSize: '1.7rem' },
-  'md': { buttonSize: 'var(--tg-size-toolbar-md)', fontSize: '1.5rem', emojiSize: '2rem' },
-  'lg': { buttonSize: 'var(--tg-size-toolbar-lg)', fontSize: '1.7rem', emojiSize: '2.3rem' },
-  'xl': { buttonSize: 'var(--tg-size-toolbar-xl)', fontSize: '1.9rem', emojiSize: '2.6rem' }
+  'xs': { buttonSize: 'var(--tg-size-toolbar-xs)', fontSize: 'var(--tg-size-tool-font-xs)', emojiSize: 'var(--tg-size-tool-emoji-xs)' },
+  'sm': { buttonSize: 'var(--tg-size-toolbar-sm)', fontSize: 'var(--tg-size-tool-font-sm)', emojiSize: 'var(--tg-size-tool-emoji-sm)' },
+  'md': { buttonSize: 'var(--tg-size-toolbar-md)', fontSize: 'var(--tg-size-tool-font-md)', emojiSize: 'var(--tg-size-tool-emoji-md)' },
+  'lg': { buttonSize: 'var(--tg-size-toolbar-lg)', fontSize: 'var(--tg-size-tool-font-lg)', emojiSize: 'var(--tg-size-tool-emoji-lg)' },
+  'xl': { buttonSize: 'var(--tg-size-toolbar-xl)', fontSize: 'var(--tg-size-tool-font-xl)', emojiSize: 'var(--tg-size-tool-emoji-xl)' }
 }
 
 // Computed style qui combine le style du drag et les autres styles
@@ -505,16 +677,19 @@ const toolbarStyle = computed(() => {
     '--button-size': size.buttonSize,
     '--font-size': size.fontSize,
     '--emoji-size': size.emojiSize,
-    zIndex: 2147483647
+    zIndex: 'var(--tg-z-extension)'
   }
 })
 
 // Gestionnaire du clic sur le bouton principal
 const handleMainButtonClick = () => {
-  if (!isDragging.value) {
-    isExpanded.value = !isExpanded.value
-    settingsStore.settings.expanded = isExpanded.value
+  if (suppressNextClick) {
+    suppressNextClick = false
+    return
   }
+
+  isExpanded.value = !isExpanded.value
+  settingsStore.settings.expanded = isExpanded.value
 }
 
 // Si épinglé, toujours expanded
@@ -532,12 +707,25 @@ watch(() => settingsStore.settings.expanded, (expanded) => {
   }
 })
 
+watch(isExpanded, (expanded) => {
+  if (!expanded && !isDragging.value) {
+    nextTick(() => {
+      position.value = calculateBoundaries(
+        settingsStore.settings.position.x,
+        settingsStore.settings.position.y
+      )
+    })
+  }
+})
+
 // Gestion du clic en dehors
 onClickOutside(toolbarRef, () => {
   if (!settingsStore.settings.isPinned && isExpanded.value) {
     isExpanded.value = false
     settingsStore.settings.expanded = false
   }
+}, {
+  ignore: ['.p-dialog', '.p-dialog-mask', '.p-tooltip']
 })
 
 // Synchronisation avec AutoCopy
@@ -559,11 +747,16 @@ useExcludeToolGlowsBar()
 onMounted(async () => {
   try {
     await settingsStore.loadSettings()
+    await darkModeStore.loadOptions()
+    settingsLoaded.value = true
+    if (!toolglowsStore.activeTools.includes('darkMode') && darkModeStore.isActive) {
+      await darkModeStore.setActive(false)
+    }
     isExpanded.value = settingsStore.settings.expanded
 
     // Applique la position initiale avec les limites
     const boundedPosition = calculateBoundaries(
-      settingsStore.settings.position.x || window.innerWidth - 100,
+      settingsStore.settings.position.x || window.innerWidth - toolbarDefaultOffset,
       settingsStore.settings.position.y || 20
     )
     position.value = boundedPosition
@@ -606,10 +799,10 @@ const closeSettings = () => {
   display: flex;
   flex-direction: row;
   gap: var(--tg-space-4);
-  border-radius: 3rem;
+  border-radius: var(--tg-radius-floating-shell);
   box-shadow: var(--card-shadow);
   user-select: none;
-  cursor: move;
+  cursor: default;
   min-width: fit-content;
   padding: var(--tg-space-2);
   touch-action: none;
@@ -649,7 +842,7 @@ const closeSettings = () => {
   background: var(--tg-loading-surface);
   color: var(--tg-action-on);
   border-radius: var(--tg-radius-control);
-  z-index: 2147483647;
+  z-index: var(--tg-z-extension);
 }
 
 .toolglows-tool-emoji {
@@ -657,8 +850,34 @@ const closeSettings = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
+  width: var(--tg-full-width);
+  height: var(--tg-full-height);
+  line-height: 1;
+  font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+  font-style: normal;
+  transform: none !important;
+}
+
+.toolglows-tool-button {
+  transition:
+    opacity var(--tg-motion-fast),
+    filter var(--tg-motion-fast),
+    background-color var(--tg-motion-fast);
+}
+
+.toolglows-tool-button-active {
+  opacity: 1;
+  filter: none;
+}
+
+.toolglows-tool-button-inactive {
+  opacity: 0.42;
+  filter: grayscale(1) saturate(0.2);
+}
+
+.toolglows-tool-button-inactive:hover,
+.toolglows-tool-button-inactive:focus-visible {
+  opacity: 0.68;
 }
 
 .toolglows-settings-header {
@@ -700,7 +919,7 @@ const closeSettings = () => {
 
 .toolglows-tool-name {
   color: var(--text-color);
-  font-size: 0.9rem;
+  font-size: var(--tg-text-base);
 }
 
 .toolglows-setting-item {
@@ -711,6 +930,21 @@ const closeSettings = () => {
   background: var(--surface-ground);
   border-radius: var(--border-radius);
   flex-wrap: wrap;
+}
+
+.toolglows-main-button.p-button {
+  cursor: grab !important;
+  touch-action: none;
+  overflow: hidden;
+  border-radius: 50% !important;
+}
+
+.toolglows-clickable-setting {
+  cursor: pointer;
+}
+
+.toolglows-clickable-setting:hover {
+  background: var(--surface-hover);
 }
 
 .toolglows-settings-dialog {

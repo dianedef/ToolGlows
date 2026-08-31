@@ -55,6 +55,8 @@ pnpm dev
 
 Pour charger une version locale, utilisez le dossier `dist/chrome` ou `dist/firefox` comme extension non empaquetée dans le navigateur correspondant.
 
+ToolGlows doit disposer de l’accès « Sur tous les sites » pour afficher sa barre automatiquement. Si Edge ou Chrome restreint cet accès, le popup le détecte, explique la marche à suivre et ouvre directement la gestion de l’extension. Les pages internes du navigateur et les boutiques d’extensions restent protégées par le navigateur.
+
 ## Commandes
 
 ```bash

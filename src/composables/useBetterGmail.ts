@@ -102,22 +102,22 @@ export function useBetterGmail() {
       /* Style compact */
       ${designOptions.value.compactHeader ? `
         .gb_Td {
-          padding: 4px !important;
+          padding: var(--tg-space-1) !important;
         }
       ` : ''}
 
       ${designOptions.value.compactNavigation ? `
         .ain {
-          padding: 4px 0 !important;
+          padding: var(--tg-space-1) 0 !important;
         }
         .TK {
-          padding: 4px 0 !important;
+          padding: var(--tg-space-1) 0 !important;
         }
       ` : ''}
 
       /* Taille de police personnalisée */
       body {
-        font-size: ${designOptions.value.fontSize}px !important;
+        font-size: var(--tg-font-size, ${designOptions.value.fontSize}px) !important;
         ${designOptions.value.customFont ? `font-family: ${designOptions.value.customFont} !important;` : ''}
       }
 
@@ -257,9 +257,12 @@ export function useBetterGmail() {
   // Utilitaire pour obtenir la valeur de largeur
   const getWidthValue = () => {
     switch (designOptions.value.customWidth) {
-      case 'narrow': return '800px'
-      case 'wide': return '1400px'
-      default: return '1100px'
+      case 'narrow':
+        return 'var(--tg-size-800, 800px)'
+      case 'wide':
+        return 'var(--tg-size-1400, 1400px)'
+      default:
+        return 'var(--tg-size-1100, 1100px)'
     }
   }
 
@@ -398,20 +401,20 @@ export function useBetterGmail() {
       .gmail-quote-button {
         position: fixed;
         display: none;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
+        width: var(--tg-size-30);
+        height: var(--tg-size-30);
+        border-radius: var(--tg-radius-full);
         border: none;
-        background: white;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        background: var(--tg-action-on);
+        box-shadow: var(--tg-shadow-control);
         cursor: pointer;
-        z-index: 9999;
-        transition: all 0.2s;
+        z-index: var(--tg-z-tooltip);
+        transition: var(--tg-transition-all-fast);
       }
 
       .gmail-quote-button:hover {
         transform: scale(1.1);
-        background: #f5f5f5;
+        background: var(--tg-surface-raised);
       }
     `
     document.head.appendChild(style)
@@ -427,3 +430,5 @@ export function useBetterGmail() {
     quoteOptions,
   }
 }
+
+

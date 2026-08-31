@@ -1,5 +1,6 @@
 @import 'primeicons/primeicons.css';
 @import './design-tokens.css';
+@import './controls.scss';
 
 /* Reset pour nos composants */
 #toolglows-app *, #toolglows-extension *, #toolglows-root * {
@@ -145,6 +146,41 @@
   margin: var(--tg-space-4) !important;
   transition: transform var(--tg-motion-standard) !important;
   cursor: inherit !important;
+}
+
+/* PrimeVue retains dialog semantics and focus management; this shared shell
+   owns ToolGlows' visual consistency for every teleported modal. */
+.toolglows-dialog.p-dialog {
+  border-radius: var(--tg-radius-floating-shell) !important;
+  overflow: hidden;
+}
+
+.toolglows-header-menu,
+.toolglows-locale-menu {
+  background: var(--tg-surface-raised);
+  border-radius: var(--tg-radius-control);
+  z-index: var(--tg-z-dropdown);
+  box-shadow: var(--tg-shadow-card);
+}
+
+/* Tool names are rendered in a document-level PrimeVue overlay. Keep the
+   tooltip readable in both themes and independent from page styles. */
+.p-tooltip {
+  z-index: var(--tg-z-tooltip) !important;
+}
+
+.p-tooltip .p-tooltip-text {
+  background: var(--tg-tooltip-background) !important;
+  color: var(--tg-tooltip-text) !important;
+  box-shadow: var(--tg-tooltip-shadow) !important;
+  border-radius: var(--tg-radius-control) !important;
+  padding: var(--tg-space-1-5) var(--tg-space-2) !important;
+  font-size: var(--tg-text-sm) !important;
+}
+
+.toolglows-locale-menu {
+  margin-left: calc(-1 * var(--tg-space-4));
+  margin-top: var(--tg-space-4);
 }
 
 .toolglows-main-button.p-button:hover,

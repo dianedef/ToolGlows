@@ -224,7 +224,7 @@ export function useInstantOCR() {
       .ocr-overlay {
         pointer-events: none;
         user-select: text;
-        z-index: 9999;
+        z-index: ${resolveDesignToken('--tg-z-tooltip')};
       }
       .ocr-overlay span {
         position: absolute;

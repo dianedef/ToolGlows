@@ -1,24 +1,24 @@
 .control-button {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
+  width: var(--tg-size-50);
+  height: var(--tg-size-50);
+  border-radius: var(--tg-radius-full);
   border: none;
-  background: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  background: var(--tg-surface-raised);
+  box-shadow: var(--tg-shadow-control);
   cursor: pointer;
-  font-size: 24px;
-  transition: all 0.3s ease;
+  font-size: var(--tg-size-icon-xl);
+  transition: var(--tg-transition-all-standard);
   display: flex;
   align-items: center;
   justify-content: center;
 
   &:hover {
     transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: var(--tg-shadow-control-dragging);
   }
 
   &.active {
-    background: #2196f3;
-    color: white;
+    background: var(--tg-action);
+    color: var(--tg-action-on);
   }
-} 
+}

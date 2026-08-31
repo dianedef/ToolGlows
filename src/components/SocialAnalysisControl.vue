@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="dialogVisible"
     modal
     :header="'👥 Analyse Sociale'"
@@ -224,13 +224,13 @@
         Cliquez sur "Analyser les commentaires" pour commencer l'analyse.
       </div>
     </div>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { useSocialAnalysis } from '@/composables/useSocialAnalysis'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -308,7 +308,7 @@ watch(dialogVisible, (newValue) => {
 .toolglows-social-analysis-content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--tg-space-6);
 }
 
 .toolglows-platform-header {
@@ -317,13 +317,13 @@ watch(dialogVisible, (newValue) => {
     display: flex;
     align-items: center;
     gap: var(--tg-space-2);
-    font-size: 1.2rem;
+    font-size: var(--tg-size-tool-icon);
   }
 }
 
 .toolglows-platform-warning {
   color: var(--red-500);
-  font-size: 0.9rem;
+  font-size: var(--tg-text-base);
   font-weight: normal;
 }
 
@@ -336,7 +336,7 @@ watch(dialogVisible, (newValue) => {
 .toolglows-stats-container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--tg-space-6);
 }
 
 .toolglows-stats-card {
@@ -346,7 +346,7 @@ watch(dialogVisible, (newValue) => {
 
   h4 {
     margin: 0 0 1rem 0;
-    font-size: 1.1rem;
+    font-size: var(--tg-text-lg);
   }
 }
 
@@ -365,20 +365,20 @@ watch(dialogVisible, (newValue) => {
 }
 
 .toolglows-stat-value {
-  font-size: 2rem;
+  font-size: var(--tg-text-2xl);
   font-weight: bold;
   color: var(--primary-color);
 }
 
 .toolglows-stat-percentage {
   color: var(--text-color-secondary);
-  font-size: 0.9rem;
+  font-size: var(--tg-text-base);
 }
 
 .toolglows-sentiment-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  gap: var(--tg-space-6);
 }
 
 .toolglows-sentiment-column {
@@ -401,7 +401,7 @@ watch(dialogVisible, (newValue) => {
 }
 
 .toolglows-sentiment-label {
-  min-width: 100px;
+  min-width: var(--tg-size-100);
 }
 
 .toolglows-progress-bar {
@@ -413,14 +413,14 @@ watch(dialogVisible, (newValue) => {
 }
 
 .toolglows-progress {
-  height: 100%;
+  height: var(--tg-full-height);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 0.9rem;
+  color: var(--tg-action-on);
+  font-size: var(--tg-text-base);
   font-weight: 600;
-  transition: width 0.3s ease;
+  transition: width var(--tg-motion-standard);
 
   &.positive {
     background: var(--green-500);
@@ -438,12 +438,12 @@ watch(dialogVisible, (newValue) => {
 .toolglows-comments-list {
   h4 {
     margin: 0 0 1rem 0;
-    font-size: 1.1rem;
+    font-size: var(--tg-text-lg);
   }
 }
 
 .toolglows-comment-text {
-  max-width: 300px;
+  max-width: var(--tg-size-300);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -452,7 +452,7 @@ watch(dialogVisible, (newValue) => {
 .toolglows-gender-badge {
   padding: var(--tg-space-1) 0.5rem;
   border-radius: var(--border-radius);
-  font-size: 0.9rem;
+  font-size: var(--tg-text-base);
 
   &.male {
     background: var(--blue-100);
@@ -471,7 +471,7 @@ watch(dialogVisible, (newValue) => {
 }
 
 .toolglows-sentiment-badge {
-  font-size: 1.2rem;
+  font-size: var(--tg-size-tool-icon);
 }
 
 .toolglows-profile-link {
@@ -485,7 +485,7 @@ watch(dialogVisible, (newValue) => {
 
 .toolglows-no-data {
   text-align: center;
-  padding: 2rem;
+  padding: var(--tg-space-6);
   background: var(--surface-ground);
   border-radius: var(--border-radius);
   color: var(--text-color-secondary);
@@ -497,7 +497,7 @@ watch(dialogVisible, (newValue) => {
   border: none !important;
   padding: var(--tg-space-3) 1.25rem !important;
   font-weight: 600 !important;
-  transition: all 0.3s ease !important;
+  transition: var(--tg-transition-all-standard) !important;
 
   &:hover {
     filter: brightness(1.1) !important;
@@ -511,3 +511,4 @@ watch(dialogVisible, (newValue) => {
   }
 }
 </style>
+

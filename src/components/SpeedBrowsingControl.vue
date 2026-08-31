@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="speedBrowsingStore.isActive"
     :modal="true"
     :dismissable-mask="true"
@@ -39,13 +39,13 @@
         />
       </div>
     </div>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useSpeedBrowsingStore } from '@/stores/speedBrowsing'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Slider from 'primevue/slider'
 import Divider from 'primevue/divider'
 import ToggleButton from 'primevue/togglebutton'
@@ -82,13 +82,13 @@ onMounted(async () => {
 }
 
 .slider-value {
-  min-width: 2rem;
+  min-width: var(--tg-size-2rem);
   text-align: center;
   color: var(--text-color-secondary);
 }
 
 :deep(.p-togglebutton) {
-  width: 100%;
+  width: var(--tg-full-width);
 }
 
 :deep(.p-togglebutton .p-button-label) {

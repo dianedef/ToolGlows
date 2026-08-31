@@ -33,6 +33,7 @@ interface Settings {
   position: { x: number; y: number }
   activeTools: string[]
   isPinned: boolean
+  interfaceTheme?: 'light' | 'dark'
   toolbarColor?: string
   toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 }
@@ -45,7 +46,14 @@ interface MessageData {
 
 interface DarkModePayload {
   isActive: boolean
-  styles: string
+  options: {
+    backgroundColor: string
+    textColor: string
+    linkColor: string
+    contrastLevel: number
+    transitionDuration: number
+    excludedDomains: string[]
+  }
 }
 
 interface DragOpenLink {
@@ -113,12 +121,18 @@ function normalizeDragOpenPayload(data: unknown): DragOpenPayload | null {
 }
 
 function isDarkModePayload(data: unknown): data is DarkModePayload {
-  return typeof data === 'object' &&
-    data !== null &&
-    'isActive' in data &&
-    'styles' in data &&
-    typeof (data as DarkModePayload).isActive === 'boolean' &&
-    typeof (data as DarkModePayload).styles === 'string'
+  if (typeof data !== 'object' || data === null) return false
+  const payload = data as Partial<DarkModePayload>
+  const options = payload.options as Partial<DarkModePayload['options']> | undefined
+  const isColor = (value: unknown) => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)
+
+  return typeof payload.isActive === 'boolean' &&
+    typeof options === 'object' && options !== null &&
+    isColor(options.backgroundColor) && isColor(options.textColor) && isColor(options.linkColor) &&
+    typeof options.contrastLevel === 'number' && Number.isFinite(options.contrastLevel) &&
+    typeof options.transitionDuration === 'number' && Number.isFinite(options.transitionDuration) &&
+    Array.isArray(options.excludedDomains) && options.excludedDomains.length <= 1_000 &&
+    options.excludedDomains.every(domain => typeof domain === 'string' && domain.length <= 253)
 }
 
 /**
@@ -393,37 +407,37 @@ onMessage('GET_TABS', async ({ data }) => {
   )
 })
 
-onMessage('RELOAD_ALL_TABS', async ({ sender }) => {
-  const tabs = await chrome.tabs.query({})
-  const initiatingTabId = sender.tabId
-  let successCount = 0
-  let errorCount = 0
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type !== 'TOOLGLOWS_RELOAD_ALL_TABS') return false
 
-  for (const tab of tabs) {
-    if (!tab.id || tab.id === initiatingTabId) continue
-
+  void (async () => {
     try {
-      await chrome.tabs.reload(tab.id)
-      successCount++
-    } catch (error) {
-      console.warn(`[BACKGROUND] Could not reload tab ${tab.id}:`, error)
-      errorCount++
-    }
-  }
+      const tabs = await chrome.tabs.query({})
+      const initiatingTabId = sender.tab?.id
+      const reloadableTabs = tabs.filter(
+        (tab): tab is chrome.tabs.Tab & { id: number } =>
+          tab.id !== undefined && tab.id !== initiatingTabId
+      )
 
-  if (initiatingTabId) {
-    successCount++
-    setTimeout(() => {
-      chrome.tabs.reload(initiatingTabId).catch(error => {
-        console.warn(
-          `[BACKGROUND] Could not reload initiating tab ${initiatingTabId}:`,
-          error
-        )
+      // Reply before disconnecting any content-script ports. The initiating
+      // page reloads itself only after receiving this acknowledgement.
+      sendResponse({
+        successCount: reloadableTabs.length + (initiatingTabId === undefined ? 0 : 1),
+        errorCount: 0
       })
-    }, 0)
-  }
 
-  return { successCount, errorCount }
+      for (const tab of reloadableTabs) {
+        void chrome.tabs.reload(tab.id).catch(error => {
+          console.warn(`[BACKGROUND] Could not reload tab ${tab.id}:`, error)
+        })
+      }
+    } catch (error) {
+      console.error('[BACKGROUND] Could not dispatch tab reloads:', error)
+      sendResponse({ successCount: 0, errorCount: 1 })
+    }
+  })()
+
+  return true
 })
 
 async function broadcastDarkModeUpdate(data: unknown) {
@@ -435,7 +449,7 @@ async function broadcastDarkModeUpdate(data: unknown) {
   console.log('[BACKGROUND] 🌓 Broadcasting dark mode update to content scripts')
   const payload = {
     isActive: data.isActive,
-    styles: data.styles
+    options: data.options
   }
 
   try {

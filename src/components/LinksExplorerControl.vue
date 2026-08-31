@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="dialogVisible"
     modal
     :header="'🔗 Explorateur de liens'"
@@ -144,14 +144,14 @@
         Aucun lien trouvé. Lancez l'exploration pour commencer !
       </div>
     </div>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { useLinksExplorer } from '@/composables/useLinksExplorer'
 import { useToast } from 'primevue/usetoast'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import InputNumber from 'primevue/inputnumber'
@@ -227,7 +227,7 @@ const handleCopy = async () => {
 .toolglows-settings-group {
   background: var(--surface-ground);
   border-radius: var(--border-radius);
-  padding: 1.25rem;
+  padding: var(--tg-space-5-half);
 
   h3 {
     margin: 0 0 1rem 0;
@@ -241,7 +241,7 @@ const handleCopy = async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
+  gap: var(--tg-space-6);
   flex-wrap: wrap;
 }
 
@@ -249,7 +249,7 @@ const handleCopy = async () => {
   display: flex;
   align-items: center;
   gap: var(--tg-space-3);
-  min-width: 200px;
+  min-width: var(--tg-size-200);
 
   :deep(.p-checkbox) {
     width: var(--tg-space-5);
@@ -276,14 +276,14 @@ const handleCopy = async () => {
   display: flex;
   align-items: center;
   gap: var(--tg-space-3);
-  min-width: 200px;
+  min-width: var(--tg-size-200);
 
   label {
     font-weight: 500;
   }
 
   .toolglows-depth-input {
-    width: 5rem;
+    width: var(--tg-size-5rem);
   }
 }
 
@@ -291,7 +291,7 @@ const handleCopy = async () => {
   display: flex;
   align-items: center;
   gap: var(--tg-space-3);
-  min-width: 200px;
+  min-width: var(--tg-size-200);
 }
 
 .toolglows-label-with-hint {
@@ -302,7 +302,7 @@ const handleCopy = async () => {
 
 .toolglows-format-hint {
   color: var(--text-color-secondary);
-  font-size: 0.8rem;
+  font-size: var(--tg-text-sm);
 }
 
 .toolglows-links-explorer-actions {
@@ -312,13 +312,13 @@ const handleCopy = async () => {
 }
 
 .toolglows-links-list {
-  max-height: 400px;
+  max-height: var(--tg-size-400);
   overflow-y: auto;
 }
 
 .toolglows-no-links {
   text-align: center;
-  padding: 2rem;
+  padding: var(--tg-space-6);
   background: var(--surface-ground);
   border-radius: var(--border-radius);
   color: var(--text-color-secondary);
@@ -334,7 +334,7 @@ const handleCopy = async () => {
   border: none !important;
   padding: var(--tg-space-3) 1.25rem !important;
   font-weight: 600 !important;
-  transition: all 0.3s ease !important;
+  transition: var(--tg-transition-all-standard) !important;
 }
 
 :deep(.toolglows-action-button:hover) {
@@ -349,3 +349,4 @@ const handleCopy = async () => {
   cursor: not-allowed !important;
 }
 </style>
+

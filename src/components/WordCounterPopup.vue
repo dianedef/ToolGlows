@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="visible"
     :modal="true"
     :header="'Statistiques du texte'"
@@ -15,7 +15,7 @@
     >
       <i
         class="pi pi-spin pi-spinner"
-        style="font-size: 2rem"
+        style="font-size: var(--tg-text-2xl)"
       ></i>
       <p>Chargement des options...</p>
     </div>
@@ -113,14 +113,14 @@
         />
       </div>
     </template>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed, onMounted } from 'vue'
 import { useWordCounter } from '@/composables/useWordCounter'
 import { useWordCounterStore } from '@/stores/wordCounter'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import Divider from 'primevue/divider'
 import Checkbox from 'primevue/checkbox'
@@ -199,7 +199,7 @@ const closeDialog = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: var(--tg-space-6);
   gap: var(--tg-space-4);
   color: var(--text-color-secondary);
 }
@@ -218,7 +218,7 @@ const closeDialog = () => {
 .stat-item h4 {
   margin: 0 0 0.5rem;
   color: var(--text-color);
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
 }
 
 .stat-value {
@@ -235,7 +235,7 @@ const closeDialog = () => {
 .reading-time h4 {
   margin: 0 0 0.5rem;
   color: var(--text-color);
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
 }
 
 .time-details {
@@ -249,7 +249,7 @@ const closeDialog = () => {
 .analysis-options h4 {
   margin: 0 0 0.5rem;
   color: var(--text-color);
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
 }
 
 .option-row {
@@ -262,7 +262,7 @@ const closeDialog = () => {
 .frequent-words h4 {
   margin: 0 0 0.5rem;
   color: var(--text-color);
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
 }
 
 .words-list {
@@ -286,7 +286,8 @@ const closeDialog = () => {
 }
 
 :deep(.p-checkbox) {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: var(--tg-size-1-25rem);
+  height: var(--tg-size-1-25rem);
 }
 </style>
+

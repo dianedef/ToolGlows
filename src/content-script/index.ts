@@ -19,19 +19,22 @@
 
 // Import des styles
 import "./index.scss"
-import { createApp, h, defineComponent, provide } from 'vue'
+import { createApp, h, defineComponent, provide, watch } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import primeVueThemeStyles from 'primevue/resources/themes/lara-light-blue/theme.css?inline'
+import primeVueDarkThemeStyles from 'primevue/resources/themes/lara-dark-blue/theme.css?inline'
 import primeVueCoreStyles from 'primevue/resources/primevue.min.css?inline'
 import primeIconsStyles from 'primeicons/primeicons.css?inline'
 import ToolGlowsBar from '../components/ToolGlowsBar.vue'
 import { setupPrimeVue } from '../utils/setupPrimeVue'
 import { injectStyles } from '../utils/styleInjection'
+import { scopeToolGlowsCss } from '../utils/scopeCss'
+import { CONTENT_SCRIPT_STATUS_MESSAGE } from '../utils/contentScriptStatus'
 import mainStyles from '@/assets/main.css?inline'
 import contentStyles from '@/content-script/index.scss?inline'
 import { setupSecureBridge } from '@/bridge'
-import './darkMode'
+import { removeDarkMode } from './darkMode'
 
 // Import des stores
 import { useSettingsStore } from '../stores/settings'
@@ -48,6 +51,53 @@ interface StorageData {
 
 let app: ReturnType<typeof createApp> | null = null
 let bridgeInitialized = false
+
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type !== CONTENT_SCRIPT_STATUS_MESSAGE) return false
+
+  sendResponse({ ready: true })
+  return false
+})
+
+const checkboxRowSelector = [
+  '.field-checkbox',
+  '.toolglows-field-checkbox',
+  '.toolglows-checkbox-wrapper',
+  '.toolglows-setting-item',
+  '.toolglows-tool-item'
+].join(', ')
+
+function handleCheckboxRowClick(event: MouseEvent) {
+  const target = event.target
+  if (!(target instanceof Element)) return
+
+  // Native checkbox, label, link, button and form controls retain their
+  // standard interaction. The handler only makes the empty part of a setting
+  // row activate its own ToolGlows checkbox.
+  if (target.closest('[data-toolglows-checkbox], label, a, button, input, select, textarea, [role="button"]')) {
+    return
+  }
+
+  const row = target.closest(checkboxRowSelector)
+  const checkbox = row?.querySelector<HTMLInputElement>(
+    '[data-toolglows-checkbox] input[type="checkbox"]'
+  )
+
+  if (checkbox && !checkbox.disabled) checkbox.click()
+}
+
+function applyInterfaceTheme(theme: 'light' | 'dark' | undefined) {
+  const resolvedTheme = theme === 'dark' ? 'dark' : 'light'
+  const themeElement = document.getElementById('toolglows-primevue-theme') as HTMLStyleElement | null
+
+  if (themeElement) {
+    themeElement.textContent = scopeToolGlowsCss(
+      resolvedTheme === 'dark' ? primeVueDarkThemeStyles : primeVueThemeStyles
+    )
+  }
+
+  document.getElementById('toolglows-root')?.setAttribute('data-theme', resolvedTheme)
+}
 
 /**
  * Creates Vue App Mount Point in Page DOM
@@ -137,6 +187,9 @@ async function initVueApp() {
       pt: {
         button: {
           root: { class: 'shadow-none' }
+        },
+        checkbox: {
+          root: { 'data-toolglows-checkbox': 'true' }
         }
       }
     })
@@ -145,15 +198,22 @@ async function initVueApp() {
     setupPrimeVue(app)
 
     // Injection des styles locaux et dépendances packagées.
-    injectStyles(primeVueThemeStyles, 'toolglows-primevue-theme')
-    injectStyles(primeVueCoreStyles, 'toolglows-primevue-core')
-    injectStyles(primeIconsStyles, 'toolglows-prime-icons')
-    injectStyles(mainStyles, 'toolglows-main-styles')
-    injectStyles(contentStyles, 'toolglows-content-styles')
+    injectStyles(scopeToolGlowsCss(primeVueThemeStyles), 'toolglows-primevue-theme')
+    injectStyles(scopeToolGlowsCss(primeVueCoreStyles), 'toolglows-primevue-core')
+    injectStyles(scopeToolGlowsCss(primeIconsStyles), 'toolglows-prime-icons')
+    injectStyles(scopeToolGlowsCss(mainStyles), 'toolglows-main-styles')
+    injectStyles(scopeToolGlowsCss(contentStyles), 'toolglows-content-styles')
+
+    watch(
+      () => stores.settings.settings.interfaceTheme,
+      applyInterfaceTheme,
+      { immediate: true }
+    )
 
     // Montage de l'application
     const rootElement = createRootElement()
     app.mount(rootElement)
+    document.addEventListener('click', handleCheckboxRowClick, true)
 
     console.log('[SUCCESS] Vue application mounted in page')
   } catch (error) {
@@ -163,6 +223,8 @@ async function initVueApp() {
 }
 
 function cleanup() {
+  document.removeEventListener('click', handleCheckboxRowClick, true)
+  removeDarkMode()
   if (app) {
     app.unmount()
     app = null
@@ -171,6 +233,13 @@ function cleanup() {
   if (rootElement) {
     rootElement.remove()
   }
+  ;[
+    'toolglows-primevue-theme',
+    'toolglows-primevue-core',
+    'toolglows-prime-icons',
+    'toolglows-main-styles',
+    'toolglows-content-styles'
+  ].forEach(id => document.getElementById(id)?.remove())
 }
 
 // Initialisation sécurisée

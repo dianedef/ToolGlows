@@ -1,150 +1,201 @@
+import { disable, enable, isEnabled } from 'darkreader'
 import { onMessage } from 'webext-bridge/content-script'
+import { maintainDarkModeBackdrop, retireDarkModeBootstrap } from './darkModeBootstrap'
+import { buildSiteDarkModeOverrides } from './darkModeSiteOverrides'
+import { startSofteningBrightSurfaces, stopSofteningBrightSurfaces } from './softenBrightSurfaces'
 
-interface DarkModeMessage {
-  styles: string
+export interface DarkModeThemeOptions {
+  backgroundColor: string
+  textColor: string
+  linkColor: string
+  contrastLevel: number
+  transitionDuration: number
+  excludedDomains: string[]
+}
+
+export interface DarkModeMessage {
   isActive: boolean
+  options: DarkModeThemeOptions
 }
 
-// Gestionnaire des styles du mode sombre
-let darkModeStyle: HTMLStyleElement | null = null
-const STYLE_ID = 'dark-mode-content-styles'
-
-// État du mode sombre
 let isDarkModeActive = false
+const OVERRIDE_STYLE_ID = 'toolglows-dark-mode-overrides'
 
-// Validation des styles CSS
-const isValidCSS = (styles: string): boolean => {
-  try {
-    const testElement = document.createElement('style')
-    testElement.textContent = styles
-    document.head.appendChild(testElement)
-    const isValid = testElement.sheet !== null
-    testElement.remove()
-    return isValid
-  } catch (error) {
-    console.error('[DARK MODE] ❌ Style validation failed:', error)
-    return false
-  }
+function isHexColor(value: unknown): value is string {
+  return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)
 }
 
-// Fonction pour appliquer les styles
-const applyDarkModeStyles = (styles: string): boolean => {
-  try {
-    console.log('[DARK MODE] 🎨 Applying dark mode styles')
-    
-    // Vérifier si les styles sont valides
-    if (!isValidCSS(styles)) {
-      console.error('[DARK MODE] ❌ Invalid CSS styles provided')
-      return false
-    }
-
-    // Vérifier si les styles sont déjà appliqués et identiques
-    if (darkModeStyle?.textContent === styles) {
-      console.log('[DARK MODE] ℹ️ Styles already applied, skipping')
-      return true
-    }
-
-    // Supprimer l'ancien style s'il existe
-    removeDarkModeStyles()
-
-    // Créer et ajouter le nouveau style
-    darkModeStyle = document.createElement('style')
-    darkModeStyle.id = STYLE_ID
-    darkModeStyle.textContent = styles
-    document.head.appendChild(darkModeStyle)
-    
-    console.log('[DARK MODE] ✨ New styles applied successfully')
-    return true
-  } catch (error) {
-    console.error('[DARK MODE] ❌ Error applying styles:', error)
-    return false
-  }
+function relativeLuminance(hex: string): number {
+  const channels = [1, 3, 5].map(index => Number.parseInt(hex.slice(index, index + 2), 16) / 255)
+  const [red, green, blue] = channels.map(channel =>
+    channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+  )
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue
 }
 
-// Fonction pour supprimer les styles
-const removeDarkModeStyles = (): boolean => {
-  try {
-    console.log('[DARK MODE] 🗑️ Initiating dark mode styles removal')
-
-    // Vérifier si le mode sombre est déjà désactivé
-    if (!isDarkModeActive && !darkModeStyle && !document.getElementById(STYLE_ID)) {
-      console.log('[DARK MODE] ℹ️ Dark mode already inactive, nothing to remove')
-      return true
-    }
-
-    // Rechercher tous les styles potentiels (en cas de doublons accidentels)
-    const existingStyles = document.querySelectorAll(`style#${STYLE_ID}`)
-    
-    if (existingStyles.length > 0) {
-      console.log(`[DARK MODE] 🔍 Found ${existingStyles.length} style element(s) to remove`)
-      existingStyles.forEach(style => {
-        try {
-          style.remove()
-          console.log('[DARK MODE] 🗑️ Style element removed')
-        } catch (removeError) {
-          console.error('[DARK MODE] ⚠️ Error removing individual style:', removeError)
-        }
-      })
-    }
-
-    // Nettoyage de la référence en mémoire
-    if (darkModeStyle) {
-      darkModeStyle = null
-      console.log('[DARK MODE] 🧹 Memory reference cleared')
-    }
-
-    // Mise à jour de l'état
-    isDarkModeActive = false
-    console.log('[DARK MODE] ✅ Dark mode successfully deactivated')
-    
-    return true
-  } catch (error) {
-    console.error('[DARK MODE] ❌ Critical error during styles removal:', error)
-    return false
-  }
+function contrastRatio(first: string, second: string): number {
+  const lighter = Math.max(relativeLuminance(first), relativeLuminance(second))
+  const darker = Math.min(relativeLuminance(first), relativeLuminance(second))
+  return (lighter + 0.05) / (darker + 0.05)
 }
 
-// Vérifier si un objet est un message de mode sombre
+function ensureReadableColor(preferred: string, background: string, minimumRatio: number): string {
+  if (contrastRatio(preferred, background) >= minimumRatio) return preferred
+  const lightFallback = '#f2f2f2'
+  const darkFallback = '#111111'
+  return contrastRatio(lightFallback, background) >= contrastRatio(darkFallback, background)
+    ? lightFallback
+    : darkFallback
+}
+
 function isDarkModeMessage(data: unknown): data is DarkModeMessage {
   if (typeof data !== 'object' || data === null) return false
-  
-  const msg = data as Partial<DarkModeMessage>
-  return (
-    typeof msg.styles === 'string' &&
-    typeof msg.isActive === 'boolean'
-  )
+  const message = data as Partial<DarkModeMessage>
+  const options = message.options as Partial<DarkModeThemeOptions> | undefined
+
+  return typeof message.isActive === 'boolean' &&
+    typeof options === 'object' && options !== null &&
+    isHexColor(options.backgroundColor) &&
+    isHexColor(options.textColor) &&
+    isHexColor(options.linkColor) &&
+    typeof options.contrastLevel === 'number' && Number.isFinite(options.contrastLevel) &&
+    typeof options.transitionDuration === 'number' && Number.isFinite(options.transitionDuration) &&
+    Array.isArray(options.excludedDomains) &&
+    options.excludedDomains.every(domain => typeof domain === 'string')
 }
 
-// Écouter les messages pour le mode sombre
-console.log('[DARK MODE] 🎧 Initializing dark mode listeners')
+function isCurrentDomainExcluded(excludedDomains: string[]): boolean {
+  const hostname = window.location.hostname.toLowerCase()
+  return excludedDomains.some(domain => domain.toLowerCase() === hostname)
+}
+
+export function applyDarkMode(message: DarkModeMessage): boolean {
+  try {
+    if (!message.isActive || isCurrentDomainExcluded(message.options.excludedDomains)) {
+      return removeDarkMode()
+    }
+
+    const requestedContrast = Math.min(Math.max(message.options.contrastLevel, 0.5), 2)
+    const contrast = Math.round(100 + (requestedContrast - 1) * 40)
+    const transitionDuration = Math.round(Math.min(Math.max(message.options.transitionDuration, 0), 2_000))
+    const textColor = ensureReadableColor(
+      message.options.textColor,
+      message.options.backgroundColor,
+      4.5
+    )
+    const linkColor = ensureReadableColor(
+      message.options.linkColor,
+      message.options.backgroundColor,
+      3
+    )
+    const siteOverrides = buildSiteDarkModeOverrides(window.location.hostname)
+
+    enable({
+      mode: 1,
+      brightness: 100,
+      contrast,
+      grayscale: 0,
+      sepia: 0,
+      darkSchemeBackgroundColor: message.options.backgroundColor,
+      darkSchemeTextColor: textColor,
+      scrollbarColor: 'auto',
+      selectionColor: 'auto',
+      styleSystemControls: true
+    }, {
+      invert: [],
+      ignoreInlineStyle: ['#toolglows-root', '#toolglows-root *', '[data-toolglows-ui]', '[data-toolglows-ui] *'],
+      ignoreImageAnalysis: ['img', 'picture', 'video', '#toolglows-root', '#toolglows-root *', '[data-toolglows-ui]', '[data-toolglows-ui] *'],
+      disableStyleSheetsProxy: false,
+      ignoreCSSUrl: [],
+      css: ''
+    })
+    // Keep a stable dark canvas underneath DarkReader. Some sites replace their
+    // body styles after hydration and would otherwise reintroduce a white page.
+    maintainDarkModeBackdrop(message.options)
+
+    let overrideStyle = document.getElementById(OVERRIDE_STYLE_ID) as HTMLStyleElement | null
+    if (!overrideStyle) {
+      overrideStyle = document.createElement('style')
+      overrideStyle.id = OVERRIDE_STYLE_ID
+      document.head.appendChild(overrideStyle)
+    }
+    overrideStyle.textContent = `
+      body a { color: ${linkColor} !important; }
+      html, body {
+        transition: background-color ${transitionDuration}ms ease, color ${transitionDuration}ms ease;
+      }
+      [data-toolglows-soft-light="surface"] {
+        background-color: var(--tg-page-dark-surface) !important;
+        color: var(--tg-page-dark-text) !important;
+      }
+      [data-toolglows-soft-light="raised"] {
+        background-color: var(--tg-page-dark-surface-raised) !important;
+        color: var(--tg-page-dark-text) !important;
+      }
+      [data-toolglows-soft-light="warm"] {
+        background-color: var(--tg-page-dark-surface-warm) !important;
+        color: var(--tg-page-dark-text) !important;
+      }
+      [data-toolglows-soft-light="cool"] {
+        background-color: var(--tg-page-dark-surface-cool) !important;
+        color: var(--tg-page-dark-text) !important;
+      }
+      [data-toolglows-soft-light="control"] {
+        background-color: var(--tg-page-dark-surface-raised) !important;
+        border: 1px solid var(--tg-page-dark-border) !important;
+        box-shadow: var(--tg-page-dark-control-shadow) !important;
+        color: var(--tg-page-dark-text) !important;
+      }
+      [data-toolglows-soft-light="control"]:hover {
+        background-color: var(--tg-page-dark-action-surface) !important;
+        border-color: var(--tg-page-dark-action-border) !important;
+      }
+      [data-toolglows-soft-light="control"]:focus-visible {
+        outline: 2px solid var(--tg-page-dark-focus) !important;
+        outline-offset: 2px !important;
+      }
+      [data-toolglows-soft-light="success"] {
+        background-color: var(--tg-page-dark-success-surface) !important;
+        border: 1px solid var(--tg-page-dark-success-border) !important;
+        box-shadow: var(--tg-page-dark-control-shadow) !important;
+        color: var(--tg-page-dark-success) !important;
+      }
+      [data-toolglows-soft-light="success"] :is(span, svg) {
+        background-color: transparent !important;
+        color: inherit !important;
+      }
+      ${siteOverrides}
+    `
+    startSofteningBrightSurfaces()
+
+    isDarkModeActive = true
+    return true
+  } catch (error) {
+    console.error('[DARK MODE] Failed to enable the dynamic theme:', error)
+    return false
+  }
+}
+
+export function removeDarkMode(): boolean {
+  try {
+    retireDarkModeBootstrap()
+    if (isEnabled()) disable()
+    document.getElementById(OVERRIDE_STYLE_ID)?.remove()
+    stopSofteningBrightSurfaces()
+    isDarkModeActive = false
+    return true
+  } catch (error) {
+    console.error('[DARK MODE] Failed to disable the dynamic theme:', error)
+    return false
+  }
+}
 
 onMessage('DARK_MODE_UPDATE', ({ data }) => {
-  console.log('[DARK MODE] 📥 Received update:', data)
-  
-  if (isDarkModeMessage(data)) {
-    if (data.isActive) {
-      if (data.styles) {
-        const success = applyDarkModeStyles(data.styles)
-        if (success) {
-          isDarkModeActive = true
-        }
-      }
-    } else {
-      removeDarkModeStyles()
-    }
+  if (!isDarkModeMessage(data)) {
+    console.warn('[DARK MODE] Ignored invalid update payload')
+    return
   }
+  applyDarkMode(data)
 })
 
-// Nettoyage lors du déchargement de la page
-window.addEventListener('unload', () => {
-  if (isDarkModeActive) {
-    removeDarkModeStyles()
-  }
-})
-
-// Exporter les fonctions pour les utiliser ailleurs si nécessaire
-export {
-  applyDarkModeStyles,
-  removeDarkModeStyles,
-  isDarkModeActive
-}
+export { isDarkModeActive }

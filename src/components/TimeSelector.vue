@@ -26,7 +26,7 @@ defineEmits<{
   border: 1px solid var(--surface-border);
   background: var(--surface-ground);
   color: var(--text-color);
-  width: 100px;
+  width: var(--tg-size-100);
 }
 
 .time-selector input:focus {

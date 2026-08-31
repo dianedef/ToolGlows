@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@mozilla/readability": "^0.6.0",
+    "darkreader": "4.9.128",
     "notivue": "^2.4.5",
     "pinia": "^4.0.3",
     "primeicons": "^7.0.0",

@@ -126,14 +126,14 @@ onMounted(() => {
 
 .settings-panel {
   position: absolute;
-  top: 100%;
+  top: var(--tg-full-height);
   right: 0;
-  width: 300px;
+  width: var(--tg-size-300);
   background: var(--surface-card);
   border-radius: var(--border-radius);
   box-shadow: var(--card-shadow);
   padding: var(--tg-space-4);
-  z-index: 1000;
+  z-index: var(--tg-z-dropdown);
 }
 
 .setting-group {
@@ -161,12 +161,12 @@ onMounted(() => {
 
 .width-row label {
   color: var(--text-color-secondary);
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
 }
 
 .width-value {
   color: var(--text-color-secondary);
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
   text-align: right;
 }
 
@@ -179,8 +179,8 @@ onMounted(() => {
 }
 
 :deep(.p-checkbox) {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: var(--tg-size-1-25rem);
+  height: var(--tg-size-1-25rem);
 }
 
 :deep(.p-slider) {

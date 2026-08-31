@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { resolveDesignToken } from '@/utils/designTokens'
 
 interface Reel {
   id: string
@@ -23,7 +24,7 @@ export function useInstagramSavedLibrary() {
     { 
       id: 'default', 
       name: 'Non classé', 
-      color: '#888888', 
+      color: resolveDesignToken('--tg-color-folder-default'),
       reels: [] 
     }
   ])
@@ -33,7 +34,7 @@ export function useInstagramSavedLibrary() {
   const selectedReels = ref<string[]>([])
 
   // Créer un nouveau dossier
-  const createFolder = (name: string, color: string = '#888888') => {
+  const createFolder = (name: string, color: string = resolveDesignToken('--tg-color-folder-default')) => {
     const newFolder: Folder = {
       id: Date.now().toString(),
       name,
@@ -121,4 +122,4 @@ export function useInstagramSavedLibrary() {
     toggleReelSelection,
     moveSelectedReels
   }
-} 
+}

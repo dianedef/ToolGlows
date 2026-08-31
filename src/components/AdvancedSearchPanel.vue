@@ -217,7 +217,7 @@ const previewQuery = computed(() => {
   background: var(--surface-card);
   border-radius: var(--border-radius);
   padding: var(--tg-space-5);
-  max-width: 600px;
+  max-width: var(--tg-size-600);
   margin: 0 auto;
 }
 
@@ -269,11 +269,11 @@ const previewQuery = computed(() => {
 }
 
 :deep(.p-float-label) {
-  width: 100%;
+  width: var(--tg-full-width);
 }
 
 :deep(.p-inputtext) {
-  width: 100%;
+  width: var(--tg-full-width);
 }
 
 :deep(.p-chip) {

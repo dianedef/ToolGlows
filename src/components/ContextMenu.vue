@@ -77,7 +77,7 @@ onUnmounted(() => {
 :deep(.p-menuitem-link) {
   padding: var(--tg-space-2) 0.75rem;
   border-radius: var(--border-radius);
-  transition: background-color 0.2s;
+  transition: background-color var(--tg-motion-fast);
 }
 
 :deep(.p-menuitem-icon) {

@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="ocrStore.isActive"
     :modal="true"
     :dismissable-mask="true"
@@ -16,7 +16,7 @@
       >
         <i
           class="pi pi-spin pi-spinner"
-          style="font-size: 2rem"
+          style="font-size: var(--tg-text-2xl)"
         ></i>
         <p>Chargement des options...</p>
       </div>
@@ -87,13 +87,13 @@
         </div>
       </template>
     </div>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useInstantOCRStore } from '@/stores/instantOCR'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Dropdown from 'primevue/dropdown'
 import Checkbox from 'primevue/checkbox'
 import Slider from 'primevue/slider'
@@ -141,7 +141,7 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: var(--tg-space-6);
   gap: var(--tg-space-4);
   color: var(--text-color-secondary);
 }

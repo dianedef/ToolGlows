@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="igStore.isActive"
     :header="'Bibliothèque Instagram'"
     :modal="true"
@@ -166,7 +166,7 @@
       </div>
     </div>
 
-    <Dialog
+    <ToolGlowsDialog
       v-model:visible="showAddCollectionDialog"
       :header="editingCollection ? 'Modifier la collection' : 'Ajouter une collection'"
       :modal="true"
@@ -199,14 +199,14 @@
           @click="saveCollection"
         />
       </template>
-    </Dialog>
-  </Dialog>
+    </ToolGlowsDialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useInstagramSavedStore } from '@/stores/instagramSaved'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Checkbox from 'primevue/checkbox'
@@ -298,7 +298,7 @@ const closeDialog = () => {
 }
 
 .collection-icon {
-  font-size: 1.2rem;
+  font-size: var(--tg-size-tool-icon);
 }
 
 .collection-details {
@@ -311,7 +311,7 @@ const closeDialog = () => {
 }
 
 .collection-description {
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
   color: var(--text-color-secondary);
 }
 
@@ -335,7 +335,7 @@ const closeDialog = () => {
 .field-slider label,
 .field-input label,
 .field-dropdown label {
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
   color: var(--text-color);
   margin-bottom: var(--tg-space-1);
 }

@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="gmailStore.isActive"
     :modal="true"
     :dismissable-mask="true"
@@ -243,7 +243,7 @@
       </div>
     </div>
 
-    <Dialog
+    <ToolGlowsDialog
       v-model:visible="showAddLabelDialog"
       :header="editingLabel ? 'Modifier le label' : 'Ajouter un label'"
       :modal="true"
@@ -259,7 +259,7 @@
       </div>
       <div class="field mb-3">
         <label>Couleur</label>
-        <ColorPicker v-model="newLabel.color" />
+        <ToolGlowsColorPicker v-model="newLabel.color" />
       </div>
       <div class="field mb-3">
         <label>Raccourci (optionnel)</label>
@@ -281,9 +281,9 @@
           @click="saveLabel"
         />
       </template>
-    </Dialog>
+    </ToolGlowsDialog>
 
-    <Dialog
+    <ToolGlowsDialog
       v-model:visible="showAddShortcutDialog"
       :header="editingShortcut ? 'Modifier le raccourci' : 'Ajouter un raccourci'"
       :modal="true"
@@ -321,9 +321,9 @@
           @click="saveShortcut"
         />
       </template>
-    </Dialog>
+    </ToolGlowsDialog>
 
-    <Dialog
+    <ToolGlowsDialog
       v-model:visible="showAddFilterDialog"
       :header="editingFilter ? 'Modifier le filtre' : 'Ajouter un filtre'"
       :modal="true"
@@ -423,20 +423,20 @@
           @click="saveFilter"
         />
       </template>
-    </Dialog>
-  </Dialog>
+    </ToolGlowsDialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useBetterGmailStore } from '@/stores/betterGmail'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Checkbox from 'primevue/checkbox'
 import Slider from 'primevue/slider'
 import Dropdown from 'primevue/dropdown'
-import ColorPicker from 'primevue/colorpicker'
+import ToolGlowsColorPicker from './ToolGlowsColorPicker.vue'
 import Textarea from 'primevue/textarea'
 import InputNumber from 'primevue/inputnumber'
 
@@ -659,7 +659,7 @@ const closeDialog = () => {
 .toolglows-label-color {
   width: var(--tg-space-4);
   height: var(--tg-space-4);
-  border-radius: 50%;
+  border-radius: var(--tg-radius-full);
 }
 
 .toolglows-label-details,
@@ -676,7 +676,7 @@ const closeDialog = () => {
 
 .toolglows-label-shortcut,
 .toolglows-filter-conditions {
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
   color: var(--text-color-secondary);
 }
 
@@ -703,7 +703,7 @@ const closeDialog = () => {
 .toolglows-field-input label,
 .toolglows-field-dropdown label,
 .toolglows-field-spinner label {
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
   color: var(--text-color);
   margin-bottom: var(--tg-space-1);
 }
@@ -726,7 +726,7 @@ const closeDialog = () => {
   padding: var(--tg-space-1) 0.5rem;
   background: var(--surface-ground);
   border-radius: var(--tg-radius-sm);
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
 }
 
 .toolglows-condition-row,
@@ -745,8 +745,9 @@ const closeDialog = () => {
 
 .toolglows-filter-condition {
   font-family: monospace;
-  padding: 0.125rem 0.25rem;
+  padding: var(--tg-space-0-5) var(--tg-space-1);
   background: var(--surface-ground);
   border-radius: var(--tg-radius-sm);
 }
 </style>
+

@@ -120,7 +120,7 @@ export function useDragOpen() {
       position: fixed;
       border: ${elementOutline('solid')};
       background: ${resolveDesignToken('--tg-element-hover')};
-      z-index: 9999;
+      z-index: ${resolveDesignToken('--tg-z-tooltip')};
       pointer-events: none;
     `
     document.body.appendChild(element)

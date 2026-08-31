@@ -143,25 +143,25 @@ function saveSettings() {
 
 <style scoped>
 .options-page {
-  max-width: 800px;
+  max-width: var(--tg-size-800);
   margin: 0 auto;
-  padding: 2rem;
+  padding: var(--tg-space-6);
 }
 
 section {
-  margin: 2rem 0;
+  margin: var(--tg-space-6) 0;
 }
 
 h2 {
-  margin: 0 0 1rem;
-  font-size: 1.5rem;
+  margin: 0 0 var(--tg-space-4);
+  font-size: var(--tg-size-tool-font-md);
   font-weight: 600;
 }
 
 label {
   display: grid;
-  gap: 0.375rem;
-  margin-bottom: 1rem;
+  gap: var(--tg-space-1-5);
+  margin-bottom: var(--tg-space-4);
   font-weight: 500;
 }
 
@@ -169,16 +169,16 @@ input,
 select,
 textarea {
   width: 100%;
-  border: 1px solid #cbd5e1;
-  border-radius: 0.375rem;
-  padding: 0.5rem;
+  border: 1px solid var(--tg-border-default);
+  border-radius: var(--tg-radius-control);
+  padding: var(--tg-space-2);
   font: inherit;
 }
 
 .checkbox-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--tg-space-2);
 }
 
 .checkbox-row input {
@@ -188,17 +188,17 @@ textarea {
 .time-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: var(--tg-space-4);
 }
 
 button {
   border: 0;
-  border-radius: 0.375rem;
-  background: #2563eb;
-  color: white;
+  border-radius: var(--tg-radius-control);
+  background: var(--tg-action);
+  color: var(--tg-action-on);
   cursor: pointer;
   font: inherit;
   font-weight: 600;
-  padding: 0.625rem 1rem;
+  padding: var(--tg-space-2) var(--tg-space-4);
 }
 </style>

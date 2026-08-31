@@ -42,6 +42,7 @@ export interface ToolGlowsSettings {
   }
   activeTools: string[]
   isPinned: boolean
+  interfaceTheme?: 'light' | 'dark'
   toolbarColor?: string
   toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   hideElement?: HideElementSettings
@@ -66,6 +67,7 @@ export const useSettingsStore = defineStore('settings', () => {
     position: { x: window.innerWidth - 100, y: 20 },
     activeTools: [],
     isPinned: false,
+    interfaceTheme: 'light',
     toolbarColor: '#ff69b4',
     toolbarSize: 'md',
     components: {}
@@ -85,7 +87,8 @@ export const useSettingsStore = defineStore('settings', () => {
     activeTools: settings.value.activeTools,
     toolbarColor: settings.value.toolbarColor,
     expanded: settings.value.expanded,
-    isPinned: settings.value.isPinned
+    isPinned: settings.value.isPinned,
+    interfaceTheme: settings.value.interfaceTheme
   }), (newSettings) => {
     applySettings(settings.value)
   }, { deep: true })
@@ -116,7 +119,7 @@ export const useSettingsStore = defineStore('settings', () => {
     // Direct style manipulation for instant feedback
     const toolbar = document.querySelector('.toolglows-bar') as HTMLElement
     if (toolbar) {
-      toolbar.style.backgroundColor = newSettings.toolbarColor || '#ffffff'
+      toolbar.style.backgroundColor = newSettings.toolbarColor || 'var(--tg-color-light-surface)'
     }
 
     // Update active tools if changed (avoid redundant updates)

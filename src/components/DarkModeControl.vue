@@ -1,56 +1,74 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-if="!isLoading"
-    v-model:visible="darkModeStore.isActive"
+    v-model:visible="dialogVisible"
     :modal="true"
     :dismissable-mask="true"
     :header="'Mode sombre'"
     position="right"
     :style="{ width: '350px' }"
+    :pt="{ root: { class: 'toolglows-dark-mode-dialog', 'data-toolglows-ui': 'true' } }"
     append-to="body"
     @hide="closeDialog"
   >
     <div class="toolglows-dark-mode-options">
       <div class="toolglows-field mb-3">
         <h4>État</h4>
-        <div class="toolglows-field-checkbox mb-2">
+        <label class="toolglows-field-checkbox toolglows-checkbox-card mb-2">
           <Checkbox
-            v-model="darkModeStore.isActive"
+            :model-value="darkModeStore.shouldActivateDarkMode && !darkModeStore.isDomainExcluded"
             :binary="true"
             input-id="dark-mode-toggle"
             name="dark-mode-toggle"
             @update:model-value="darkModeStore.setActive($event)"
           />
-          <label
-            class="p-checkbox-label"
-            for="dark-mode-toggle"
-          >Activer le mode sombre</label>
-        </div>
+          <span class="p-checkbox-label">Activer le mode sombre</span>
+        </label>
       </div>
 
       <div class="toolglows-field mb-3">
         <h4>Couleurs</h4>
+        <div class="toolglows-palette-picker mb-3">
+          <label>Palette</label>
+          <SelectButton
+            :model-value="darkModeStore.options.palettePreset"
+            :options="paletteOptions"
+            option-label="label"
+            option-value="value"
+            :allow-empty="false"
+            aria-label="Palette du mode sombre"
+            @update:model-value="darkModeStore.setPalettePreset($event)"
+          />
+        </div>
+        <p
+          v-if="darkModeStore.options.palettePreset === 'graphite'"
+          class="toolglows-palette-description mb-3"
+        >
+          Palette graphite harmonisée : surfaces neutres, actions bleues et succès vert sauge.
+        </p>
+        <template v-else>
         <div class="toolglows-color-picker mb-2">
           <label>Arrière-plan</label>
-          <ColorPicker
-            v-model="darkModeStore.options.backgroundColor"
-            @update:model-value="darkModeStore.saveOptions()"
+          <ToolGlowsColorPicker
+            :model-value="darkModeStore.options.backgroundColor"
+            @update:model-value="setPaletteColor('backgroundColor', $event)"
           />
         </div>
         <div class="toolglows-color-picker mb-2">
           <label>Texte</label>
-          <ColorPicker
-            v-model="darkModeStore.options.textColor"
-            @update:model-value="darkModeStore.saveOptions()"
+          <ToolGlowsColorPicker
+            :model-value="darkModeStore.options.textColor"
+            @update:model-value="setPaletteColor('textColor', $event)"
           />
         </div>
         <div class="toolglows-color-picker mb-2">
           <label>Liens</label>
-          <ColorPicker
-            v-model="darkModeStore.options.linkColor"
-            @update:model-value="darkModeStore.saveOptions()"
+          <ToolGlowsColorPicker
+            :model-value="darkModeStore.options.linkColor"
+            @update:model-value="setPaletteColor('linkColor', $event)"
           />
         </div>
+        </template>
       </div>
 
       <div class="toolglows-field mb-3">
@@ -58,35 +76,22 @@
         <div class="toolglows-field-slider mb-2">
           <label>Contraste</label>
           <Slider
-            v-model="darkModeStore.options.contrastLevel"
+            :model-value="darkModeStore.options.contrastLevel"
             :min="0.5"
             :max="2"
             :step="0.1"
-            @update:model-value="darkModeStore.saveOptions()"
+            @update:model-value="setNumericOption('contrastLevel', $event)"
           />
         </div>
         <div class="toolglows-field-slider mb-2">
           <label>Durée de transition (ms)</label>
           <Slider
-            v-model="darkModeStore.options.transitionDuration"
+            :model-value="darkModeStore.options.transitionDuration"
             :min="0"
             :max="1000"
             :step="50"
-            @update:model-value="darkModeStore.saveOptions()"
+            @update:model-value="setNumericOption('transitionDuration', $event)"
           />
-        </div>
-        <div class="toolglows-field-checkbox mb-2">
-          <Checkbox
-            v-model="darkModeStore.options.invertImages"
-            :binary="true"
-            input-id="invert-images"
-            name="invert-images"
-            @update:model-value="darkModeStore.saveOptions()"
-          />
-          <label
-            class="p-checkbox-label"
-            for="invert-images"
-          >Inverser les images</label>
         </div>
       </div>
 
@@ -94,33 +99,27 @@
 
       <div class="toolglows-field mb-3">
         <h4>Programmation</h4>
-        <div class="toolglows-field-checkbox mb-2">
+        <label class="toolglows-field-checkbox toolglows-checkbox-card mb-2">
           <Checkbox
             v-model="darkModeStore.options.syncWithSystem"
             :binary="true"
             input-id="sync-system"
             name="sync-system"
-            @update:model-value="darkModeStore.saveOptions()"
+            @update:model-value="darkModeStore.setSyncWithSystem($event)"
           />
-          <label
-            class="p-checkbox-label"
-            for="sync-system"
-          >Synchroniser avec le système</label>
-        </div>
+          <span class="p-checkbox-label">Synchroniser avec le système</span>
+        </label>
 
-        <div class="toolglows-field-checkbox mb-2">
+        <label class="toolglows-field-checkbox toolglows-checkbox-card mb-2">
           <Checkbox
             v-model="darkModeStore.options.autoEnable"
             :binary="true"
             input-id="auto-enable"
             name="auto-enable"
-            @update:model-value="darkModeStore.saveOptions()"
+            @update:model-value="darkModeStore.setAutoEnable($event)"
           />
-          <label
-            class="p-checkbox-label"
-            for="auto-enable"
-          >Activer automatiquement</label>
-        </div>
+          <span class="p-checkbox-label">Activer automatiquement</span>
+        </label>
 
         <div
           v-if="darkModeStore.options.autoEnable"
@@ -129,15 +128,15 @@
           <div class="toolglows-time-picker mb-2">
             <label>Début</label>
             <TimeSelector
-              v-model="darkModeStore.options.scheduleStart"
-              @update:model-value="darkModeStore.saveOptions()"
+              :model-value="darkModeStore.options.scheduleStart"
+              @update:model-value="darkModeStore.updateOptions({ scheduleStart: $event })"
             />
           </div>
           <div class="toolglows-time-picker">
             <label>Fin</label>
             <TimeSelector
-              v-model="darkModeStore.options.scheduleEnd"
-              @update:model-value="darkModeStore.saveOptions()"
+              :model-value="darkModeStore.options.scheduleEnd"
+              @update:model-value="darkModeStore.updateOptions({ scheduleEnd: $event })"
             />
           </div>
         </div>
@@ -184,22 +183,55 @@
         </div>
       </div>
     </div>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useDarkModeStore } from '@/stores/darkMode'
-import Dialog from 'primevue/dialog'
-import ColorPicker from 'primevue/colorpicker'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
+import ToolGlowsColorPicker from './ToolGlowsColorPicker.vue'
 import Slider from 'primevue/slider'
 import Checkbox from 'primevue/checkbox'
 import Divider from 'primevue/divider'
 import Button from 'primevue/button'
+import SelectButton from 'primevue/selectbutton'
 import TimeSelector from './TimeSelector.vue'
+import type { DarkModePalettePreset } from '@/stores/darkModePalette'
 
 const darkModeStore = useDarkModeStore()
 const isLoading = ref(true)
+const paletteOptions: Array<{ label: string; value: DarkModePalettePreset }> = [
+  { label: 'Graphite', value: 'graphite' },
+  { label: 'Personnalisé', value: 'custom' }
+]
+
+const setPaletteColor = (
+  color: 'backgroundColor' | 'textColor' | 'linkColor',
+  value: string | undefined
+) => {
+  if (value) void darkModeStore.setPaletteColor(color, value)
+}
+
+const setNumericOption = (
+  option: 'contrastLevel' | 'transitionDuration',
+  value: number | number[] | undefined
+) => {
+  if (typeof value === 'number') void darkModeStore.updateOptions({ [option]: value })
+}
+
+const props = defineProps<{
+  modelValue: boolean
+}>()
+
+const emit = defineEmits<{
+  (event: 'update:modelValue', value: boolean): void
+}>()
+
+const dialogVisible = computed({
+  get: () => props.modelValue,
+  set: (value: boolean) => emit('update:modelValue', value)
+})
 
 // Initialisation synchrone
 const init = async () => {
@@ -216,7 +248,7 @@ const init = async () => {
 init()
 
 const closeDialog = () => {
-  darkModeStore.isActive = false
+  dialogVisible.value = false
 }
 
 // Convertir les chaînes de temps en objets Date pour le Calendar
@@ -259,6 +291,7 @@ const onTimeChange = (value: unknown, isStart: boolean) => {
 }
 
 .toolglows-color-picker,
+.toolglows-palette-picker,
 .toolglows-field-slider {
   display: flex;
   align-items: center;
@@ -270,6 +303,24 @@ const onTimeChange = (value: unknown, isStart: boolean) => {
   display: flex;
   align-items: center;
   gap: var(--tg-space-2);
+}
+
+.toolglows-palette-description {
+  color: var(--tg-text-secondary);
+  line-height: var(--tg-line-height-copy);
+}
+
+.toolglows-checkbox-card {
+  width: var(--tg-full-width);
+  min-height: var(--tg-size-control-comfortable);
+  padding: var(--tg-space-2) var(--tg-space-3);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--tg-radius-control);
+  cursor: pointer;
+}
+
+.toolglows-checkbox-card:hover {
+  background: var(--surface-hover);
 }
 
 .toolglows-schedule {

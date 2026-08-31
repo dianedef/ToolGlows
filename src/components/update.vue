@@ -40,9 +40,9 @@ const version = __VERSION__
 
 <style lang="scss" scoped>
 .update-container {
-  max-width: 800px;
+  max-width: var(--tg-size-800);
   margin: 0 auto;
-  padding: 2rem;
+  padding: var(--tg-space-6);
 }
 
 .update-header {
@@ -59,7 +59,8 @@ const version = __VERSION__
 }
 
 :deep(.p-message) {
-  width: 100%;
+  width: var(--tg-full-width);
   margin: 0;
 }
 </style>
+

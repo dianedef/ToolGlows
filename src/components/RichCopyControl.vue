@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="copyStore.isActive"
     :header="'Rich Copy'"
     :modal="true"
@@ -175,7 +175,7 @@
       </div>
     </div>
 
-    <Dialog
+    <ToolGlowsDialog
       v-model:visible="showAddFormatDialog"
       :header="editingFormat ? 'Modifier le format' : 'Ajouter un format'"
       :modal="true"
@@ -225,14 +225,14 @@
           <span>{{ editingFormat ? 'Modifier' : 'Ajouter' }}</span>
         </Button>
       </template>
-    </Dialog>
-  </Dialog>
+    </ToolGlowsDialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRichCopyStore } from '@/stores/richCopy'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Checkbox from 'primevue/checkbox'
@@ -330,7 +330,7 @@ const closeDialog = () => {
 }
 
 .format-icon {
-  font-size: 1.2rem;
+  font-size: var(--tg-size-tool-icon);
 }
 
 .format-details {
@@ -343,7 +343,7 @@ const closeDialog = () => {
 }
 
 .format-shortcut {
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
   color: var(--text-color-secondary);
 }
 
@@ -365,7 +365,7 @@ const closeDialog = () => {
 }
 
 .field-slider label {
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
   color: var(--text-color);
 }
 
@@ -423,7 +423,7 @@ const closeDialog = () => {
 
 .pi {
   font-size: var(--tg-space-4);
-  line-height: 1;
+  line-height: var(--tg-line-height-tight);
   vertical-align: middle;
 }
 

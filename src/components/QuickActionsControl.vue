@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="dialogVisible"
     :modal="true"
     :dismissable-mask="true"
@@ -47,12 +47,12 @@
         </div>
       </div>
     </div>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, inject, computed } from 'vue'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import { useQuickActionsStore } from '@/stores/quickActions'
 import type { QuickAction } from '@/types/quickActions'
 
@@ -141,7 +141,7 @@ const executeAction = async (actionId: string) => {
 
 <style scoped>
 .quick-actions-dialog {
-  min-width: 500px;
+  min-width: var(--tg-size-500);
 }
 
 .quick-actions-content {
@@ -150,7 +150,7 @@ const executeAction = async (actionId: string) => {
 
 .shortcuts-section,
 .actions-section {
-  margin-bottom: 2rem;
+  margin-bottom: var(--tg-space-6);
 }
 
 h3 {
@@ -188,16 +188,16 @@ h3 {
 
 .action-icon {
   margin-right: var(--tg-space-2);
-  font-size: 1.1rem;
+  font-size: var(--tg-text-lg);
   color: var(--primary-color);
 }
 
 h4 {
   margin: var(--tg-space-4) 0 0.5rem;
   color: var(--text-color-secondary);
-  font-size: 0.9rem;
+  font-size: var(--tg-text-base);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--tg-letter-spacing-pixel);
 }
 
 .action-item {
@@ -208,7 +208,7 @@ h4 {
   border-radius: var(--tg-radius-sm);
   background-color: var(--surface-ground);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color var(--tg-motion-fast);
 }
 
 .action-item:hover {

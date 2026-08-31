@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="isDialogVisible"
     :modal="true"
     :dismissable-mask="true"
@@ -107,14 +107,14 @@
         </div>
       </div>
     </div>
-  </Dialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { useHideElementStore } from '@/stores/hideElement'
 import { useElementSelector } from '@/composables/useElementSelector'
 import { computed, onMounted, ref, onUnmounted, watch, nextTick } from 'vue'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Checkbox from 'primevue/checkbox'

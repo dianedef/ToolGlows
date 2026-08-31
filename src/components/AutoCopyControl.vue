@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Dialog
+    <ToolGlowsDialog
       v-model:visible="copyStore.isActive"
       :header="'Auto Copy'"
       :modal="true"
@@ -107,7 +107,7 @@
           </div>
         </div>
       </div>
-    </Dialog>
+    </ToolGlowsDialog>
   </div>
 </template>
 
@@ -115,7 +115,7 @@
 import { onMounted } from 'vue'
 import { useAutoCopyStore } from '@/stores/autoCopy'
 import { useAutoCopy } from '@/composables/useAutoCopy'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Checkbox from 'primevue/checkbox'
 import { useToast } from 'primevue/usetoast'
 import { useExcludeToolGlowsBar } from '@/composables/excludeToolGlowsBar'
@@ -170,7 +170,7 @@ const closeDialog = () => {
   border-radius: var(--tg-radius-md);
   border: 1px solid var(--surface-border);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--tg-transition-all-fast);
 }
 
 .format-item:hover {
@@ -189,7 +189,7 @@ const closeDialog = () => {
 }
 
 .format-icon {
-  font-size: 1.2rem;
+  font-size: var(--tg-size-tool-icon);
 }
 
 .format-details {
@@ -202,7 +202,7 @@ const closeDialog = () => {
 }
 
 .format-shortcut {
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
   opacity: 0.8;
 }
 
@@ -212,3 +212,4 @@ const closeDialog = () => {
   gap: var(--tg-space-2);
 }
 </style>
+

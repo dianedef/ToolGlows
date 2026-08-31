@@ -1,5 +1,5 @@
 <template>
-  <Dialog
+  <ToolGlowsDialog
     v-model:visible="searchStore.isActive"
     :header="'Search Jumper'"
     :modal="true"
@@ -86,30 +86,30 @@
         <div class="toolglows-color-pickers">
           <div class="toolglows-color-field">
             <label>Arrière-plan</label>
-            <ColorPicker
+            <ToolGlowsColorPicker
               v-model="searchStore.options.customStyles.backgroundColor"
-              @change="searchStore.saveOptions()"
+              @update:model-value="searchStore.saveOptions()"
             />
           </div>
           <div class="toolglows-color-field">
             <label>Texte</label>
-            <ColorPicker
+            <ToolGlowsColorPicker
               v-model="searchStore.options.customStyles.textColor"
-              @change="searchStore.saveOptions()"
+              @update:model-value="searchStore.saveOptions()"
             />
           </div>
           <div class="toolglows-color-field">
             <label>Accent</label>
-            <ColorPicker
+            <ToolGlowsColorPicker
               v-model="searchStore.options.customStyles.accentColor"
-              @change="searchStore.saveOptions()"
+              @update:model-value="searchStore.saveOptions()"
             />
           </div>
         </div>
       </div>
     </div>
 
-    <Dialog
+    <ToolGlowsDialog
       v-model:visible="showAddEngineDialog"
       :header="editingEngine ? 'Modifier le moteur' : 'Ajouter un moteur'"
       :modal="true"
@@ -140,18 +140,18 @@
           @click="saveEngine"
         />
       </template>
-    </Dialog>
-  </Dialog>
+    </ToolGlowsDialog>
+  </ToolGlowsDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useSearchJumperStore } from '@/stores/searchJumper'
-import Dialog from 'primevue/dialog'
+import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Checkbox from 'primevue/checkbox'
-import ColorPicker from 'primevue/colorpicker'
+import ToolGlowsColorPicker from './ToolGlowsColorPicker.vue'
 
 const searchStore = useSearchJumperStore()
 const showAddEngineDialog = ref(false)
@@ -220,7 +220,7 @@ function saveEngine() {
 }
 
 .toolglows-engine-icon {
-  font-size: 1.2rem;
+  font-size: var(--tg-size-tool-icon);
   margin-right: var(--tg-space-2);
 }
 
@@ -253,7 +253,8 @@ function saveEngine() {
 }
 
 .toolglows-color-field label {
-  font-size: 0.875rem;
+  font-size: var(--tg-size-icon-sm);
   color: var(--text-color-secondary);
 }
 </style>
+
