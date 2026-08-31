@@ -36,6 +36,17 @@ interface Settings {
   interfaceTheme?: 'light' | 'dark'
   toolbarColor?: string
   toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  hideElement?: {
+    hiddenElements: Array<{
+      selector: string
+      domain: string
+      timestamp: number
+      name?: string
+    }>
+    isSelectingElement: boolean
+    shortcut: string
+    enableShortcut: boolean
+  }
 }
 
 interface MessageData {

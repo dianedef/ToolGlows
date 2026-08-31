@@ -7,6 +7,11 @@ const DEFAULT_TOOLGLOWS_SCOPE = [
   '[data-toolglows-ui]'
 ]
 
+const TOOLGLOWS_PAGE_RUNTIME_SELECTORS = [
+  '.toolglows-hidden-element-preview',
+  '.toolglows-hidden-element-restore'
+]
+
 function scopeSelector(selector: string, scopes: string[]): string[] {
   const trimmed = selector.trim()
   if (!trimmed) return []
@@ -15,6 +20,12 @@ function scopeSelector(selector: string, scopes: string[]): string[] {
   // them again would produce impossible selectors such as
   // `#toolglows-root #toolglows-root *` and break the extension UI.
   if (scopes.some(scope => trimmed === scope || trimmed.startsWith(`${scope} `) || trimmed.startsWith(`${scope}:`))) {
+    return [trimmed]
+  }
+
+  if (TOOLGLOWS_PAGE_RUNTIME_SELECTORS.some(selector =>
+    trimmed === selector || trimmed.startsWith(`${selector}:`) || trimmed.startsWith(`${selector} `)
+  )) {
     return [trimmed]
   }
 

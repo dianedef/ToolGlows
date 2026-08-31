@@ -31,4 +31,18 @@ describe('ToolGlows third-party CSS isolation', () => {
     expect(css).not.toMatch(/(^|})\s*:root\b/m)
     expect(css).not.toMatch(/(^|})\s*body\b/m)
   })
+
+  it('preserves only the namespaced page-runtime element markers', () => {
+    const css = scopeToolGlowsCss(`
+      .toolglows-hidden-element-preview { outline: var(--outline); }
+      .toolglows-hidden-element-preview :is(img, picture) { filter: var(--filter); }
+      .toolglows-hidden-element-restore:hover { background: var(--danger); }
+      .ordinary-page-class { color: red; }
+    `)
+
+    expect(css).toMatch(/(^|})\s*\.toolglows-hidden-element-preview\b/m)
+    expect(css).toMatch(/(^|})\s*\.toolglows-hidden-element-preview :is\(img, picture\)/m)
+    expect(css).toMatch(/(^|})\s*\.toolglows-hidden-element-restore:hover\b/m)
+    expect(css).not.toMatch(/(^|})\s*\.ordinary-page-class\b/m)
+  })
 })

@@ -1,8 +1,8 @@
 <template>
   <ToolGlowsDialog
     v-model:visible="isDialogVisible"
-    :modal="true"
-    :dismissable-mask="true"
+    :modal="!elementSelector.isActive.value"
+    :dismissable-mask="!elementSelector.isActive.value"
     header="Hide Elements"
     position="right"
     :style="{ width: '450px' }"
@@ -68,7 +68,16 @@
           v-if="domainElements.length > 0"
           class="hidden-elements mb-3"
         >
-          <h4>Elements Hidden on this Site</h4>
+          <div class="hidden-elements-header">
+            <h4>Elements Hidden on this Site</h4>
+            <Button
+              label="Restore all"
+              icon="pi pi-refresh"
+              text
+              severity="danger"
+              @click="hideElementStore.resetHiddenElementsForCurrentSite"
+            />
+          </div>
           <div
             v-for="element in domainElements"
             :key="element.selector"
@@ -143,8 +152,6 @@ const isShortcutEnabled = computed({
 const elementSelector = useElementSelector({
   onElementSelect: async (element) => {
     await hideElementStore.hideElement(element)
-    elementSelector.stopSelecting()
-    hideElementStore.settings.isSelectingElement = false
   }
 })
 
@@ -155,6 +162,7 @@ watch(() => hideElementStore.settings.isSelectingElement, (isSelecting) => {
   } else if (!isSelecting && elementSelector.isActive.value) {
     elementSelector.stopSelecting()
   }
+  hideElementStore.applyHiddenElements()
 })
 
 // Liste des éléments masqués pour le domaine actuel
@@ -234,6 +242,7 @@ const closeDialog = async () => {
   await nextTick()
   isDialogVisible.value = false
   elementSelector.stopSelecting()
+  hideElementStore.settings.isSelectingElement = false
 }
 
 // Tooltip directive
@@ -277,6 +286,16 @@ onUnmounted(() => {
   margin-bottom: var(--tg-space-2);
 
   &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.hidden-elements-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h4 {
     margin-bottom: 0;
   }
 }

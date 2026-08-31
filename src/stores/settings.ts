@@ -70,6 +70,12 @@ export const useSettingsStore = defineStore('settings', () => {
     interfaceTheme: 'light',
     toolbarColor: '#ff69b4',
     toolbarSize: 'md',
+    hideElement: {
+      hiddenElements: [],
+      isSelectingElement: false,
+      shortcut: 'Alt+H',
+      enableShortcut: true
+    },
     components: {}
   } as ToolGlowsSettings)
 

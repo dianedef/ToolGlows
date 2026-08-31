@@ -35,6 +35,17 @@ export interface Settings {
   interfaceTheme?: 'light' | 'dark'
   toolbarColor?: string
   toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  hideElement?: {
+    hiddenElements: Array<{
+      selector: string
+      domain: string
+      timestamp: number
+      name?: string
+    }>
+    isSelectingElement: boolean
+    shortcut: string
+    enableShortcut: boolean
+  }
   darkMode?: {
     options?: {
       backgroundColor: string
@@ -137,6 +148,24 @@ export const bridgeApi = {
       toolbarSize: settings.toolbarSize
     }
 
+    if (settings.interfaceTheme) {
+      jsonSettings.interfaceTheme = settings.interfaceTheme
+    }
+
+    if (settings.hideElement) {
+      jsonSettings.hideElement = {
+        hiddenElements: settings.hideElement.hiddenElements.map(element => ({
+          selector: element.selector,
+          domain: element.domain,
+          timestamp: element.timestamp,
+          ...(element.name ? { name: element.name } : {})
+        })),
+        isSelectingElement: false,
+        shortcut: settings.hideElement.shortcut,
+        enableShortcut: settings.hideElement.enableShortcut
+      }
+    }
+
     if (settings.toolbarColor) {
       jsonSettings.toolbarColor = settings.toolbarColor
     }
@@ -158,8 +187,10 @@ export const bridgeApi = {
             },
             activeTools: settings.activeTools,
             isPinned: settings.isPinned,
+            interfaceTheme: settings.interfaceTheme,
             toolbarColor: settings.toolbarColor,
-            toolbarSize: settings.toolbarSize || 'md'
+            toolbarSize: settings.toolbarSize || 'md',
+            hideElement: settings.hideElement
           } as Settings
         }
       }

@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
 import { nextTick, reactive, ref } from 'vue'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ToolGlowsBar from '../ToolGlowsBar.vue'
 
@@ -42,7 +42,13 @@ const actionStores = {
   linksExplorer: { exploreLinks: vi.fn().mockResolvedValue(undefined) },
   socialAnalysis: { analyzeComments: vi.fn().mockResolvedValue(undefined) },
   reloadAllTabs: { reloadAllTabs: vi.fn().mockResolvedValue(undefined) },
-  hideElement: reactive({ settings: { isSelectingElement: false } })
+  hideElement: reactive({
+    settings: { isSelectingElement: false, hiddenElements: [] as Array<{ domain: string }> },
+    loadSettings: vi.fn().mockResolvedValue(undefined),
+    setupMutationObserver: vi.fn(),
+    resetHiddenElementsForCurrentSite: vi.fn().mockResolvedValue(undefined),
+    teardown: vi.fn()
+  })
 }
 
 vi.mock('@/stores/linksExplorer', () => ({ useLinksExplorerStore: () => actionStores.linksExplorer }))
@@ -136,6 +142,7 @@ async function mountToolbar(pinned = false) {
   })
 
   await Promise.resolve()
+  await flushPromises()
   await nextTick()
   await nextTick()
   return { settingsStore, toolglowsStore, wrapper }
@@ -168,6 +175,9 @@ describe('ToolGlowsBar interaction invariants', () => {
     actionStores.socialAnalysis.analyzeComments.mockClear()
     actionStores.reloadAllTabs.reloadAllTabs.mockClear()
     actionStores.hideElement.settings.isSelectingElement = false
+    actionStores.hideElement.loadSettings.mockClear()
+    actionStores.hideElement.setupMutationObserver.mockClear()
+    actionStores.hideElement.teardown.mockClear()
   })
 
   it('uses one round button for both drag and click interaction', async () => {
@@ -285,5 +295,11 @@ describe('ToolGlowsBar interaction invariants', () => {
 
     expect(actionStores.hideElement.settings.isSelectingElement).toBe(true)
     expect(hideButton.attributes('aria-pressed')).toBe('true')
+
+    await hideButton.trigger('click')
+    await nextTick()
+
+    expect(actionStores.hideElement.settings.isSelectingElement).toBe(false)
+    expect(hideButton.attributes('aria-pressed')).toBe('false')
   })
 })

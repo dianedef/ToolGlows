@@ -12,6 +12,50 @@
   }
 }
 
+.toolglows-hidden-element-preview {
+  outline: var(--tg-element-outline-width) solid var(--tg-element-hidden-outline) !important;
+  outline-offset: var(--tg-space-0-5) !important;
+  border-radius: var(--tg-element-hidden-radius) !important;
+  background-color: var(--tg-element-hidden-preview) !important;
+  box-shadow: var(--tg-element-hidden-shadow) !important;
+  transform: var(--tg-element-hidden-transform) !important;
+  transform-origin: var(--tg-element-hidden-transform-origin) !important;
+  transition: var(--tg-element-hidden-transition) !important;
+}
+
+.toolglows-hidden-element-preview:is(img, picture, video, canvas, svg),
+.toolglows-hidden-element-preview :is(img, picture, video, canvas, svg) {
+  filter: var(--tg-element-hidden-media-filter) !important;
+  border-radius: inherit !important;
+}
+
+.toolglows-hidden-element-restore {
+  position: fixed !important;
+  z-index: var(--tg-z-overlay) !important;
+  display: grid !important;
+  place-items: center !important;
+  width: var(--tg-size-control) !important;
+  height: var(--tg-size-control) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: var(--tg-radius-round) !important;
+  background: var(--tg-element-hidden-outline) !important;
+  color: var(--tg-color-light-surface) !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  line-height: var(--tg-line-height-tight) !important;
+  box-shadow: var(--tg-shadow-control) !important;
+  transition: var(--tg-transition-all-fast) !important;
+  transform: translateY(calc(var(--tg-hidden-restore-index, 0) * var(--tg-element-hidden-restore-offset))) !important;
+}
+
+.toolglows-hidden-element-restore:hover,
+.toolglows-hidden-element-restore:focus-visible {
+  transform: translateY(calc(var(--tg-hidden-restore-index, 0) * var(--tg-element-hidden-restore-offset))) scale(1.08) !important;
+  outline: var(--tg-element-outline-width) solid var(--tg-color-light-surface) !important;
+  outline-offset: var(--tg-space-0-5) !important;
+}
+
 .p-dialog-mask {
   background-color: var(--tg-scrim) !important;
 }

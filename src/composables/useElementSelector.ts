@@ -34,7 +34,7 @@ export function useElementSelector(options: ElementSelectorOptions = {}) {
   const {
     highlightColor,
     hoverColor,
-    excludeSelector = '.toolglows-bar, [data-component="toolglows-tool"]',
+    excludeSelector = '.toolglows-bar, [data-component="toolglows-tool"], [data-toolglows-hidden-restore]',
     onElementSelect = () => {},
     onElementHover = () => {}
   } = options
@@ -138,15 +138,17 @@ export function useElementSelector(options: ElementSelectorOptions = {}) {
   const handleClick = (event: MouseEvent) => {
     if (!isActive.value) return
 
-    event.preventDefault()
-    event.stopPropagation()
-
     const target = event.target as HTMLElement
     if (!target || isElementExcluded(target)) return
+
+    event.preventDefault()
+    event.stopPropagation()
 
     // Appliquer le style de sélection
     applySelectStyle(target)
     onElementSelect(target)
+    restoreElementStyle(target)
+    hoveredElement.value = null
   }
 
   const handleEscapeKey = (event: KeyboardEvent) => {

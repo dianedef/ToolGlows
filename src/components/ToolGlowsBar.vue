@@ -147,6 +147,21 @@
         />
       </div>
 
+      <div class="toolglows-setting-item">
+        <div>
+          <strong>Éléments masqués sur ce site</strong>
+          <small>{{ hiddenElementCount }} élément(s) enregistré(s)</small>
+        </div>
+        <Button
+          label="Tout restaurer"
+          icon="pi pi-refresh"
+          severity="danger"
+          text
+          :disabled="hiddenElementCount === 0"
+          @click="hideElementStore.resetHiddenElementsForCurrentSite"
+        />
+      </div>
+
       <!-- Gestion des outils -->
       <h3>🛠️ Outils chargés dans la page</h3>
       <div class="toolglows-tools-grid">
@@ -237,6 +252,9 @@ const reloadAllTabsStore = useReloadAllTabsStore()
 const hideElementStore = useHideElementStore()
 
 const isInterfaceDark = computed(() => settingsStore.settings.interfaceTheme === 'dark')
+const hiddenElementCount = computed(() => hideElementStore.settings.hiddenElements.filter(
+  element => element.domain === window.location.hostname
+).length)
 
 const toggleInterfaceTheme = () => {
   void settingsStore.updateSettings({
@@ -621,8 +639,13 @@ const toggleToolActivation = async (toolId: string) => {
   }
 
   if (toolId === 'hideElement') {
-    await syncRegisteredToolState(toolId, enabled)
-    hideElementStore.settings.isSelectingElement = enabled
+    if (enabled) {
+      await syncRegisteredToolState(toolId, true)
+      hideElementStore.settings.isSelectingElement = true
+    } else {
+      hideElementStore.settings.isSelectingElement = false
+      await syncRegisteredToolState(toolId, false)
+    }
     return
   }
 
@@ -720,7 +743,7 @@ watch(isExpanded, (expanded) => {
 
 // Gestion du clic en dehors
 onClickOutside(toolbarRef, () => {
-  if (!settingsStore.settings.isPinned && isExpanded.value) {
+  if (!hideElementStore.settings.isSelectingElement && !settingsStore.settings.isPinned && isExpanded.value) {
     isExpanded.value = false
     settingsStore.settings.expanded = false
   }
@@ -748,6 +771,8 @@ onMounted(async () => {
   try {
     await settingsStore.loadSettings()
     await darkModeStore.loadOptions()
+    await hideElementStore.loadSettings()
+    hideElementStore.setupMutationObserver()
     settingsLoaded.value = true
     if (!toolglowsStore.activeTools.includes('darkMode') && darkModeStore.isActive) {
       await darkModeStore.setActive(false)
@@ -792,6 +817,10 @@ onMounted(async () => {
 const closeSettings = () => {
   showSettings.value = false
 }
+
+onUnmounted(() => {
+  hideElementStore.teardown()
+})
 </script>
 
 <style scoped>
