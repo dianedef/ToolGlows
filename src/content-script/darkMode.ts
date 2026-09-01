@@ -72,19 +72,6 @@ export function applyDarkMode(message: DarkModeMessage): boolean {
     }
     overrideStyle.textContent = `
       body a { color: ${linkColor} !important; }
-      body :is(img, picture, video, svg, canvas, [role="img"]),
-      body [data-darkreader-inline-invert] {
-        filter: brightness(0.68) contrast(0.92) saturate(0.92) !important;
-        transition: var(--tg-page-dark-media-transition);
-      }
-      #toolglows-root img,
-      #toolglows-root svg,
-      #toolglows-root [role="img"],
-      [data-toolglows-ui] img,
-      [data-toolglows-ui] svg,
-      [data-toolglows-ui] [role="img"] {
-        filter: none !important;
-      }
       html, body {
         transition: background-color ${transitionDuration}ms ease, color ${transitionDuration}ms ease;
       }

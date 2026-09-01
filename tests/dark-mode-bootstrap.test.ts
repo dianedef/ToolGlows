@@ -71,6 +71,18 @@ describe('dark mode early startup', () => {
     expect(document.getElementById(DARK_MODE_PREPAINT_OVERLAY_ID)).toBeNull()
   })
 
+  it('installs media color preservation before the engine can mark inline SVGs', () => {
+    maintainDarkModeBackdrop({ backgroundColor: '#202124' })
+
+    const css = document.getElementById(DARK_MODE_BOOTSTRAP_STYLE_ID)?.textContent
+    expect(css).toContain('body [data-darkreader-inline-invert] {')
+    expect(css).toContain('filter: brightness(0.68) contrast(0.92) saturate(0.92) !important;')
+    expect(css).toContain('#toolglows-root svg')
+
+    retireDarkModeBootstrap()
+    expect(document.getElementById(DARK_MODE_BOOTSTRAP_STYLE_ID)).toBeNull()
+  })
+
   it('starts the actual engine from cached state and retires prepaint immediately', async () => {
     installStorageState({
       toolglowsDarkModeBootstrap: {

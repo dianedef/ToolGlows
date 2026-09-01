@@ -61,7 +61,7 @@ describe('dark mode DOM lifecycle', () => {
       'img', 'picture', 'video', 'svg', 'canvas', '[role="img"]'
     ]))
 
-    const css = document.getElementById('toolglows-dark-mode-overrides')?.textContent
+    const css = document.getElementById('toolglows-dark-mode-bootstrap')?.textContent
     expect(css).toContain('body :is(img, picture, video, svg, canvas, [role="img"]),')
     expect(css).toContain('body [data-darkreader-inline-invert] {')
     expect(css).toContain('filter: brightness(0.68) contrast(0.92) saturate(0.92) !important;')
@@ -70,5 +70,8 @@ describe('dark mode DOM lifecycle', () => {
     expect(css).toContain('#toolglows-root [role="img"]')
     expect(css).toContain('[data-toolglows-ui] img')
     expect(css).toContain('filter: none !important;')
+
+    const lateCss = document.getElementById('toolglows-dark-mode-overrides')?.textContent
+    expect(lateCss).not.toContain('data-darkreader-inline-invert')
   })
 })

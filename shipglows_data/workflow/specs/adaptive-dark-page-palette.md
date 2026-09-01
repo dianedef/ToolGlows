@@ -116,6 +116,7 @@ Update the design-system authority and dark-mode architecture. No public claims 
 | 2026-08-31 | sg-bug | Codex | Assessed a generic declarative pre-paint for Chrome and Firefox. A persistent dynamically registered CSS content script can run before host DOM display, but requires `scripting`, explicit host permission and a fixed packaged fallback palette; exact schedule-boundary updates may additionally require `alarms`. | design ready — permission approval required | Choose the permitted automation scope before changing either manifest. |
 | 2026-08-31 | sg-bug | Codex | Implemented the approved persistent prepaint with packaged manual/system CSS, exact-domain exclusions, schedule alarms, readiness retirement and explicit cross-browser permissions. | automated proof passed — rendered proof pending | Reload the unpacked extension, accept its updated permissions if prompted, then visually retest Docker. |
 | 2026-09-01 | sg-bug | Codex | Removed the rejected DOM overlay and visual-readiness wait; the independent document-start entry now starts the actual engine from cached state while the Vue toolbar remains at document-end. | Docker reload accepted — delayed SVG preservation pending | Move the existing media-color preservation rule into the early engine path so marked SVGs never change color after first paint. |
+| 2026-09-01 | sg-bug | Codex | Moved generic media attenuation and inline-SVG no-inversion ownership into the shared document-start style, removed the duplicate document-end rule and retained full cleanup on disable. | rendered proof passed | Preserve one media-color authority across reload and manual activation. |
 
 ## Current Chantier Flow
 
@@ -157,8 +158,10 @@ Update the design-system authority and dark-mode architecture. No public claims 
 
 2026-09-01 rendered reload acceptance: the operator judged the Docker page background and central content startup visually successful. The remaining Docker logo transition is separately diagnosed: the early engine can mark its inline SVG with `data-darkreader-inline-invert`, while ToolGlows' authoritative no-inversion/media attenuation CSS is still installed by the document-end bundle. The SVG therefore changes once when that later rule takes ownership; this remains open and does not invalidate the accepted page-surface startup.
 
+2026-09-01 early media-color guard: the generic attenuation and `[data-darkreader-inline-invert]` neutralization now live in the shared document-start bootstrap style before the engine starts. The rule remains effective for media inserted during hydration, ToolGlows-owned media stays excluded, the document-end override no longer duplicates it, and Dark Mode disable removes the early style with the rest of the bootstrap layer. Fourteen focused tests, typecheck and Chrome/Firefox builds pass; the operator confirmed Docker's logo remains visually stable throughout reload.
+
 - sg-design: active
 - readiness: ready
 - implementation: early-engine correction implemented
-- verification: focused early-start, lifecycle and prepaint tests, typecheck and Chrome/Firefox builds pass; manifest lint has 0 errors and 12 generated-bundle warnings; human Docker page-surface reload proof passed, with delayed SVG color preservation still open
+- verification: 14 focused early-start, lifecycle and prepaint tests, typecheck and Chrome/Firefox builds pass; human Docker page-surface reload and early SVG color preservation proofs passed
 - delivery: local only
