@@ -10,33 +10,69 @@
   --tg-surface-canvas: var(--surface-ground, oklch(var(--b1)));
   --tg-surface-raised: var(--surface-card, oklch(var(--b1)));
   --tg-surface-overlay: var(--surface-overlay, oklch(var(--b1)));
-  --tg-surface-muted: color-mix(in srgb, var(--tg-text-primary) 7%, var(--tg-surface-raised));
+  --tg-surface-muted: color-mix(
+    in srgb,
+    var(--tg-text-primary) 7%,
+    var(--tg-surface-raised)
+  );
   --tg-surface-field: var(--tg-surface-raised);
   --tg-text-primary: var(--text-color, oklch(var(--bc)));
-  --tg-text-secondary: var(--text-color-secondary, color-mix(in srgb, var(--tg-text-primary) 72%, transparent));
-  --tg-border-default: var(--surface-border, color-mix(in srgb, var(--tg-text-primary) 18%, transparent));
+  --tg-text-secondary: var(
+    --text-color-secondary,
+    color-mix(in srgb, var(--tg-text-primary) 72%, transparent)
+  );
+  --tg-border-default: var(
+    --surface-border,
+    color-mix(in srgb, var(--tg-text-primary) 18%, transparent)
+  );
   --tg-action: var(--primary-color, oklch(var(--p)));
   --tg-action-on: var(--primary-color-text, oklch(var(--pc)));
   --tg-status-warning: var(--yellow-600, oklch(var(--wa)));
-  --tg-status-warning-surface: color-mix(in srgb, var(--tg-status-warning) 14%, transparent);
-  --tg-status-warning-border: color-mix(in srgb, var(--tg-status-warning) 55%, transparent);
-  --tg-interaction-hover: color-mix(in srgb, var(--tg-action) 8%, var(--tg-surface-raised));
-  --tg-interaction-selected: color-mix(in srgb, var(--tg-action) 14%, var(--tg-surface-raised));
+  --tg-status-warning-surface: color-mix(
+    in srgb,
+    var(--tg-status-warning) 14%,
+    transparent
+  );
+  --tg-status-warning-border: color-mix(
+    in srgb,
+    var(--tg-status-warning) 55%,
+    transparent
+  );
+  --tg-interaction-hover: color-mix(
+    in srgb,
+    var(--tg-action) 8%,
+    var(--tg-surface-raised)
+  );
+  --tg-interaction-selected: color-mix(
+    in srgb,
+    var(--tg-action) 14%,
+    var(--tg-surface-raised)
+  );
   --tg-interaction-focus: color-mix(in srgb, var(--tg-action) 28%, transparent);
   --tg-element-hover: color-mix(in srgb, var(--tg-action) 14%, transparent);
   --tg-element-selected: color-mix(in srgb, var(--tg-action) 22%, transparent);
   --tg-element-outline: var(--tg-action);
-  --tg-element-hidden-preview: color-mix(in srgb, var(--red-500) 22%, transparent);
+  --tg-element-hidden-preview: color-mix(
+    in srgb,
+    var(--red-500) 22%,
+    transparent
+  );
   --tg-element-hidden-outline: var(--red-500);
   --tg-element-hidden-radius: var(--tg-radius-md);
-  --tg-element-hidden-shadow: 0 0 0 var(--tg-space-1) color-mix(in srgb, var(--red-500) 24%, transparent);
-  --tg-element-hidden-media-filter: sepia(1) saturate(6) hue-rotate(315deg) brightness(0.82) contrast(1.1);
+  --tg-element-hidden-shadow: 0 0 0 var(--tg-space-1)
+    color-mix(in srgb, var(--red-500) 24%, transparent);
+  --tg-element-hidden-media-filter: sepia(1) saturate(6) hue-rotate(315deg)
+    brightness(0.82) contrast(1.1);
   --tg-element-hidden-transform: translateX(var(--tg-space-3)) scale(0.96);
   --tg-element-hidden-transform-origin: center;
-  --tg-element-hidden-transition: transform var(--tg-motion-fast), box-shadow var(--tg-motion-fast);
-  --tg-element-hidden-restore-offset: calc(var(--tg-size-control) + var(--tg-space-1));
+  --tg-element-hidden-transition:
+    transform var(--tg-motion-fast), box-shadow var(--tg-motion-fast);
+  --tg-element-hidden-restore-offset: calc(
+    var(--tg-size-control) + var(--tg-space-1)
+  );
   --tg-element-outline-width: 2px;
-  --tg-element-transition: background-color 0.2s ease-in-out, outline-color 0.2s ease-in-out;
+  --tg-element-transition:
+    background-color 0.2s ease-in-out, outline-color 0.2s ease-in-out;
   --tg-ocr-highlight: color-mix(in srgb, #facc15 20%, transparent);
   --tg-ocr-highlight-hover: color-mix(in srgb, #facc15 40%, transparent);
   --tg-radius-control: var(--border-radius, var(--rounded-btn));
@@ -53,6 +89,7 @@
   --tg-size-control: 40px;
   --tg-size-main-control: 48px;
   --tg-size-control-comfortable: 2.75rem;
+  --tg-size-dialog-action-min: 8rem;
   --tg-size-field-inline: 9rem;
   --tg-size-toolbar-xs: 2.5rem;
   --tg-size-toolbar-sm: 3rem;
@@ -127,8 +164,10 @@
   --tg-shadow-control: 0 2px 5px rgba(0, 0, 0, 0.2);
   --tg-shadow-control-dragging: 0 4px 15px rgba(0, 0, 0, 0.3);
   --tg-shadow-card: var(--card-shadow);
-  --tg-shadow-panel: 0 0.5rem 1.5rem color-mix(in srgb, var(--tg-text-primary) 8%, transparent);
-  --tg-shadow-dialog: 0 1rem 3rem color-mix(in srgb, var(--tg-text-primary) 22%, transparent);
+  --tg-shadow-panel: 0 0.5rem 1.5rem
+    color-mix(in srgb, var(--tg-text-primary) 8%, transparent);
+  --tg-shadow-dialog: 0 1rem 3rem
+    color-mix(in srgb, var(--tg-text-primary) 22%, transparent);
   --tg-scrim: rgba(0, 0, 0, 0.4);
   --tg-z-dropdown: 1000;
   --tg-z-tooltip: 9999;
@@ -181,8 +220,8 @@
   --tg-page-dark-success-surface: #213b31;
   --tg-page-dark-success-border: #4f806b;
   --tg-page-dark-focus: #8fc1ee;
-  --tg-page-dark-control-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 3px 10px rgba(0, 0, 0, 0.18);
+  --tg-page-dark-control-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.35), 0 3px 10px rgba(0, 0, 0, 0.18);
   --tg-page-dark-shadow-none: none;
   --tg-page-dark-media-transition: filter 160ms ease, opacity 160ms ease;
 }
-

@@ -19,7 +19,7 @@
       ></i>
       <p>Chargement des options...</p>
     </div>
-    
+
     <div
       v-else
       class="stats-container"
@@ -59,7 +59,7 @@
       <!-- Options d'analyse -->
       <div class="analysis-options">
         <h4>Options d'analyse</h4>
-        
+
         <div class="option-row">
           <Checkbox
             v-model="wordCounterStore.options.countSpaces"
@@ -98,20 +98,17 @@
     </div>
 
     <template #footer>
-      <div class="dialog-footer">
-        <Button
-          label="Fermer"
-          icon="pi pi-times"
-          text
-          @click="close"
-        />
-        <Button
-          label="Copier les statistiques"
-          icon="pi pi-copy"
-          severity="secondary"
-          @click="copyStats"
-        />
-      </div>
+      <Button
+        label="Fermer"
+        icon="pi pi-times"
+        text
+        @click="close"
+      />
+      <Button
+        label="Copier les statistiques"
+        icon="pi pi-copy"
+        @click="copyStats"
+      />
     </template>
   </ToolGlowsDialog>
 </template>
@@ -139,13 +136,8 @@ const visible = computed({
   set: (value) => emit('update:visible', value)
 })
 
-const {
-  stats,
-  options,
-  analyzeSelection,
-  updateOptions,
-  copyStats
-} = useWordCounter()
+const { stats, options, analyzeSelection, updateOptions, copyStats } =
+  useWordCounter()
 
 const wordCounterStore = useWordCounterStore()
 const isLoading = ref(true)
@@ -271,12 +263,6 @@ const closeDialog = () => {
   gap: var(--tg-space-2);
 }
 
-.dialog-footer {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--tg-space-4);
-}
-
 :deep(.p-dialog-content) {
   padding-top: 0;
 }
@@ -290,4 +276,3 @@ const closeDialog = () => {
   height: var(--tg-size-1-25rem);
 }
 </style>
-

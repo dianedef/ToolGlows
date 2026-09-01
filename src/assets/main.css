@@ -3,11 +3,16 @@
 @import './controls.scss';
 
 /* Reset pour nos composants */
-#toolglows-app *, #toolglows-extension *, #toolglows-root * {
+#toolglows-app *,
+#toolglows-extension *,
+#toolglows-root * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 /* Styles pour la barre de défilement */
@@ -49,9 +54,13 @@
 }
 
 /* Pour Firefox */
-#toolglows-app *, #toolglows-extension *, #toolglows-root *, .p-dialog * {
+#toolglows-app *,
+#toolglows-extension *,
+#toolglows-root *,
+.p-dialog * {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--surface-card) 38%, transparent) transparent;
+  scrollbar-color: color-mix(in srgb, var(--surface-card) 38%, transparent)
+    transparent;
 }
 
 /* Styles communs */
@@ -84,7 +93,9 @@
 /* Animation pour les panneaux */
 .toolglows-settings-panel-enter-active,
 .toolglows-settings-panel-leave-active {
-  transition: opacity var(--tg-motion-panel), transform var(--tg-motion-panel);
+  transition:
+    opacity var(--tg-motion-panel),
+    transform var(--tg-motion-panel);
 }
 
 .toolglows-settings-panel-enter-from,
@@ -208,12 +219,32 @@
   background: var(--tg-surface-muted);
 }
 
-.toolglows-dialog .p-dialog-content > div > :is(
-  .toolglows-field,
-  .field,
-  .shortcuts-section,
-  .actions-section
-) {
+/* Footer actions keep their DOM and keyboard order: the secondary action
+   anchors the start edge while the final, primary action closes the flow. */
+.toolglows-dialog .p-dialog-footer > .p-button {
+  min-width: var(--tg-size-dialog-action-min);
+  min-height: var(--tg-size-control-comfortable);
+}
+
+.toolglows-dialog .p-dialog-footer > .p-button:first-child:not(:only-child) {
+  margin-inline-end: auto;
+}
+
+@media (max-width: 30rem) {
+  .toolglows-dialog .p-dialog-footer > .p-button {
+    flex: 1 1 var(--tg-full-width);
+    width: var(--tg-full-width);
+  }
+
+  .toolglows-dialog .p-dialog-footer > .p-button:first-child:not(:only-child) {
+    margin-inline-end: 0;
+  }
+}
+
+.toolglows-dialog
+  .p-dialog-content
+  > div
+  > :is(.toolglows-field, .field, .shortcuts-section, .actions-section) {
   margin-bottom: var(--tg-space-3);
   padding: var(--tg-space-4);
   border: 1px solid var(--tg-border-default);
@@ -221,23 +252,27 @@
   background: var(--tg-surface-muted);
 }
 
-.toolglows-dialog .p-dialog-content > div > :is(
-  .toolglows-field,
-  .field,
-  .shortcuts-section,
-  .actions-section
-):last-child {
+.toolglows-dialog
+  .p-dialog-content
+  > div
+  > :is(
+    .toolglows-field,
+    .field,
+    .shortcuts-section,
+    .actions-section
+  ):last-child {
   margin-bottom: 0;
 }
 
 /* Maintained PrimeVue controls own behavior; these shared rows own the visual
    rhythm across every product settings dialog. */
-.toolglows-dialog :is(
-  .field-checkbox,
-  .toolglows-field-checkbox,
-  .option-row,
-  .toolglows-reader-choice
-) {
+.toolglows-dialog
+  :is(
+    .field-checkbox,
+    .toolglows-field-checkbox,
+    .option-row,
+    .toolglows-reader-choice
+  ) {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -246,23 +281,27 @@
   min-height: var(--tg-size-control-comfortable);
 }
 
-.toolglows-dialog :is(
-  .field-checkbox,
-  .toolglows-field-checkbox,
-  .option-row,
-  .toolglows-reader-choice
-) > :is(label, span) {
+.toolglows-dialog
+  :is(
+    .field-checkbox,
+    .toolglows-field-checkbox,
+    .option-row,
+    .toolglows-reader-choice
+  )
+  > :is(label, span) {
   order: 1;
   flex: 1;
   margin: 0;
 }
 
-.toolglows-dialog :is(
-  .field-checkbox,
-  .toolglows-field-checkbox,
-  .option-row,
-  .toolglows-reader-choice
-) > .p-checkbox {
+.toolglows-dialog
+  :is(
+    .field-checkbox,
+    .toolglows-field-checkbox,
+    .option-row,
+    .toolglows-reader-choice
+  )
+  > .p-checkbox {
   order: 2;
   flex: 0 0 auto;
 }
@@ -275,13 +314,17 @@
   width: var(--tg-full-width);
 }
 
-.toolglows-dialog :is(.field-slider, .toolglows-field-slider, .width-row) > :is(label, h4) {
+.toolglows-dialog
+  :is(.field-slider, .toolglows-field-slider, .width-row)
+  > :is(label, h4) {
   grid-column: 1;
   grid-row: 1;
   margin: 0;
 }
 
-.toolglows-dialog :is(.field-slider, .toolglows-field-slider, .width-row) > :is(small, output, .width-value) {
+.toolglows-dialog
+  :is(.field-slider, .toolglows-field-slider, .width-row)
+  > :is(small, output, .width-value) {
   grid-column: 2;
   grid-row: 1;
   justify-self: end;
@@ -289,19 +332,22 @@
   color: var(--tg-text-secondary);
 }
 
-.toolglows-dialog :is(.field-slider, .toolglows-field-slider, .width-row) > .p-slider {
+.toolglows-dialog
+  :is(.field-slider, .toolglows-field-slider, .width-row)
+  > .p-slider {
   grid-column: 1 / -1;
   grid-row: 2;
   width: var(--tg-full-width);
 }
 
-.toolglows-dialog :is(
-  .toolglows-field-spinner,
-  .notification-duration,
-  .toolglows-depth-control,
-  .field:has(> .p-inputnumber),
-  .toolglows-field:has(> .p-inputnumber)
-) {
+.toolglows-dialog
+  :is(
+    .toolglows-field-spinner,
+    .notification-duration,
+    .toolglows-depth-control,
+    .field:has(> .p-inputnumber),
+    .toolglows-field:has(> .p-inputnumber)
+  ) {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -310,24 +356,28 @@
   width: var(--tg-full-width);
 }
 
-.toolglows-dialog :is(
-  .toolglows-field-spinner,
-  .notification-duration,
-  .toolglows-depth-control,
-  .field:has(> .p-inputnumber),
-  .toolglows-field:has(> .p-inputnumber)
-) > :is(label, h4) {
+.toolglows-dialog
+  :is(
+    .toolglows-field-spinner,
+    .notification-duration,
+    .toolglows-depth-control,
+    .field:has(> .p-inputnumber),
+    .toolglows-field:has(> .p-inputnumber)
+  )
+  > :is(label, h4) {
   flex: 1;
   margin: 0;
 }
 
-.toolglows-dialog :is(
-  .toolglows-field-spinner,
-  .notification-duration,
-  .toolglows-depth-control,
-  .field:has(> .p-inputnumber),
-  .toolglows-field:has(> .p-inputnumber)
-) > .p-inputnumber {
+.toolglows-dialog
+  :is(
+    .toolglows-field-spinner,
+    .notification-duration,
+    .toolglows-depth-control,
+    .field:has(> .p-inputnumber),
+    .toolglows-field:has(> .p-inputnumber)
+  )
+  > .p-inputnumber {
   flex: 0 1 var(--tg-size-field-inline);
   width: var(--tg-size-field-inline);
   max-width: var(--tg-size-field-inline);
@@ -338,7 +388,9 @@
   flex-direction: row;
 }
 
-.toolglows-dialog .toolglows-field-spinner.toolglows-field-spinner > .p-inputnumber {
+.toolglows-dialog
+  .toolglows-field-spinner.toolglows-field-spinner
+  > .p-inputnumber {
   width: var(--tg-size-field-inline) !important;
   max-width: var(--tg-size-field-inline);
 }

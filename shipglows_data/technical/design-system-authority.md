@@ -43,6 +43,8 @@ The shared wrapper also owns the visible dialog shell: tokenized border, elevati
 
 Settings controls use shared composition rows inside the dialog shell. Toggle labels sit before their maintained checkbox controls, slider labels and values share a compact header above a full-width track, and bounded numeric inputs align opposite their labels. Tool implementations retain state and behavior but do not redefine this rhythm locally.
 
+Dialog footers preserve source and keyboard order while exposing a consistent action hierarchy: a text-style secondary action anchors the start edge and the final primary action anchors the end edge. Shared minimum sizing keeps targets legible; narrow viewports stack actions at full width without reversing their order. Tool components provide labels and handlers but do not wrap or locally recompose footer actions.
+
 ## Theme switching
 
 The `toolglowsSettings.interfaceTheme` value in browser sync storage is the only active persisted ToolGlows interface mode and accepts `light` or `dark`. Popup, options and injected surfaces load it through the maintained settings store. The content script replaces its injected PrimeVue palette in place, while extension pages apply the matching DaisyUI theme; neither path affects the visited page.
@@ -61,6 +63,7 @@ Legacy theme modules may remain as unreferenced migration evidence, but they mus
 - Use `--tg-page-dark-*` roles for visited-page adaptation; range classifiers return semantic roles rather than raw replacement colors.
 - Use the shared dialog wrapper for every product modal; do not apply a fixed global dialog `z-index` that disables PrimeVue stacking.
 - Keep dialog-shell finish on the shared wrapper and stylesheet; tool components may define content layout but must not replace the outer border, elevation or radius.
+- Keep direct footer actions in semantic secondary-then-primary DOM order and let the shared dialog shell own their spacing, sizing and responsive reflow.
 - Load `src/assets/main.css` in each extension-page entrypoint that consumes semantic ToolGlows tokens.
 - Respect `prefers-reduced-motion` for non-essential transforms and transitions on extension-owned UI.
 - Vendor theme sources are external palette providers and are not edited locally.

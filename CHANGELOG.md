@@ -3,6 +3,7 @@
 ## [2026-09-01]
 
 ### Fixed
+
 - Unified interface theme persistence across the toolbar, popup and options page.
 - Made options saves truthful with visible success or error feedback.
 - Removed unavailable pricing and account actions from extension interfaces.
@@ -13,23 +14,28 @@
 - Made every color picker fill its complete control surface in light and dark themes.
 - Aligned color-picker labels and controls consistently across settings and tool dialogs.
 - Harmonized toggle, slider and numeric-field rhythm across ToolGlows settings dialogs.
+- Clarified modal actions with consistent secondary/primary spacing, sizing and narrow-screen stacking.
 
 ## [2026-05-04]
 
 ### Security
+
 - Cleared critical/high pnpm audit findings for production and full dependency graphs, leaving one documented moderate dev-only `uuid` advisory through `web-ext > node-notifier`.
 - Removed unused vulnerable build tooling (`unplugin-imagemin`, `unplugin-turbo-console`) and added narrow pnpm overrides for unresolved transitive advisory paths.
 
 ### Changed
+
 - Added explicit Node and pnpm package-manager requirements in `package.json`, README, and the developer guide.
 - Updated extension build and test tooling including `jsdom`, `vitest`, `web-ext`, `@playwright/test`, `sass`, `tsx`, and `unplugin-icons`.
 
 ### Fixed
+
 - Adapted reader mode parsing to `@mozilla/readability@0.6.0` built-in types.
 - Pointed manifest linting at the built Firefox extension and fixed manifest fields required by `web-ext lint`.
 - Cleared global TypeScript validation failures across background message payloads, stores, composables, options pages, and stale declaration files.
 
 ### Added
+
 - Added minimal technical and editorial governance maps for dependency/security documentation tracking.
 
 ## Example update
