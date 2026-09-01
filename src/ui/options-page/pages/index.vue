@@ -69,9 +69,9 @@ defineExpose({ saveState })
 h2 { margin: 0 0 var(--tg-space-5-half); font-size: var(--tg-size-tool-font-md); font-weight: 600; }
 label { display: grid; gap: var(--tg-space-2); margin-bottom: var(--tg-space-4); font-weight: 500; }
 label:last-child { margin-bottom: 0; }
-input, select { width: 100%; min-height: var(--tg-size-control-comfortable); border: 1px solid var(--tg-border-default); border-radius: var(--tg-radius-control); padding: var(--tg-space-2) var(--tg-space-3); background: var(--tg-surface-field); color: var(--tg-text-primary); font: inherit; }
+input:not([type='checkbox']), select { width: 100%; min-height: var(--tg-size-control-comfortable); border: 1px solid var(--tg-border-default); border-radius: var(--tg-radius-control); padding: var(--tg-space-2) var(--tg-space-3); background: var(--tg-surface-field); color: var(--tg-text-primary); font: inherit; }
 .checkbox-row { display: flex; align-items: center; justify-content: flex-start; gap: var(--tg-space-2); }
-.checkbox-row input { width: auto; }
+.checkbox-row input { width: var(--tg-size-checkbox); height: var(--tg-size-checkbox); margin: 0; accent-color: var(--tg-action); }
 .save-row { display: flex; align-items: center; gap: var(--tg-space-4); padding: var(--tg-space-1) 0; flex-wrap: wrap; }
 button { min-height: var(--tg-size-control-comfortable); border: 0; border-radius: var(--tg-radius-control); background: var(--tg-action); color: var(--tg-action-on); cursor: pointer; font: inherit; font-weight: 600; padding: var(--tg-space-2) var(--tg-space-5); }
 button:disabled { cursor: wait; }

@@ -121,7 +121,7 @@ label {
   font-weight: 500;
 }
 
-input,
+input:not([type='checkbox']),
 select,
 textarea {
   width: var(--tg-full-width);
@@ -138,7 +138,10 @@ textarea {
 }
 
 .checkbox-row input {
-  width: auto;
+  width: var(--tg-size-checkbox);
+  height: var(--tg-size-checkbox);
+  margin: 0;
+  accent-color: var(--tg-action);
 }
 
 .number-grid {

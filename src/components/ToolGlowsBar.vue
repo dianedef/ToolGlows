@@ -982,7 +982,7 @@ onUnmounted(() => {
 }
 
 .toolglows-clickable-setting:hover {
-  background: var(--surface-hover);
+  background: var(--tg-interaction-hover);
 }
 
 .toolglows-settings-dialog {
