@@ -8,6 +8,7 @@
 - Removed unavailable pricing and account actions from extension interfaces.
 - Improved narrow-screen layout, semantic design-token coverage and reduced-motion behavior.
 - Refined interface spacing and rounded surfaces, and restored opaque selector backgrounds in both themes.
+- Added structured spacing, borders, elevation and rounded setting groups to the main and tool-specific dialogs.
 
 ## [2026-05-04]
 

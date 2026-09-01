@@ -127,6 +127,7 @@
   --tg-shadow-control-dragging: 0 4px 15px rgba(0, 0, 0, 0.3);
   --tg-shadow-card: var(--card-shadow);
   --tg-shadow-panel: 0 0.5rem 1.5rem color-mix(in srgb, var(--tg-text-primary) 8%, transparent);
+  --tg-shadow-dialog: 0 1rem 3rem color-mix(in srgb, var(--tg-text-primary) 22%, transparent);
   --tg-scrim: rgba(0, 0, 0, 0.4);
   --tg-z-dropdown: 1000;
   --tg-z-tooltip: 9999;

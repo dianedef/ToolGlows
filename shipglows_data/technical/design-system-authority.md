@@ -1,7 +1,7 @@
 ---
 artifact: design_system_authority
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: "toolglows"
 created: "2026-08-28"
 updated: "2026-09-01"
@@ -39,6 +39,8 @@ The dark-mode settings expose Graphite and Custom presets. Graphite consumes the
 
 All product dialogs consume the shared `ToolGlowsDialog` wrapper. PrimeVue remains responsible for dialog semantics, focus management and automatic opening-order stacking; the wrapper owns the ToolGlows modal boundary, body teleportation, canonical overlay base and shared floating-shell radius. The toolbar consumes the same floating-shell radius token and stays on the lower extension layer.
 
+The shared wrapper also owns the visible dialog shell: tokenized border, elevation and floating-shell radius, plus canonical header, content and footer spacing. Its root shell values are applied through the maintained wrapper style binding so PrimeVue's positioned-dialog rules cannot flatten right-aligned tool panels after cascade resolution. Common first-level settings groups consume the section radius, muted surface and shared spacing scale; specialized dialogs retain their own widths and interaction behavior.
+
 ## Theme switching
 
 The `toolglowsSettings.interfaceTheme` value in browser sync storage is the only active persisted ToolGlows interface mode and accepts `light` or `dark`. Popup, options and injected surfaces load it through the maintained settings store. The content script replaces its injected PrimeVue palette in place, while extension pages apply the matching DaisyUI theme; neither path affects the visited page.
@@ -56,6 +58,7 @@ Legacy theme modules may remain as unreferenced migration evidence, but they mus
 - Add new reusable visual values only to the canonical token source.
 - Use `--tg-page-dark-*` roles for visited-page adaptation; range classifiers return semantic roles rather than raw replacement colors.
 - Use the shared dialog wrapper for every product modal; do not apply a fixed global dialog `z-index` that disables PrimeVue stacking.
+- Keep dialog-shell finish on the shared wrapper and stylesheet; tool components may define content layout but must not replace the outer border, elevation or radius.
 - Load `src/assets/main.css` in each extension-page entrypoint that consumes semantic ToolGlows tokens.
 - Respect `prefers-reduced-motion` for non-essential transforms and transitions on extension-owned UI.
 - Vendor theme sources are external palette providers and are not edited locally.

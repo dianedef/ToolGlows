@@ -6,6 +6,7 @@
     append-to="body"
     :auto-z-index="true"
     :base-z-index="dialogBaseZIndex"
+    :style="dialogShellStyle"
     class="toolglows-dialog"
   >
     <template
@@ -37,4 +38,9 @@ const resolvedDialogBaseZIndex = Number.parseInt(resolveDesignToken('--tg-z-over
 const dialogBaseZIndex = Number.isFinite(resolvedDialogBaseZIndex)
   ? resolvedDialogBaseZIndex
   : 0
+const dialogShellStyle = {
+  border: '1px solid var(--tg-border-default)',
+  borderRadius: 'var(--tg-radius-floating-shell)',
+  boxShadow: 'var(--tg-shadow-dialog)',
+}
 </script>

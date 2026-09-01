@@ -159,9 +159,75 @@
 
 /* PrimeVue retains dialog semantics and focus management; this shared shell
    owns ToolGlows' visual consistency for every teleported modal. */
-.toolglows-dialog.p-dialog {
+.p-dialog-mask:has(> .toolglows-dialog) {
+  padding: var(--tg-space-4);
+}
+
+.p-dialog-mask > .toolglows-dialog.p-dialog {
+  max-width: calc(100vw - var(--tg-space-6));
+  max-height: calc(100vh - var(--tg-space-6));
+  height: auto;
+  border: 1px solid var(--tg-border-default) !important;
   border-radius: var(--tg-radius-floating-shell) !important;
+  background: var(--tg-surface-overlay);
+  box-shadow: var(--tg-shadow-dialog) !important;
   overflow: hidden;
+}
+
+.toolglows-dialog .p-dialog-header {
+  gap: var(--tg-space-3);
+  padding: var(--tg-space-5-half) var(--tg-space-5);
+  border-bottom: 1px solid var(--tg-border-default);
+  background: var(--tg-surface-muted);
+}
+
+.toolglows-dialog .p-dialog-title {
+  color: var(--tg-text-primary);
+  font-size: var(--tg-text-xl);
+  line-height: var(--tg-line-height-copy);
+}
+
+.toolglows-dialog .p-dialog-header-icon {
+  flex: 0 0 auto;
+  border-radius: var(--tg-radius-round);
+}
+
+.toolglows-dialog .p-dialog-content {
+  padding: var(--tg-space-4);
+  background: var(--tg-surface-raised);
+  color: var(--tg-text-primary);
+}
+
+.toolglows-dialog .p-dialog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--tg-space-2);
+  padding: var(--tg-space-4) var(--tg-space-5);
+  border-top: 1px solid var(--tg-border-default);
+  background: var(--tg-surface-muted);
+}
+
+.toolglows-dialog .p-dialog-content > div > :is(
+  .toolglows-field,
+  .field,
+  .shortcuts-section,
+  .actions-section
+) {
+  margin-bottom: var(--tg-space-3);
+  padding: var(--tg-space-4);
+  border: 1px solid var(--tg-border-default);
+  border-radius: var(--tg-radius-section);
+  background: var(--tg-surface-muted);
+}
+
+.toolglows-dialog .p-dialog-content > div > :is(
+  .toolglows-field,
+  .field,
+  .shortcuts-section,
+  .actions-section
+):last-child {
+  margin-bottom: 0;
 }
 
 .toolglows-header-menu,
