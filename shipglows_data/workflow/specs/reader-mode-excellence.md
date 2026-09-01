@@ -1,13 +1,13 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.3.0"
+artifact_version: "1.4.0"
 project: "toolglows"
 created: "2026-08-31"
 created_at: "2026-08-31 21:00:36 UTC"
 updated: "2026-08-31"
 updated_at: "2026-09-01 10:47:08 UTC"
-status: verified
+status: complete
 source_skill: sg-development
 source_model: "Codex"
 scope: "reader-mode-excellence"
@@ -39,14 +39,14 @@ evidence:
   - "Edge proof on Wikipedia confirms an opaque centered 800 px surface, 36 px title, theme/content preferences, keyboard exit, host-page preservation and focus restoration."
   - "Unsupported-page Edge proof preserves Example Domain and exposes the accessible extraction error without locking scroll."
   - "Typecheck, 73 tests, Chrome and Firefox production builds pass; Firefox manifest lint reports 0 errors and 0 notices."
-next_step: "Deliver the verified exact-scope commit to origin/main."
+next_step: "Evaluate the next evidence-backed ToolGlows reading improvement."
 ---
 
 # Reader Mode Excellence
 
 ## Status
 
-Verified and ready for delivery.
+Complete and delivered.
 
 ## User Story
 
@@ -220,6 +220,7 @@ None. The operator approved the complete refactor, Edge proof, exact-scope commi
 | 2026-08-31 21:02 UTC | sg-development | Codex | Reviewed behavior, scope, security, design authority, edge cases, proof, and dirty-work boundaries. | ready | Implement the reader lifecycle. |
 | 2026-08-31 21:26 UTC | sg-development | Codex | Implemented the isolated reader lifecycle, unified preferences, strict sanitizer, accessible controls, tokenized themes, focused tests and technical documentation. Typecheck, 72 tests, Chrome/Firefox builds and manifest lint pass. | implemented — Edge proof pending | Reload ToolGlows in Edge, then run the accepted browser scenarios. |
 | 2026-09-01 10:47 UTC | sg-development | Codex | Verified the production Chrome build in Edge on supported and unsupported pages, including visual isolation, preferences, keyboard cleanup and focus restoration; reran the complete automated baseline. | verified | Deliver the exact-scope commit to origin/main. |
+| 2026-09-01 10:47 UTC | sg-development | Codex | Delivered the verified reader lifecycle to `origin/main` in commit `c345505`. | shipped | Evaluate the next evidence-backed reading improvement. |
 
 ## Current Chantier Flow
 
@@ -227,4 +228,4 @@ None. The operator approved the complete refactor, Edge proof, exact-scope commi
 - readiness: ready
 - implementation: complete
 - verification: complete — Edge rendered proof and automated baseline passed
-- delivery: pending
+- delivery: complete — `c345505` pushed to `origin/main`
