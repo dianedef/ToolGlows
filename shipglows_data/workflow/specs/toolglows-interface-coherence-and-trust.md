@@ -1,13 +1,13 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "toolglows"
 created: "2026-09-01"
 created_at: "2026-09-01 11:59:25 UTC"
 updated: "2026-09-01"
-updated_at: "2026-09-01 12:25:14 UTC"
-status: verified
+updated_at: "2026-09-01 12:32:45 UTC"
+status: complete
 source_skill: sg-design
 source_model: "Codex"
 scope: "interface-theme-settings-trust"
@@ -31,7 +31,7 @@ supersedes:
 evidence:
   - "2026-09-01 design-token audit graded theme architecture D and found 22 active project-owned drift defects."
   - "2026-09-01 Edge proof showed unavailable commercial CTAs and a dispersed options form without visible save feedback."
-next_step: "Persist the verified milestone, then close the chantier."
+next_step: "Chantier closed; reassess only if new interface-theme or settings surfaces are introduced."
 ---
 
 # ToolGlows Interface Coherence and Trust
@@ -138,6 +138,7 @@ As a ToolGlows user, I want the extension theme, settings and visible actions to
 |----------|-------|-------|--------|--------|-----------|
 | 2026-09-01 11:59 UTC | 006-sg-design | Codex | Created the approved successor contract from the design-token and UI audit findings. | ready | Start sequential implementation batches. |
 | 2026-09-01 12:25 UTC | sg-development | Codex | Unified active theme persistence, connected options storage feedback, removed unavailable journeys, repaired narrow reflow and added reduced-motion/token mappings. | verified | Persist the milestone and close delivery. |
+| 2026-09-01 12:32 UTC | sg-design | Codex | Delivered the verified implementation to `origin/main` in commit `4f130be`. | complete | Chantier closed. |
 
 ## Current Chantier Flow
 
@@ -145,4 +146,4 @@ As a ToolGlows user, I want the extension theme, settings and visible actions to
 - readiness: ready
 - implementation: complete
 - verification: passed — 82 tests, typecheck, Chrome/Firefox builds, changed-token scan, manifest lint and isolated Edge proof
-- delivery: pending
+- delivery: pushed to `origin/main` — `4f130be`
