@@ -99,7 +99,7 @@ function createSettings(pinned = false) {
       isPinned: pinned,
       interfaceTheme: 'light' as const,
       toolbarColor: 'var(--tg-toolbar-color-default)',
-      toolbarSize: 'md' as const,
+      toolbarSize: 'md' as 'xs' | 'sm' | 'md' | 'lg' | 'xl',
       components: {}
     },
     loadSettings: vi.fn().mockResolvedValue(undefined),
@@ -189,6 +189,49 @@ describe('ToolGlowsBar interaction invariants', () => {
     expect(wrapper.find('.toolglows-drag-handle').exists()).toBe(false)
     expect(wrapper.findAll('.toolglows-main-button')).toHaveLength(1)
     expect(wrapper.get('.toolglows-main-button').attributes('aria-label')).toBe('ToolGlows')
+  })
+
+  it.each([
+    ['xs', 'var(--tg-size-toolbar-xs)'],
+    ['sm', 'var(--tg-size-toolbar-sm)'],
+    ['md', 'var(--tg-size-toolbar-md)'],
+    ['lg', 'var(--tg-size-toolbar-lg)'],
+    ['xl', 'var(--tg-size-toolbar-xl)'],
+  ] as const)('applies the %s toolbar size token', async (size, token) => {
+    const { settingsStore, wrapper } = await mountToolbar()
+
+    settingsStore.settings.toolbarSize = size
+    await nextTick()
+
+    expect(
+      (wrapper.get('.toolglows-bar').element as HTMLElement).style.getPropertyValue('--button-size'),
+    ).toBe(token)
+  })
+
+  it('repositions the toolbar after its selected size changes', async () => {
+    const { settingsStore, wrapper } = await mountToolbar()
+    const toolbar = wrapper.get('.toolglows-bar').element as HTMLElement
+    vi.spyOn(toolbar, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 0,
+      width: 160,
+      height: 112,
+      top: 0,
+      right: 160,
+      bottom: 112,
+      left: 0,
+      toJSON: () => ({}),
+    })
+    settingsStore.settings.position = { x: window.innerWidth - 30, y: window.innerHeight - 30 }
+    await nextTick()
+    await nextTick()
+
+    settingsStore.settings.toolbarSize = 'xl'
+    await nextTick()
+    await nextTick()
+
+    expect(Number.parseFloat(toolbar.style.left)).toBeLessThanOrEqual(window.innerWidth - 180)
+    expect(Number.parseFloat(toolbar.style.top)).toBeLessThanOrEqual(window.innerHeight - 132)
   })
 
   it('opens and closes on clicks without pointer movement', async () => {

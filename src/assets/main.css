@@ -151,6 +151,29 @@
   overflow: hidden;
 }
 
+.toolglows-settings-select-panel.p-dropdown-panel {
+  background: var(--tg-surface-overlay) !important;
+  color: var(--tg-text-primary) !important;
+  border: var(--tg-border-width-control) solid var(--tg-border-default) !important;
+}
+
+.toolglows-settings-select-panel.p-dropdown-panel .p-dropdown-item {
+  background: transparent !important;
+  color: var(--tg-text-primary) !important;
+}
+
+.toolglows-settings-select-panel.p-dropdown-panel
+  .p-dropdown-item:not(.p-highlight):not(.p-disabled):is(:hover, .p-focus) {
+  background: var(--tg-interaction-hover) !important;
+  color: var(--tg-text-primary) !important;
+}
+
+.toolglows-settings-select-panel.p-dropdown-panel
+  .p-dropdown-item.p-highlight {
+  background: var(--tg-interaction-selected) !important;
+  color: var(--tg-text-primary) !important;
+}
+
 /* Animations */
 .p-sidebar-enter-active,
 .p-sidebar-leave-active {

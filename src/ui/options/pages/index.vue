@@ -53,11 +53,11 @@ async function saveSettings() {
       <label class="toolglows-settings-row">
         <span>Taille</span>
         <select v-model="settings.toolbarSize">
-          <option value="xs">XS</option>
-          <option value="sm">SM</option>
-          <option value="md">MD</option>
-          <option value="lg">LG</option>
-          <option value="xl">XL</option>
+          <option value="xs">Très petite</option>
+          <option value="sm">Petite</option>
+          <option value="md">Moyenne</option>
+          <option value="lg">Grande</option>
+          <option value="xl">Très grande</option>
         </select>
       </label>
     </section>

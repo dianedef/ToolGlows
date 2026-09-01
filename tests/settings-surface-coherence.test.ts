@@ -80,6 +80,12 @@ describe('settings surface coherence', () => {
     expect(sharedStyles).toContain(
       'background: var(--tg-surface-muted) !important',
     )
+    expect(sharedStyles).toContain(
+      '.toolglows-settings-select-panel.p-dropdown-panel',
+    )
+    expect(sharedStyles).toContain(
+      'background: var(--tg-surface-overlay) !important',
+    )
     expect(sharedStyles).not.toContain(
       '.toolglows-dialog .p-dropdown {\n  background: var(--tg-surface-muted) !important',
     )

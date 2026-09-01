@@ -27,6 +27,7 @@ import { bridgeApi, initBridgeListeners } from '@/bridge'
 import { useToolGlowsStore } from '@/stores/toolglows'
 import { useBrowserSyncStorage } from '@/composables/useBrowserStorage'
 import { normalizeInterfaceTheme } from '@/composables/useInterfaceTheme'
+import { normalizeToolbarSize, type ToolbarSize } from '@/utils/toolbarSize'
 import type { HideElementSettings } from './hideElement'
 
 /**
@@ -45,7 +46,7 @@ export interface ToolGlowsSettings {
   isPinned: boolean
   interfaceTheme: 'light' | 'dark'
   toolbarColor?: string
-  toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  toolbarSize: ToolbarSize
   hideElement?: HideElementSettings
   components?: {
     richCopy?: {
@@ -91,6 +92,7 @@ export const useSettingsStore = defineStore('settings', () => {
     position: { ...defaultSettings.position, ...value?.position },
     activeTools: Array.isArray(value?.activeTools) ? value.activeTools : defaultSettings.activeTools,
     interfaceTheme: normalizeInterfaceTheme(value?.interfaceTheme),
+    toolbarSize: normalizeToolbarSize(value?.toolbarSize),
     hideElement: {
       hiddenElements: Array.isArray(value?.hideElement?.hiddenElements)
         ? value.hideElement.hiddenElements
@@ -117,7 +119,8 @@ export const useSettingsStore = defineStore('settings', () => {
     toolbarColor: settings.value.toolbarColor,
     expanded: settings.value.expanded,
     isPinned: settings.value.isPinned,
-    interfaceTheme: settings.value.interfaceTheme
+    interfaceTheme: settings.value.interfaceTheme,
+    toolbarSize: settings.value.toolbarSize
   }), (newSettings) => {
     applySettings(settings.value)
   }, { deep: true })

@@ -146,6 +146,7 @@
             option-label="label"
             option-value="value"
             class="toolglows-settings-select"
+            panel-class="toolglows-settings-select-panel"
           />
         </div>
       </section>
@@ -477,6 +478,7 @@ watch([
   () => settingsStore.settings.position,
   () => settingsStore.settings.expanded,
   () => settingsStore.settings.isPinned,
+  () => settingsStore.settings.toolbarSize,
   () => toolglowsStore.activeTools
 ], ([newPosition]) => {
   if (!isDragging.value && newPosition) {

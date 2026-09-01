@@ -10,6 +10,7 @@
    semantic token boundary on the teleported nodes themselves. */
 .toolglows-dialog,
 .toolglows-dialog-mask,
+.toolglows-settings-select-panel,
 [data-toolglows-ui] {
   --tg-size-20: 1.25rem;
   --tg-surface-canvas: var(--surface-ground, oklch(var(--b1)));

@@ -46,4 +46,17 @@ describe('options page settings persistence', () => {
 
     expect(wrapper.get('[role="alert"]').text()).toContain('Impossible d’enregistrer')
   })
+
+  it('offers the same five descriptive toolbar sizes as the injected settings', () => {
+    const wrapper = mount(OptionsPage)
+    const sizeSelect = wrapper.findAll('select')[1]
+
+    expect(sizeSelect.findAll('option').map(option => option.text())).toEqual([
+      'Très petite',
+      'Petite',
+      'Moyenne',
+      'Grande',
+      'Très grande',
+    ])
+  })
 })

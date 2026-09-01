@@ -92,6 +92,7 @@ describe('settings interface redesign', () => {
     expect(toolbar).toContain('<h3>Page actuelle</h3>')
     expect(toolbar).toContain('<h3>Outils actifs</h3>')
     expect(toolbar).toContain('input-id="toolbarSize"')
+    expect(toolbar).toContain('panel-class="toolglows-settings-select-panel"')
     expect(toolbar).not.toContain('toolglows-setting-item')
   })
 
