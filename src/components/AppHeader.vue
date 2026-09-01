@@ -1,8 +1,8 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="navbar bg-primary text-primary-content p-2">
-    <div class="flex-1 pl-2">
+  <div class="app-navbar navbar bg-primary text-primary-content p-2">
+    <div class="app-navbar-brand flex-1 pl-2">
       <RouterLink
         to="/"
         class="flex gap-2 items-center"
@@ -12,11 +12,11 @@
           alt="logo"
           class="h-8 w-auto"
         />
-        <div class="text-base font-semibold">ToolGlows</div>
+        <div class="app-navbar-title text-base font-semibold">ToolGlows</div>
       </RouterLink>
     </div>
-    <div class="flex-none">
-      <ul class="menu menu-horizontal menu-xs">
+    <div class="app-navbar-actions flex-none">
+      <ul class="app-navbar-menu menu menu-horizontal menu-xs">
         <li>
           <RouterLink to="/options-page">
             <i-ph-gear />
@@ -57,5 +57,32 @@
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.app-navbar {
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--tg-space-1) var(--tg-space-2);
+}
+
+.app-navbar-brand {
+  min-width: 0;
+}
+
+.app-navbar-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-navbar-actions {
+  max-width: var(--tg-full-width);
+  margin-left: auto;
+}
+
+.app-navbar-menu {
+  max-width: var(--tg-full-width);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+</style>
 

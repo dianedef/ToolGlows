@@ -7,6 +7,7 @@
 - Made options saves truthful with visible success or error feedback.
 - Removed unavailable pricing and account actions from extension interfaces.
 - Improved narrow-screen layout, semantic design-token coverage and reduced-motion behavior.
+- Refined interface spacing and rounded surfaces, and restored opaque selector backgrounds in both themes.
 
 ## [2026-05-04]
 

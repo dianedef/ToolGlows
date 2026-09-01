@@ -11,6 +11,7 @@
   --tg-surface-raised: var(--surface-card, oklch(var(--b1)));
   --tg-surface-overlay: var(--surface-overlay, oklch(var(--b1)));
   --tg-surface-muted: color-mix(in srgb, var(--tg-text-primary) 7%, var(--tg-surface-raised));
+  --tg-surface-field: var(--tg-surface-raised);
   --tg-text-primary: var(--text-color, oklch(var(--bc)));
   --tg-text-secondary: var(--text-color-secondary, color-mix(in srgb, var(--tg-text-primary) 72%, transparent));
   --tg-border-default: var(--surface-border, color-mix(in srgb, var(--tg-text-primary) 18%, transparent));
@@ -39,6 +40,8 @@
   --tg-ocr-highlight: color-mix(in srgb, #facc15 20%, transparent);
   --tg-ocr-highlight-hover: color-mix(in srgb, #facc15 40%, transparent);
   --tg-radius-control: var(--border-radius, var(--rounded-btn));
+  --tg-radius-panel: var(--rounded-box, 1rem);
+  --tg-radius-section: calc(var(--tg-radius-panel) * 0.75);
   --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   --tg-radius-round: 999px;
   --tg-radius-pill: 3rem;
@@ -123,6 +126,7 @@
   --tg-shadow-control: 0 2px 5px rgba(0, 0, 0, 0.2);
   --tg-shadow-control-dragging: 0 4px 15px rgba(0, 0, 0, 0.3);
   --tg-shadow-card: var(--card-shadow);
+  --tg-shadow-panel: 0 0.5rem 1.5rem color-mix(in srgb, var(--tg-text-primary) 8%, transparent);
   --tg-scrim: rgba(0, 0, 0, 0.4);
   --tg-z-dropdown: 1000;
   --tg-z-tooltip: 9999;

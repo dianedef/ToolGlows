@@ -18,12 +18,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="isReady">
+  <div v-if="isReady" class="extension-shell popup-shell">
     <AppHeader />
 
-    <div class="p-4 prose">
+    <main class="extension-content prose">
       <RouterView />
-    </div>
+    </main>
 
     <AppFooter />
 
@@ -33,4 +33,7 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.extension-shell { min-height: 100vh; background: var(--tg-surface-canvas); color: var(--tg-text-primary); }
+.extension-content { padding: var(--tg-space-4); }
+</style>

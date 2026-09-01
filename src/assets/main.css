@@ -121,6 +121,15 @@
 /* Style pour le dropdown */
 .p-dropdown {
   width: var(--tg-full-width);
+  background: var(--tg-surface-field);
+  border-radius: var(--tg-radius-control);
+}
+
+.p-dropdown-panel {
+  background: var(--tg-surface-overlay);
+  border-radius: var(--tg-radius-section);
+  box-shadow: var(--tg-shadow-panel);
+  overflow: hidden;
 }
 
 /* Animations */

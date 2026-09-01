@@ -1,7 +1,7 @@
 ---
 artifact: design_system_authority
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: "toolglows"
 created: "2026-08-28"
 updated: "2026-09-01"
@@ -48,6 +48,9 @@ Legacy theme modules may remain as unreferenced migration evidence, but they mus
 ## Required consumption
 
 - Use `--tg-surface-*`, `--tg-text-*`, `--tg-border-*` and `--tg-action*` for component surfaces and text.
+- Use the canonical control, section and panel radius roles to preserve a deliberate rounded hierarchy rather than assigning local radii.
+- Use the shared spacing scale for page gutters, raised sections, form rhythm and compact toolbar rows.
+- Native selects and PrimeVue dropdowns consume `--tg-surface-field`; transparent control backgrounds are not an accepted theme state.
 - Use `--tg-interaction-*` for hover, selected and focus states.
 - Use `--tg-element-*` for page-element selection overlays.
 - Add new reusable visual values only to the canonical token source.

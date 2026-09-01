@@ -924,7 +924,7 @@ onUnmounted(() => {
 }
 
 .toolglows-settings-content {
-  padding: var(--tg-space-4);
+  padding: var(--tg-space-5);
 }
 
 .toolglows-tools-grid {
@@ -937,9 +937,10 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: var(--tg-space-3);
-  padding: var(--tg-space-2);
-  background: var(--surface-ground);
-  border-radius: var(--border-radius);
+  padding: var(--tg-space-3);
+  background: var(--tg-surface-muted);
+  border: 1px solid var(--tg-border-default);
+  border-radius: var(--tg-radius-section);
 }
 
 .toolglows-tool-header {
@@ -958,9 +959,10 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: var(--tg-space-3);
-  padding: var(--tg-space-2);
-  background: var(--surface-ground);
-  border-radius: var(--border-radius);
+  padding: var(--tg-space-3);
+  background: var(--tg-surface-muted);
+  border: 1px solid var(--tg-border-default);
+  border-radius: var(--tg-radius-section);
   flex-wrap: wrap;
 }
 

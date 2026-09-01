@@ -38,10 +38,10 @@ onMounted(checkContentScript)
 </script>
 
 <template>
-  <div>
+  <div class="popup-home">
     <div class="hero">
       <div class="hero-content text-center">
-        <div class="max-w-md">
+        <div class="popup-panel max-w-md">
           <h1>ToolGlows</h1>
           <p>
             Vos outils essentiels, directement dans chaque page web.
@@ -96,11 +96,22 @@ onMounted(checkContentScript)
 </template>
 
 <style scoped>
+.popup-home { padding: var(--tg-space-2); }
+.popup-panel {
+  width: var(--tg-full-width);
+  padding: var(--tg-space-5-half);
+  border: 1px solid var(--tg-border-default);
+  border-radius: var(--tg-radius-panel);
+  background: var(--tg-surface-raised);
+  box-shadow: var(--tg-shadow-panel);
+}
+.popup-panel h1 { margin: 0 0 var(--tg-space-2); }
+.popup-panel > p { margin: 0 0 var(--tg-space-5-half); color: var(--tg-text-secondary); }
 .site-access-alert,
 .site-access-note {
-  margin: var(--tg-space-4) 0;
-  padding: var(--tg-space-3);
-  border-radius: var(--tg-radius-control);
+  margin: 0 0 var(--tg-space-4);
+  padding: var(--tg-space-4);
+  border-radius: var(--tg-radius-section);
   text-align: left;
 }
 
@@ -123,6 +134,10 @@ onMounted(checkContentScript)
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--tg-space-2);
-  margin-bottom: var(--tg-space-4);
+  margin: 0;
+}
+.popup-actions :deep(.btn) {
+  min-height: var(--tg-size-control-comfortable);
+  border-radius: var(--tg-radius-control);
 }
 </style>
