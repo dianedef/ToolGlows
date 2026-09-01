@@ -1,7 +1,7 @@
 ---
 artifact: design_system_authority
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.3.0"
 project: "toolglows"
 created: "2026-08-28"
 updated: "2026-09-01"
@@ -43,6 +43,10 @@ The shared wrapper also owns the visible dialog shell: tokenized border, elevati
 
 Settings controls use shared composition rows inside the dialog shell. Toggle labels sit before their maintained checkbox controls, slider labels and values share a compact header above a full-width track, and bounded numeric inputs align opposite their labels. Tool implementations retain state and behavior but do not redefine this rhythm locally.
 
+Settings surfaces follow one structural grammar: shell, section, row, then control or state. A section may use a muted raised surface to group a meaningful subject; a simple field row remains transparent and is separated by rhythm or a subtle divider instead of becoming another nested card. Selectable tool cards are the deliberate exception because their container communicates an interactive choice. The quick toolbar dialog and full options page may differ in density, but both consume this same hierarchy and the canonical responsive width and spacing tokens.
+
+Within the `.toolglows-dialog` boundary, maintained compatibility aliases map legacy PrimeVue semantic variables to canonical `--tg-*` roles. This is a migration bridge for older tool panels, not a second token authority; new settings code consumes the ToolGlows roles and shared settings primitives directly.
+
 Dialog footers preserve source and keyboard order while exposing a consistent action hierarchy: a text-style secondary action anchors the start edge and the final primary action anchors the end edge. Shared minimum sizing keeps targets legible; narrow viewports stack actions at full width without reversing their order. Tool components provide labels and handlers but do not wrap or locally recompose footer actions.
 
 ## Theme switching
@@ -63,6 +67,7 @@ Legacy theme modules may remain as unreferenced migration evidence, but they mus
 - Use `--tg-page-dark-*` roles for visited-page adaptation; range classifiers return semantic roles rather than raw replacement colors.
 - Use the shared dialog wrapper for every product modal; do not apply a fixed global dialog `z-index` that disables PrimeVue stacking.
 - Keep dialog-shell finish on the shared wrapper and stylesheet; tool components may define content layout but must not replace the outer border, elevation or radius.
+- Compose settings as shared sections and rows; do not automatically turn each direct field into a bordered card.
 - Keep direct footer actions in semantic secondary-then-primary DOM order and let the shared dialog shell own their spacing, sizing and responsive reflow.
 - Load `src/assets/main.css` in each extension-page entrypoint that consumes semantic ToolGlows tokens.
 - Respect `prefers-reduced-motion` for non-essential transforms and transitions on extension-owned UI.

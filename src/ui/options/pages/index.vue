@@ -23,33 +23,35 @@ async function saveSettings() {
 
 <template>
   <form
-    class="options-page"
+    class="options-page toolglows-settings-stack"
     @submit.prevent="saveSettings"
   >
     <h1>Paramètres ToolGlows</h1>
 
-    <section>
-      <h2>Barre d'outils</h2>
-      <label class="checkbox-row">
+    <section class="toolglows-settings-section">
+      <div class="toolglows-settings-section-header">
+        <div><h2>Barre d'outils</h2><p>Comportement et apparence de la barre.</p></div>
+      </div>
+      <label class="checkbox-row toolglows-settings-row">
+        <span>Barre ouverte par défaut</span>
         <input
           v-model="settings.expanded"
           type="checkbox"
         >
-        <span>Barre ouverte par defaut</span>
       </label>
-      <label class="checkbox-row">
+      <label class="checkbox-row toolglows-settings-row">
+        <span>Barre épinglée</span>
         <input
           v-model="settings.isPinned"
           type="checkbox"
         >
-        <span>Barre epinglee</span>
       </label>
-      <label class="toolglows-color-field">
+      <label class="toolglows-color-field toolglows-settings-row">
         <span>Couleur</span>
         <ToolGlowsColorPicker v-model="settings.toolbarColor" />
       </label>
-      <label>
-        Taille
+      <label class="toolglows-settings-row">
+        <span>Taille</span>
         <select v-model="settings.toolbarSize">
           <option value="xs">XS</option>
           <option value="sm">SM</option>
@@ -60,8 +62,10 @@ async function saveSettings() {
       </label>
     </section>
 
-    <section>
-      <h2>Position</h2>
+    <section class="toolglows-settings-section">
+      <div class="toolglows-settings-section-header">
+        <div><h2>Position</h2><p>Coordonnées de la barre dans la page.</p></div>
+      </div>
       <div class="number-grid">
         <label>
           X
@@ -82,8 +86,10 @@ async function saveSettings() {
       </div>
     </section>
 
-    <section>
-      <h2>Outils actifs</h2>
+    <section class="toolglows-settings-section">
+      <div class="toolglows-settings-section-header">
+        <div><h2>Outils actifs</h2><p>Configuration avancée des identifiants chargés.</p></div>
+      </div>
       <label>
         Identifiants, un par ligne
         <textarea
@@ -104,37 +110,39 @@ async function saveSettings() {
   padding: var(--tg-space-6);
 }
 
-section {
-  margin: var(--tg-space-6) 0;
-}
-
 h2 {
-  margin: 0 0 var(--tg-space-4);
+  margin: 0;
   font-size: var(--tg-size-tool-font-md);
   font-weight: 600;
 }
 
 label {
+  font-weight: 500;
+}
+
+.number-grid label,
+.toolglows-settings-section > label:not(.toolglows-settings-row) {
   display: grid;
   gap: var(--tg-space-1-5);
   margin-bottom: var(--tg-space-4);
-  font-weight: 500;
 }
 
 input:not([type='checkbox']),
 select,
 textarea {
   width: var(--tg-full-width);
-  border: 1px solid var(--tg-border-default);
+  border: var(--tg-border-width-control) solid var(--tg-border-default);
   border-radius: var(--tg-radius-control);
   padding: var(--tg-space-2);
   font: inherit;
 }
 
+.toolglows-settings-row > select {
+  width: var(--tg-size-field-inline);
+}
+
 .checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: var(--tg-space-2);
+  cursor: pointer;
 }
 
 .checkbox-row input {

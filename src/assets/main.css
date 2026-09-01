@@ -185,6 +185,21 @@
   overflow: hidden;
 }
 
+/* Legacy tool styles remain visually compatible while components migrate to
+   semantic roles. PrimeVue still owns behavior and interaction semantics. */
+.toolglows-dialog {
+  --surface-card: var(--tg-surface-raised);
+  --surface-ground: var(--tg-surface-muted);
+  --surface-overlay: var(--tg-surface-overlay);
+  --surface-hover: var(--tg-interaction-hover);
+  --surface-border: var(--tg-border-default);
+  --text-color: var(--tg-text-primary);
+  --text-color-secondary: var(--tg-text-secondary);
+  --primary-color: var(--tg-action);
+  --primary-color-text: var(--tg-action-on);
+  --border-radius: var(--tg-radius-control);
+}
+
 .toolglows-dialog .p-dialog-header {
   gap: var(--tg-space-3);
   padding: var(--tg-space-5-half) var(--tg-space-5);
@@ -230,6 +245,13 @@
   margin-inline-end: auto;
 }
 
+.toolglows-settings-dialog.p-dialog {
+  width: min(
+    var(--tg-size-settings-dialog),
+    calc(var(--tg-full-width) - var(--tg-space-6))
+  );
+}
+
 @media (max-width: 30rem) {
   .toolglows-dialog .p-dialog-footer > .p-button {
     flex: 1 1 var(--tg-full-width);
@@ -239,29 +261,106 @@
   .toolglows-dialog .p-dialog-footer > .p-button:first-child:not(:only-child) {
     margin-inline-end: 0;
   }
+
+  .toolglows-settings-section {
+    padding: var(--tg-space-3);
+  }
+
+  .toolglows-settings-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .toolglows-settings-row > :is(.p-dropdown, .p-inputnumber, select) {
+    width: var(--tg-full-width);
+    max-width: var(--tg-full-width);
+  }
+}
+
+.toolglows-dialog .p-dialog-content > div > :is(.toolglows-field, .field) {
+  margin-bottom: var(--tg-space-3);
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .toolglows-dialog
   .p-dialog-content
   > div
-  > :is(.toolglows-field, .field, .shortcuts-section, .actions-section) {
+  > :is(.toolglows-field, .field):last-child {
+  margin-bottom: 0;
+}
+
+.toolglows-dialog
+  .p-dialog-content
+  > div
+  > :is(.shortcuts-section, .actions-section) {
   margin-bottom: var(--tg-space-3);
   padding: var(--tg-space-4);
-  border: 1px solid var(--tg-border-default);
+  border: var(--tg-border-width-control) solid var(--tg-border-default);
   border-radius: var(--tg-radius-section);
   background: var(--tg-surface-muted);
 }
 
-.toolglows-dialog
-  .p-dialog-content
-  > div
-  > :is(
-    .toolglows-field,
-    .field,
-    .shortcuts-section,
-    .actions-section
-  ):last-child {
-  margin-bottom: 0;
+.toolglows-settings-stack {
+  display: grid;
+  gap: var(--tg-space-4);
+}
+
+.toolglows-settings-section {
+  padding: var(--tg-space-4);
+  border: var(--tg-border-width-control) solid var(--tg-border-default);
+  border-radius: var(--tg-radius-section);
+  background: var(--tg-surface-muted);
+}
+
+.toolglows-settings-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--tg-space-4);
+  margin-bottom: var(--tg-space-3);
+}
+
+.toolglows-settings-section-header :is(h2, h3, h4),
+.toolglows-settings-section-header p {
+  margin: 0;
+}
+
+.toolglows-settings-section-header p {
+  margin-top: var(--tg-space-1);
+  color: var(--tg-text-secondary);
+  font-size: var(--tg-text-sm);
+  line-height: var(--tg-line-height-copy);
+}
+
+.toolglows-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tg-space-4);
+  min-height: var(--tg-size-control-comfortable);
+  padding: var(--tg-space-3) 0;
+  border-bottom: var(--tg-border-width-control) solid var(--tg-border-default);
+}
+
+.toolglows-settings-row:last-child {
+  border-bottom: 0;
+}
+
+.toolglows-settings-row > :is(label, span, div):first-child {
+  min-width: 0;
+}
+
+.toolglows-settings-row small {
+  display: block;
+  margin-top: var(--tg-space-1);
+  color: var(--tg-text-secondary);
+  line-height: var(--tg-line-height-copy);
+}
+
+.toolglows-settings-row-danger {
+  color: var(--tg-text-primary);
 }
 
 /* Maintained PrimeVue controls own behavior; these shared rows own the visual

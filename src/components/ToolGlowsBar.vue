@@ -100,88 +100,105 @@
     :dismissable-mask="true"
     :maximizable="true"
     header="⚙️ Paramètres"
-    :style="{ width: '50vw' }"
-    :breakpoints="{ '960px': '75vw', '641px': '100vw' }"
     class="toolglows-settings-dialog"
     append-to="body"
     @hide="closeSettings"
   >
-    <div class="toolglows-settings-content">
-      <!-- Paramètres généraux -->
-      <div class="toolglows-settings-header">
-        <h3>🔧 Général</h3>
-        <ThemeSwatch />
-      </div>
-      <label class="toolglows-setting-item toolglows-clickable-setting">
-        <Checkbox
-          :model-value="isInterfaceDark"
-          :binary="true"
-          input-id="interfaceTheme"
-          @update:model-value="toggleInterfaceTheme"
-        />
-        <span>Mode sombre de ToolGlows</span>
-      </label>
-      <label class="toolglows-setting-item toolglows-clickable-setting">
-        <Checkbox
-          v-model="settingsStore.settings.isPinned"
-          :binary="true"
-          input-id="pinBar"
-        />
-        <span>Épingler la barre d'outils</span>
-      </label>
-
-      <div class="toolglows-setting-item">
-        <label for="toolbarSize">Taille de la barre d'outils</label>
-        <Dropdown
-          v-model="settingsStore.settings.toolbarSize"
-          :options="[
-            { label: 'Très petite', value: 'xs' },
-            { label: 'Petite', value: 'sm' },
-            { label: 'Moyenne', value: 'md' },
-            { label: 'Grande', value: 'lg' },
-            { label: 'Très grande', value: 'xl' }
-          ]"
-          option-label="label"
-          option-value="value"
-          class="w-full md:w-14rem"
-        />
-      </div>
-
-      <div class="toolglows-setting-item">
-        <div>
-          <strong>Éléments masqués sur ce site</strong>
-          <small>{{ hiddenElementCount }} élément(s) enregistré(s)</small>
-        </div>
-        <Button
-          label="Tout restaurer"
-          icon="pi pi-refresh"
-          severity="danger"
-          text
-          :disabled="hiddenElementCount === 0"
-          @click="hideElementStore.resetHiddenElementsForCurrentSite"
-        />
-      </div>
-
-      <!-- Gestion des outils -->
-      <h3>🛠️ Outils chargés dans la page</h3>
-      <div class="toolglows-tools-grid">
-        <label
-          v-for="tool in toolglowsStore.tools"
-          :key="tool.id"
-          class="toolglows-tool-item toolglows-clickable-setting"
-        >
-          <Checkbox
-            :model-value="toolglowsStore.activeTools.includes(tool.id)"
-            :binary="true"
-            :input-id="'tool-' + tool.id"
-            @update:model-value="() => toolglowsStore.toggleTool(tool.id)"
-          />
-          <div class="toolglows-tool-header">
-            <span class="toolglows-tool-emoji">{{ tool.emoji }}</span>
-            <span class="toolglows-tool-name">{{ tool.name }}</span>
+    <div class="toolglows-settings-content toolglows-settings-stack">
+      <section class="toolglows-settings-section">
+        <div class="toolglows-settings-section-header">
+          <div>
+            <h3>Général</h3>
+            <p>Apparence et comportement de la barre d’outils.</p>
           </div>
+          <ThemeSwatch />
+        </div>
+
+        <label class="toolglows-settings-row toolglows-clickable-setting">
+          <span>Mode sombre de ToolGlows</span>
+          <Checkbox
+            :model-value="isInterfaceDark"
+            :binary="true"
+            input-id="interfaceTheme"
+            @update:model-value="toggleInterfaceTheme"
+          />
         </label>
-      </div>
+        <label class="toolglows-settings-row toolglows-clickable-setting">
+          <span>Épingler la barre d'outils</span>
+          <Checkbox
+            v-model="settingsStore.settings.isPinned"
+            :binary="true"
+            input-id="pinBar"
+          />
+        </label>
+        <div class="toolglows-settings-row">
+          <label for="toolbarSize">Taille de la barre d'outils</label>
+          <Dropdown
+            v-model="settingsStore.settings.toolbarSize"
+            input-id="toolbarSize"
+            :options="[
+              { label: 'Très petite', value: 'xs' },
+              { label: 'Petite', value: 'sm' },
+              { label: 'Moyenne', value: 'md' },
+              { label: 'Grande', value: 'lg' },
+              { label: 'Très grande', value: 'xl' }
+            ]"
+            option-label="label"
+            option-value="value"
+            class="toolglows-settings-select"
+          />
+        </div>
+      </section>
+
+      <section class="toolglows-settings-section">
+        <div class="toolglows-settings-section-header">
+          <div>
+            <h3>Page actuelle</h3>
+            <p>Réglages et éléments enregistrés uniquement pour ce site.</p>
+          </div>
+        </div>
+        <div class="toolglows-settings-row toolglows-settings-row-danger">
+          <div>
+            <strong>Éléments masqués</strong>
+            <small>{{ hiddenElementCount }} élément(s) enregistré(s)</small>
+          </div>
+          <Button
+            label="Tout restaurer"
+            icon="pi pi-refresh"
+            severity="danger"
+            text
+            :disabled="hiddenElementCount === 0"
+            @click="hideElementStore.resetHiddenElementsForCurrentSite"
+          />
+        </div>
+      </section>
+
+      <section class="toolglows-settings-section">
+        <div class="toolglows-settings-section-header">
+          <div>
+            <h3>Outils actifs</h3>
+            <p>Choisissez les outils affichés dans la barre.</p>
+          </div>
+        </div>
+        <div class="toolglows-tools-grid">
+          <label
+            v-for="tool in toolglowsStore.tools"
+            :key="tool.id"
+            class="toolglows-tool-item toolglows-clickable-setting"
+          >
+            <span class="toolglows-tool-header">
+              <span class="toolglows-tool-emoji">{{ tool.emoji }}</span>
+              <span class="toolglows-tool-name">{{ tool.name }}</span>
+            </span>
+            <Checkbox
+              :model-value="toolglowsStore.activeTools.includes(tool.id)"
+              :binary="true"
+              :input-id="'tool-' + tool.id"
+              @update:model-value="() => toolglowsStore.toggleTool(tool.id)"
+            />
+          </label>
+        </div>
+      </section>
     </div>
   </ToolGlowsDialog>
 </template>
@@ -916,35 +933,26 @@ onUnmounted(() => {
   opacity: 0.68;
 }
 
-.toolglows-settings-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--tg-space-4);
-
-  h3 {
-    margin: 0;
-  }
-}
-
 .toolglows-settings-content {
-  padding: var(--tg-space-5);
+  padding: 0;
 }
 
 .toolglows-tools-grid {
   display: grid;
-  gap: var(--tg-space-4);
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--tg-space-2);
+  grid-template-columns: repeat(auto-fill, minmax(var(--tg-size-200), 1fr));
 }
 
 .toolglows-tool-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--tg-space-3);
   padding: var(--tg-space-3);
-  background: var(--tg-surface-muted);
-  border: 1px solid var(--tg-border-default);
-  border-radius: var(--tg-radius-section);
+  background: var(--tg-surface-raised);
+  border: var(--tg-border-width-control) solid var(--tg-border-default);
+  border-radius: var(--tg-radius-control);
+  transition: background var(--tg-motion-fast), border-color var(--tg-motion-fast);
 }
 
 .toolglows-tool-header {
@@ -955,19 +963,12 @@ onUnmounted(() => {
 }
 
 .toolglows-tool-name {
-  color: var(--text-color);
+  color: var(--tg-text-primary);
   font-size: var(--tg-text-base);
 }
 
-.toolglows-setting-item {
-  display: flex;
-  align-items: center;
-  gap: var(--tg-space-3);
-  padding: var(--tg-space-3);
-  background: var(--tg-surface-muted);
-  border: 1px solid var(--tg-border-default);
-  border-radius: var(--tg-radius-section);
-  flex-wrap: wrap;
+.toolglows-settings-select {
+  min-width: var(--tg-size-field-inline);
 }
 
 .toolglows-main-button.p-button {
@@ -985,9 +986,14 @@ onUnmounted(() => {
   background: var(--tg-interaction-hover);
 }
 
+.toolglows-clickable-setting:has(.p-checkbox-input:focus-visible) {
+  outline: var(--tg-element-outline-width) solid var(--tg-action);
+  outline-offset: var(--tg-space-1);
+}
+
 .toolglows-settings-dialog {
   :deep(.p-dialog-content) {
-    padding: var(--tg-space-5);
+    padding: var(--tg-space-4);
   }
 }
 

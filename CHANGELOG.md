@@ -16,6 +16,7 @@
 - Harmonized toggle, slider and numeric-field rhythm across ToolGlows settings dialogs.
 - Clarified modal actions with consistent secondary/primary spacing, sizing and narrow-screen stacking.
 - Removed duplicate checkbox surfaces and unified tool-card hover backgrounds in settings.
+- Reworked settings around one section-and-row hierarchy, with lighter field treatment, clearer tool cards and responsive dialog sizing.
 
 ## [2026-05-04]
 
