@@ -1,13 +1,13 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.9.0"
+artifact_version: "1.0.0"
 project: "toolglows"
 created: "2026-09-01"
 created_at: "2026-09-01 12:55:59 UTC"
 updated: "2026-09-01"
-updated_at: "2026-09-01 13:06:00 UTC"
-status: verified
+updated_at: "2026-09-01 13:10:07 UTC"
+status: complete
 source_skill: sg-design
 source_model: "Codex"
 scope: "shared-dialog-shell-and-tool-settings"
@@ -28,7 +28,7 @@ supersedes: []
 evidence:
   - "Operator feedback 2026-09-01: the main settings modal and each managed-tool modal still lack margins and radii."
   - "All maintained tool dialogs consume the shared ToolGlowsDialog wrapper, whose global styling currently defines only an outer radius."
-next_step: "Persist the verified dialog-shell milestone and close delivery."
+next_step: "Chantier closed; use operator feedback to prioritize any tool-specific content refinements."
 ---
 
 # ToolGlows Dialog Shell Polish
@@ -79,11 +79,12 @@ As a ToolGlows user, I want every settings dialog to have a structured shell and
 |----------|-------|-------|--------|--------|-----------|
 | 2026-09-01 12:55 UTC | sg-design | Codex | Created the approved shared-dialog finish contract from operator feedback and wrapper evidence. | ready | Implement the shared shell. |
 | 2026-09-01 13:06 UTC | sg-development | Codex | Added shared shell spacing and finish, first-level setting panels, and a root-style safeguard against positioned-dialog flattening. | verified | Persist the milestone and close delivery. |
+| 2026-09-01 13:10 UTC | sg-design | Codex | Delivered the verified shared-dialog finish to `origin/main` in commit `50df7dc`. | complete | Chantier closed. |
 
 ## Current Chantier Flow
 
-- sg-design: verified
+- sg-design: complete
 - readiness: ready
 - implementation: complete
 - verification: passed — 84 tests, typecheck, Chrome/Firefox builds, drift scan and isolated Edge dialog proof
-- delivery: pending
+- delivery: pushed to `origin/main` — `50df7dc`
