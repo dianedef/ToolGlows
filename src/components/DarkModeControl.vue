@@ -47,21 +47,21 @@
           Palette graphite harmonisée : surfaces neutres, actions bleues et succès vert sauge.
         </p>
         <template v-else>
-        <div class="toolglows-color-picker mb-2">
+        <div class="toolglows-color-field mb-2">
           <label>Arrière-plan</label>
           <ToolGlowsColorPicker
             :model-value="darkModeStore.options.backgroundColor"
             @update:model-value="setPaletteColor('backgroundColor', $event)"
           />
         </div>
-        <div class="toolglows-color-picker mb-2">
+        <div class="toolglows-color-field mb-2">
           <label>Texte</label>
           <ToolGlowsColorPicker
             :model-value="darkModeStore.options.textColor"
             @update:model-value="setPaletteColor('textColor', $event)"
           />
         </div>
-        <div class="toolglows-color-picker mb-2">
+        <div class="toolglows-color-field mb-2">
           <label>Liens</label>
           <ToolGlowsColorPicker
             :model-value="darkModeStore.options.linkColor"
@@ -290,7 +290,6 @@ const onTimeChange = (value: unknown, isStart: boolean) => {
   color: var(--text-color);
 }
 
-.toolglows-color-picker,
 .toolglows-palette-picker,
 .toolglows-field-slider {
   display: flex;

@@ -45,7 +45,7 @@ defineExpose({ saveState })
       <h2>Barre d’outils</h2>
       <label class="checkbox-row"><input v-model="form.expanded" type="checkbox"><span>Barre ouverte par défaut</span></label>
       <label class="checkbox-row"><input v-model="form.isPinned" type="checkbox"><span>Barre épinglée</span></label>
-      <label>Couleur <ToolGlowsColorPicker v-model="form.toolbarColor" /></label>
+      <label class="toolglows-color-field"><span>Couleur</span><ToolGlowsColorPicker v-model="form.toolbarColor" /></label>
       <label>Taille de la barre d’outils
         <select v-model="form.toolbarSize">
           <option value="xs">Très petite</option><option value="sm">Petite</option><option value="md">Moyenne</option><option value="lg">Grande</option><option value="xl">Très grande</option>

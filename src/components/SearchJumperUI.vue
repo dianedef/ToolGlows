@@ -241,15 +241,8 @@ function saveEngine() {
 
 .toolglows-color-pickers {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: var(--tg-full-width);
   gap: var(--tg-space-4);
-}
-
-.toolglows-color-field {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--tg-space-2);
 }
 
 .toolglows-color-field label {

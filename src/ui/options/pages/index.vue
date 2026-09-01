@@ -44,8 +44,8 @@ async function saveSettings() {
         >
         <span>Barre epinglee</span>
       </label>
-      <label>
-        Couleur
+      <label class="toolglows-color-field">
+        <span>Couleur</span>
         <ToolGlowsColorPicker v-model="settings.toolbarColor" />
       </label>
       <label>

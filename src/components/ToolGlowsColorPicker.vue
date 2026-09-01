@@ -23,6 +23,19 @@ function updateColor(event: Event) {
 </script>
 
 <style>
+.toolglows-color-field.toolglows-color-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tg-space-4);
+  width: var(--tg-full-width);
+}
+
+.toolglows-color-field > :first-child {
+  flex: 1;
+  margin: 0;
+}
+
 .toolglows-color-picker-control {
   display: block;
   width: var(--tg-size-control-comfortable) !important;

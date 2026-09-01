@@ -257,7 +257,7 @@
         <label>Nom</label>
         <InputText v-model="newLabel.name" />
       </div>
-      <div class="field mb-3">
+      <div class="field toolglows-color-field mb-3">
         <label>Couleur</label>
         <ToolGlowsColorPicker v-model="newLabel.color" />
       </div>

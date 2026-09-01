@@ -14,6 +14,8 @@ describe('color picker surface', () => {
     expect(component).toContain('::-webkit-color-swatch-wrapper')
     expect(component).toContain('::-webkit-color-swatch')
     expect(component).toContain('::-moz-color-swatch')
+    expect(component).toContain('.toolglows-color-field')
+    expect(component).toContain('justify-content: space-between')
     expect(options).toContain('<ToolGlowsColorPicker v-model="settings.toolbarColor" />')
     expect(optionsPage).toContain('<ToolGlowsColorPicker v-model="form.toolbarColor" />')
     expect(options).not.toContain('type="color"')

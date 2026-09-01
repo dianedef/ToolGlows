@@ -11,6 +11,7 @@
 - Added structured spacing, borders, elevation and rounded setting groups to the main and tool-specific dialogs.
 - Corrected the collapsed toolbar shell so the main ToolGlows bubble is circular and evenly inset.
 - Made every color picker fill its complete control surface in light and dark themes.
+- Aligned color-picker labels and controls consistently across settings and tool dialogs.
 
 ## [2026-05-04]
 
