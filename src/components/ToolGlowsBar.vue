@@ -1,4 +1,5 @@
 <template>
+  <Toast position="bottom-right" />
   <div
     v-if="!isLoading"
     ref="toolbarRef"
@@ -15,7 +16,6 @@
     @click.capture="suppressDraggedClick"
     @contextmenu.capture="openToolSettings"
   >
-    <Toast position="bottom-right" />
     <!-- Bouton principal -->
     <Button
       class="toolglows-main-button p-button-rounded"
@@ -830,14 +830,18 @@ onUnmounted(() => {
 .toolglows-bar {
   display: flex;
   flex-direction: row;
-  gap: var(--tg-space-4);
+  gap: 0;
   border-radius: var(--tg-radius-floating-shell);
   box-shadow: var(--card-shadow);
   user-select: none;
   cursor: default;
   min-width: fit-content;
-  padding: var(--tg-space-2);
+  padding: var(--tg-space-2) !important;
   touch-action: none;
+
+  &:not(.toolglows-expanded) {
+    border-radius: var(--tg-radius-round);
+  }
 
   &.toolglows-expanded {
     cursor: default;

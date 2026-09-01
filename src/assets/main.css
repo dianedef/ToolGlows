@@ -152,7 +152,7 @@
   color: var(--text-color) !important;
   border: none !important;
   box-shadow: var(--card-shadow) !important;
-  margin: var(--tg-space-4) !important;
+  margin: 0 !important;
   transition: transform var(--tg-motion-standard) !important;
   cursor: inherit !important;
 }
