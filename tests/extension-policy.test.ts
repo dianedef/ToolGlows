@@ -17,9 +17,8 @@ function pngDimensions(filePath: string) {
 
 describe('extension store-review policy', () => {
   it('keeps privileged manifest permissions to the current minimum', () => {
-    expect(manifestConfig.permissions).toEqual(['bookmarks', 'storage', 'tabs'])
-    expect('host_permissions' in manifestConfig).toBe(false)
-    expect(manifestConfig.permissions).not.toContain('scripting')
+    expect(manifestConfig.permissions).toEqual(['alarms', 'bookmarks', 'scripting', 'storage', 'tabs'])
+    expect(manifestConfig.host_permissions).toEqual(['<all_urls>'])
     expect(manifestConfig.permissions).not.toContain('webNavigation')
     expect(manifestConfig.permissions).not.toContain('activeTab')
   })

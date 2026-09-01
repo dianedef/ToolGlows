@@ -15,6 +15,11 @@
 // import { extPay } from '@/utils/payment/extPay'
 // extPay.startBackground()
 import { onMessage, sendMessage } from 'webext-bridge/background'
+import {
+  DARK_MODE_PREPAINT_ALARM,
+  syncDarkModePrepaint,
+  type DarkModePrepaintApi
+} from './darkModePrepaint'
 
 interface ErrorDetails {
   message: string
@@ -154,7 +159,41 @@ const globalState = {
   settings: null as Settings | null
 }
 
+let darkModePrepaintSync = Promise.resolve()
+
+function queueDarkModePrepaintSync(): Promise<void> {
+  darkModePrepaintSync = darkModePrepaintSync
+    .catch(() => undefined)
+    .then(async () => {
+      const mode = await syncDarkModePrepaint(chrome as unknown as DarkModePrepaintApi)
+      console.log('[BACKGROUND] Dark-mode prepaint synchronized:', mode)
+    })
+    .catch(error => {
+      console.error('[BACKGROUND] Failed to synchronize dark-mode prepaint:', error)
+    })
+  return darkModePrepaintSync
+}
+
 console.log('[BACKGROUND] 🚀 Background script started', { globalState })
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  const relevantChange =
+    (areaName === 'local' && ('toolglowsDarkModeBootstrap' in changes || 'darkModeActive' in changes)) ||
+    (areaName === 'sync' && 'darkModeOptions' in changes)
+  if (relevantChange) void queueDarkModePrepaintSync()
+})
+
+chrome.runtime.onStartup.addListener(() => {
+  void queueDarkModePrepaintSync()
+})
+
+chrome.alarms.onAlarm.addListener(alarm => {
+  if (alarm.name === DARK_MODE_PREPAINT_ALARM) void queueDarkModePrepaintSync()
+})
+
+// Dynamic content-script registrations survive ordinary restarts, but this
+// also repairs state after an extension update or a browser-side cleanup.
+void queueDarkModePrepaintSync()
 
 /**
  * Chrome Keep-Alive Mechanism
@@ -197,6 +236,8 @@ chrome.runtime.onInstalled.addListener(async (opt) => {
         url: chrome.runtime.getURL("src/ui/setup/index.html#/setup/update"),
       })
     }
+
+    await queueDarkModePrepaintSync()
   } catch (error) {
     console.error('[ERROR] Installation/update error:', error)
   }

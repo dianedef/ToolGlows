@@ -248,7 +248,7 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     isActive.value = value
     await saveOptions()
     // Do not rely solely on Vue's async watcher: removal from activeTools must
-    // synchronously retire DarkReader, the bootstrap canvas and DOM markers.
+    // synchronously retire Dark Mode, the bootstrap canvas and DOM markers.
     if (!value) applyDarkModeEngine({
       isActive: false,
       options: {

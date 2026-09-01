@@ -13,7 +13,7 @@ export interface DarkModePalettePreferences extends DarkModePaletteColors {
 
 export const GRAPHITE_PALETTE: DarkModePaletteColors = {
   backgroundColor: '#1b1f24',
-  textColor: '#edf1f5',
+  textColor: '#cfd4da',
   linkColor: '#7da9d1'
 }
 

@@ -38,6 +38,7 @@ import { removeDarkMode } from './darkMode'
 
 // Import des stores
 import { useSettingsStore } from '../stores/settings'
+import { useDarkModeStore } from '../stores/darkMode'
 import { useToolGlowsStore } from '../stores/toolglows'
 import { useInstantOCRStore } from '../stores/instantOCR'
 import { useWordCounterStore } from '../stores/wordCounter'
@@ -155,11 +156,16 @@ async function initVueApp() {
     // Create all stores upfront for cross-store dependencies
     const stores = {
       settings: useSettingsStore(),
+      darkMode: useDarkModeStore(),
       toolglows: useToolGlowsStore(),
       ocr: useInstantOCRStore(),
       wordCounter: useWordCounterStore(),
       quickActions: useQuickActionsStore()
     }
+
+    // Start page theming independently from the toolbar mount so Dark Mode can
+    // begin adapting the host document as soon as persisted state is available.
+    void stores.darkMode.loadOptions()
 
     // Root component with store injection
     const RootComponent = defineComponent({

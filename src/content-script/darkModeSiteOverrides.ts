@@ -36,15 +36,5 @@ export function buildSiteDarkModeOverrides(hostname: string): string {
       color: inherit !important;
     }
 
-    main article .product-img {
-      filter: brightness(0.76) contrast(0.94) sepia(0.12) !important;
-      opacity: 0.92 !important;
-      transition: var(--tg-page-dark-media-transition);
-    }
-
-    main article .product-img:hover {
-      filter: brightness(0.88) contrast(0.96) sepia(0.06) !important;
-      opacity: 1 !important;
-    }
   `
 }

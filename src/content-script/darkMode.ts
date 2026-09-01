@@ -1,6 +1,10 @@
 import { disable, enable, isEnabled } from 'darkreader'
 import { onMessage } from 'webext-bridge/content-script'
-import { maintainDarkModeBackdrop, retireDarkModeBootstrap } from './darkModeBootstrap'
+import {
+  maintainDarkModeBackdrop,
+  releaseDarkModePrepaintWhenReady,
+  retireDarkModeBootstrap
+} from './darkModeBootstrap'
 import { buildSiteDarkModeOverrides } from './darkModeSiteOverrides'
 import { startSofteningBrightSurfaces, stopSofteningBrightSurfaces } from './softenBrightSurfaces'
 
@@ -103,15 +107,22 @@ export function applyDarkMode(message: DarkModeMessage): boolean {
       styleSystemControls: true
     }, {
       invert: [],
-      ignoreInlineStyle: ['#toolglows-root', '#toolglows-root *', '[data-toolglows-ui]', '[data-toolglows-ui] *'],
-      ignoreImageAnalysis: ['img', 'picture', 'video', '#toolglows-root', '#toolglows-root *', '[data-toolglows-ui]', '[data-toolglows-ui] *'],
+      ignoreInlineStyle: [
+        'img', 'picture', 'video', 'svg', 'canvas', '[role="img"]',
+        '#toolglows-root', '#toolglows-root *', '[data-toolglows-ui]', '[data-toolglows-ui] *'
+      ],
+      ignoreImageAnalysis: [
+        'img', 'picture', 'video', 'svg', 'canvas', '[role="img"]',
+        '#toolglows-root', '#toolglows-root *', '[data-toolglows-ui]', '[data-toolglows-ui] *'
+      ],
       disableStyleSheetsProxy: false,
       ignoreCSSUrl: [],
       css: ''
     })
-    // Keep a stable dark canvas underneath DarkReader. Some sites replace their
+    // Keep a stable dark canvas underneath the dark-mode engine. Some sites replace their
     // body styles after hydration and would otherwise reintroduce a white page.
     maintainDarkModeBackdrop(message.options)
+    releaseDarkModePrepaintWhenReady()
 
     let overrideStyle = document.getElementById(OVERRIDE_STYLE_ID) as HTMLStyleElement | null
     if (!overrideStyle) {
@@ -121,6 +132,19 @@ export function applyDarkMode(message: DarkModeMessage): boolean {
     }
     overrideStyle.textContent = `
       body a { color: ${linkColor} !important; }
+      body :is(img, picture, video, svg, canvas, [role="img"]),
+      body [data-darkreader-inline-invert] {
+        filter: brightness(0.68) contrast(0.92) saturate(0.92) !important;
+        transition: var(--tg-page-dark-media-transition);
+      }
+      #toolglows-root img,
+      #toolglows-root svg,
+      #toolglows-root [role="img"],
+      [data-toolglows-ui] img,
+      [data-toolglows-ui] svg,
+      [data-toolglows-ui] [role="img"] {
+        filter: none !important;
+      }
       html, body {
         transition: background-color ${transitionDuration}ms ease, color ${transitionDuration}ms ease;
       }

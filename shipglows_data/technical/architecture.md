@@ -30,7 +30,7 @@ supersedes:
 evidence:
   - "Manifest V3 configuration declares the Chrome and Firefox entrypoints and permission baseline."
   - "The content script mounts the Vue toolbar and the background worker owns privileged browser actions."
-  - "The packaged Dark Reader engine applies the configurable dynamic dark theme inside each content-script context."
+  - "The packaged Dark Mode engine applies the configurable dynamic dark theme inside each content-script context."
 next_review: "2026-11-28"
 next_step: "Refresh after a manifest, bridge or browser-context change."
 ---

@@ -5,8 +5,8 @@ artifact_version: "1.0.0"
 project: "toolglows"
 created: "2026-05-04"
 created_at: "2026-05-04 06:30:00 UTC"
-updated: "2026-05-04"
-updated_at: "2026-05-04 06:37:00 UTC"
+updated: "2026-08-31"
+updated_at: "2026-08-31 20:42:00 UTC"
 status: reviewed
 source_skill: sf-build
 source_model: "GPT-5 Codex"
@@ -57,6 +57,8 @@ Permission and Store Review Hardening for ToolGlows
 # Status
 
 Shipped. This chantier was intentionally bounded to locally verifiable store-review hardening that does not remove the extension's existing all-page toolbar/content-script behavior. A full redesign to user-requested optional site access remains out of scope because it changes product behavior and onboarding.
+
+Post-completion exception, 2026-08-31: a later operator-approved, cross-site dark-mode prepaint now has concrete runtime uses for `scripting`, `<all_urls>` host access and `alarms`. The original removal remains valid historical evidence for the earlier architecture; the current permission contract is governed by `adaptive-dark-page-palette.md` and the technical architecture.
 
 # User Story
 

@@ -80,7 +80,7 @@ pnpm launch:all          # Lancement de Chrome, Firefox et Edge détectés
 - Vue Router 5 avec génération de routes intégrée ;
 - PrimeVue 3, Tailwind CSS et DaisyUI pour les interfaces.
 
-Le manifeste partagé demande `bookmarks`, `storage` et `tabs`, ainsi que l'injection du script de contenu sur les pages web. `bookmarks` est requis par l'export de liens vers les favoris. Chrome ajoute `sidePanel` pour sa surface latérale et Firefox déclare la même surface avec `sidebar_action`. Toute permission supplémentaire doit être justifiée par une fonctionnalité et validée avant publication en store.
+Le manifeste partagé demande `alarms`, `bookmarks`, `scripting`, `storage` et `tabs`, ainsi que l'accès hôte nécessaire aux outils de page sur les URL autorisées. `scripting` et `alarms` maintiennent le pré-affichage sombre avant le rendu des sites, y compris aux limites d'un horaire configuré. `bookmarks` est requis par l'export de liens vers les favoris. Chrome ajoute `sidePanel` pour sa surface latérale et Firefox déclare la même surface avec `sidebar_action`. Toute permission supplémentaire doit être justifiée par une fonctionnalité et validée avant publication en store.
 
 ## Documentation
 

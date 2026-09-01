@@ -46,7 +46,8 @@ export default {
   },
   devtools_page: "src/devtools/index.html",
   options_page: "src/ui/options-page/index.html",
-  permissions: ["bookmarks", "storage", "tabs"],
+  permissions: ["alarms", "bookmarks", "scripting", "storage", "tabs"],
+  host_permissions: ["<all_urls>"],
   web_accessible_resources: [
     {
       resources: [
