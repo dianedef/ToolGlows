@@ -12,6 +12,7 @@
 - Corrected the collapsed toolbar shell so the main ToolGlows bubble is circular and evenly inset.
 - Made every color picker fill its complete control surface in light and dark themes.
 - Aligned color-picker labels and controls consistently across settings and tool dialogs.
+- Harmonized toggle, slider and numeric-field rhythm across ToolGlows settings dialogs.
 
 ## [2026-05-04]
 

@@ -41,6 +41,8 @@ All product dialogs consume the shared `ToolGlowsDialog` wrapper. PrimeVue remai
 
 The shared wrapper also owns the visible dialog shell: tokenized border, elevation and floating-shell radius, plus canonical header, content and footer spacing. Its root shell values are applied through the maintained wrapper style binding so PrimeVue's positioned-dialog rules cannot flatten right-aligned tool panels after cascade resolution. Common first-level settings groups consume the section radius, muted surface and shared spacing scale; specialized dialogs retain their own widths and interaction behavior.
 
+Settings controls use shared composition rows inside the dialog shell. Toggle labels sit before their maintained checkbox controls, slider labels and values share a compact header above a full-width track, and bounded numeric inputs align opposite their labels. Tool implementations retain state and behavior but do not redefine this rhythm locally.
+
 ## Theme switching
 
 The `toolglowsSettings.interfaceTheme` value in browser sync storage is the only active persisted ToolGlows interface mode and accepts `light` or `dark`. Popup, options and injected surfaces load it through the maintained settings store. The content script replaces its injected PrimeVue palette in place, while extension pages apply the matching DaisyUI theme; neither path affects the visited page.
