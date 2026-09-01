@@ -55,6 +55,9 @@ vi.mock('@/stores/linksExplorer', () => ({ useLinksExplorerStore: () => actionSt
 vi.mock('@/stores/socialAnalysis', () => ({ useSocialAnalysisStore: () => actionStores.socialAnalysis }))
 vi.mock('@/stores/reloadAllTabs', () => ({ useReloadAllTabsStore: () => actionStores.reloadAllTabs }))
 vi.mock('@/stores/hideElement', () => ({ useHideElementStore: () => actionStores.hideElement }))
+vi.mock('@/stores/readerMode', () => ({
+  useReaderModeStore: () => ({ isActive: false })
+}))
 
 vi.mock('@/stores/settings', () => ({ useSettingsStore: vi.fn() }))
 vi.mock('@/stores/toolglows', () => ({ useToolGlowsStore: vi.fn() }))

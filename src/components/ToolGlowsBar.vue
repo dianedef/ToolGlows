@@ -199,6 +199,7 @@ import { useLinksExplorerStore } from '@/stores/linksExplorer'
 import { useSocialAnalysisStore } from '@/stores/socialAnalysis'
 import { useReloadAllTabsStore } from '@/stores/reloadAllTabs'
 import { useHideElementStore } from '@/stores/hideElement'
+import { useReaderModeStore } from '@/stores/readerMode'
 import WordCounterPopup from './WordCounterPopup.vue'
 import InstantOCRControl from './InstantOCRControl.vue'
 import DarkModeControl from './DarkModeControl.vue'
@@ -250,6 +251,7 @@ const linksExplorerStore = useLinksExplorerStore()
 const socialAnalysisStore = useSocialAnalysisStore()
 const reloadAllTabsStore = useReloadAllTabsStore()
 const hideElementStore = useHideElementStore()
+const readerModeStore = useReaderModeStore()
 
 const isInterfaceDark = computed(() => settingsStore.settings.interfaceTheme === 'dark')
 const hiddenElementCount = computed(() => hideElementStore.settings.hiddenElements.filter(
@@ -580,6 +582,7 @@ const openToolSettings = (event: MouseEvent) => {
 
 const isToolEnabled = (toolId: string) => {
   if (toolId === 'darkMode') return darkModeStore.isActive
+  if (toolId === 'readerMode') return readerModeStore.isActive || Boolean(isVisible.value[toolId])
   if (toolId === 'autoCopy') return toolglowsStore.activeTools.includes(toolId)
   if (toolId === 'hideElement') return hideElementStore.settings.isSelectingElement
   const tool = toolglowsStore.tools.find(candidate => candidate.id === toolId)

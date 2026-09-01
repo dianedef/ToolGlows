@@ -1,497 +1,223 @@
-/**
- * Reader Mode Composable
- *
- * Converts cluttered web pages into clean, readable articles similar to
- * Safari Reader View or Firefox Reading Mode. Uses Mozilla's Readability
- * algorithm to extract main content and strip ads, sidebars, and navigation.
- *
- * Key features:
- * - Content extraction: Identifies and isolates main article text
- * - Customizable typography: Font size, family, line height, alignment
- * - Theme support: Light, dark, and sepia color schemes
- * - Bionic reading: Bolds first half of words for faster reading
- * - Responsive layout: Adjustable width and column count
- * - Link visibility: Option to display full URLs for accessibility
- *
- * Technical approach:
- * - Uses Mozilla's Readability library (same as Firefox Reader Mode)
- * - Fallback parsing for sites where Readability fails
- * - Replaces entire page content with cleaned version
- * - Stores original HTML for restoration
- *
- * Use cases:
- * - Reading articles without distractions
- * - Improving readability on poorly designed sites
- * - Accessibility for users with reading difficulties
- * - Printing clean versions of web articles
- */
-import { ref, computed } from 'vue'
 import { Readability } from '@mozilla/readability'
 
-interface ReaderSettings {
+export type ReaderTheme = 'light' | 'sepia' | 'dark'
+export type ReaderFontFamily = 'system-ui' | 'serif' | 'sans-serif'
+
+export interface ReaderModeOptions {
+  fontFamily: ReaderFontFamily
   fontSize: number
-  fontFamily: string
   lineHeight: number
-  textAlign: 'left' | 'justify' | 'center'
-  theme: 'light' | 'dark' | 'sepia'
-  columnCount: 1 | 2
-  bionicReading: boolean  // Bold first half of words for faster reading
-  imageSize: 'normal' | 'small' | 'hidden'
-  width: 'narrow' | 'medium' | 'wide'
-  showLinks: boolean  // Display full URLs after link text
+  maxWidth: number
+  theme: ReaderTheme
+  showImages: boolean
+  showLinks: boolean
 }
 
-interface ReaderModeOptions {
-  preserveImages?: boolean
-  preserveLinks?: boolean
-  maxImageWidth?: number
-  customParsing?: {
-    selectors?: string[]  // Target specific elements as content source
-    excludeSelectors?: string[]  // Remove elements before parsing
-  }
-}
-
-interface ParsedReaderContent {
+export interface ReaderArticle {
   title: string
-  content: string
-  excerpt: string
   byline: string
-  dir: string
+  dir: 'ltr' | 'rtl' | 'auto'
   lang: string
+  content: DocumentFragment
 }
 
-export function useReaderMode(options: ReaderModeOptions = {}) {
-  const isEnabled = ref(false)
-  const originalBodyContent = ref<DocumentFragment | null>(null)
-  const parsedContent = ref<ParsedReaderContent | null>(null)
-  const settings = ref<ReaderSettings>({
-    fontSize: 18,
-    fontFamily: 'Arial',
-    lineHeight: 1.6,
-    textAlign: 'left',
-    theme: 'light',
-    columnCount: 1,
-    bionicReading: false,
-    imageSize: 'normal',
-    width: 'medium',
-    showLinks: false
-  })
+export const defaultReaderModeOptions: ReaderModeOptions = {
+  fontFamily: 'system-ui',
+  fontSize: 18,
+  lineHeight: 1.6,
+  maxWidth: 800,
+  theme: 'light',
+  showImages: true,
+  showLinks: false,
+}
 
-  // Convertir le contenu en mode lecture
-  const parseContent = async () => {
-    try {
-      let documentClone = document.cloneNode(true) as Document
+export const readerModeLimits = {
+  fontSize: { minimum: 14, maximum: 28 },
+  lineHeight: { minimum: 1.2, maximum: 2.2 },
+  maxWidth: { minimum: 480, maximum: 1200 },
+} as const
 
-      // Prétraitement personnalisé
-      if (options.customParsing?.selectors) {
-        const customContent = document.querySelectorAll(
-          options.customParsing.selectors.join(',')
-        )
-        if (customContent.length) {
-          // Utiliser le contenu personnalisé au lieu de la page entière
-          const customDocument = document.implementation.createHTMLDocument(document.title)
-          const wrapper = customDocument.createElement('div')
-          customContent.forEach(el => wrapper.appendChild(customDocument.importNode(el, true)))
-          customDocument.body.appendChild(wrapper)
-          documentClone = customDocument
-        }
-      }
+const allowedTags = new Set([
+  'A', 'ABBR', 'ARTICLE', 'B', 'BLOCKQUOTE', 'BR', 'CAPTION', 'CODE', 'DD',
+  'DIV', 'DL', 'DT', 'EM', 'FIGCAPTION', 'FIGURE', 'H1', 'H2', 'H3', 'H4',
+  'H5', 'H6', 'HR', 'I', 'IMG', 'LI', 'OL', 'P', 'PRE', 'SECTION', 'SMALL',
+  'SPAN', 'STRONG', 'SUB', 'SUP', 'TABLE', 'TBODY', 'TD', 'TFOOT', 'TH',
+  'THEAD', 'TR', 'UL',
+])
 
-      // Exclure certains éléments si nécessaire
-      if (options.customParsing?.excludeSelectors) {
-        options.customParsing.excludeSelectors.forEach(selector => {
-          const elements = documentClone.querySelectorAll(selector)
-          elements.forEach(el => el.remove())
-        })
-      }
+const allowedAttributes = new Set(['alt', 'dir', 'height', 'lang', 'title', 'width'])
+const droppedTags = new Set([
+  'AUDIO', 'BUTTON', 'CANVAS', 'EMBED', 'FORM', 'IFRAME', 'INPUT', 'MATH',
+  'NOSCRIPT', 'OBJECT', 'SCRIPT', 'SELECT', 'STYLE', 'SVG', 'TEMPLATE',
+  'TEXTAREA', 'VIDEO',
+])
+const fontFamilies = new Set<ReaderFontFamily>(['system-ui', 'serif', 'sans-serif'])
+const readerThemes = new Set<ReaderTheme>(['light', 'sepia', 'dark'])
 
-      // Configuration de Readability
-      const readerConfig = {
-        classesToPreserve: ['important', 'highlight'],
-        keepClasses: false,
-        serializer: (element: Node) => {
-          // Personnalisation du HTML généré
-          if (element instanceof HTMLImageElement && !options.preserveImages) {
-            return ''
-          }
-          if (options.maxImageWidth && element instanceof HTMLImageElement) {
-            element.style.maxWidth = `${options.maxImageWidth}px`
-          }
-          if (element instanceof Element) {
-            return element.outerHTML
-          }
-          return element.textContent ?? ''
-        }
-      }
+const clampNumber = (value: unknown, fallback: number, minimum: number, maximum: number) => {
+  const number = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(number) ? Math.min(maximum, Math.max(minimum, number)) : fallback
+}
 
-      const reader = new Readability<string>(documentClone, readerConfig)
-      const article = reader.parse()
+export function normalizeReaderModeOptions(value: unknown): ReaderModeOptions {
+  const candidate = value && typeof value === 'object'
+    ? value as Partial<ReaderModeOptions>
+    : {}
 
-      if (!article) {
-        throw new Error('Impossible de parser le contenu')
-      }
-
-      return {
-        title: article.title ?? document.title,
-        content: article.content ?? '',
-        excerpt: article.excerpt ?? '',
-        byline: article.byline ?? '',
-        dir: article.dir ?? document.dir,
-        lang: article.lang ?? document.documentElement.lang
-      }
-    } catch (error) {
-      console.error('Erreur lors du parsing:', error)
-      // Fallback sur une méthode plus simple
-      return fallbackParsing()
-    }
+  return {
+    fontFamily: fontFamilies.has(candidate.fontFamily as ReaderFontFamily)
+      ? candidate.fontFamily as ReaderFontFamily
+      : defaultReaderModeOptions.fontFamily,
+    fontSize: clampNumber(
+      candidate.fontSize,
+      defaultReaderModeOptions.fontSize,
+      readerModeLimits.fontSize.minimum,
+      readerModeLimits.fontSize.maximum,
+    ),
+    lineHeight: clampNumber(
+      candidate.lineHeight,
+      defaultReaderModeOptions.lineHeight,
+      readerModeLimits.lineHeight.minimum,
+      readerModeLimits.lineHeight.maximum,
+    ),
+    maxWidth: clampNumber(
+      candidate.maxWidth,
+      defaultReaderModeOptions.maxWidth,
+      readerModeLimits.maxWidth.minimum,
+      readerModeLimits.maxWidth.maximum,
+    ),
+    theme: readerThemes.has(candidate.theme as ReaderTheme)
+      ? candidate.theme as ReaderTheme
+      : defaultReaderModeOptions.theme,
+    showImages: typeof candidate.showImages === 'boolean'
+      ? candidate.showImages
+      : defaultReaderModeOptions.showImages,
+    showLinks: typeof candidate.showLinks === 'boolean'
+      ? candidate.showLinks
+      : defaultReaderModeOptions.showLinks,
   }
+}
 
-  // Méthode de fallback si Readability échoue
-  const fallbackParsing = () => {
-    const mainContent = document.querySelector('main, article, #main, .main, .content')
-    if (!mainContent) return null
-
-    return {
-      title: document.title,
-      content: mainContent.innerHTML,
-      excerpt: '',
-      byline: '',
-      dir: document.dir,
-      lang: document.documentElement.lang
-    }
+function safeUrl(value: string, kind: 'link' | 'image', baseUrl: string) {
+  try {
+    const url = new URL(value, baseUrl)
+    if (url.protocol === 'https:' || url.protocol === 'http:') return url.href
+    if (kind === 'link' && url.protocol === 'mailto:') return url.href
+    if (
+      kind === 'image' &&
+      url.protocol === 'data:' &&
+      /^data:image\/(?:avif|gif|jpeg|png|webp);base64,/i.test(value)
+    ) return value
+  } catch {
+    // Invalid URLs are omitted at the trust boundary.
   }
+  return null
+}
 
-  const allowedTags = new Set([
-    'A',
-    'ABBR',
-    'ARTICLE',
-    'ASIDE',
-    'B',
-    'BLOCKQUOTE',
-    'BR',
-    'CAPTION',
-    'CODE',
-    'DD',
-    'DIV',
-    'DL',
-    'DT',
-    'EM',
-    'FIGCAPTION',
-    'FIGURE',
-    'H1',
-    'H2',
-    'H3',
-    'H4',
-    'H5',
-    'H6',
-    'HR',
-    'I',
-    'IMG',
-    'LI',
-    'OL',
-    'P',
-    'PRE',
-    'SECTION',
-    'SPAN',
-    'STRONG',
-    'SUB',
-    'SUP',
-    'TABLE',
-    'TBODY',
-    'TD',
-    'TFOOT',
-    'TH',
-    'THEAD',
-    'TR',
-    'UL',
-  ])
-
-  const allowedAttributes = new Set(['alt', 'class', 'dir', 'href', 'lang', 'src', 'title'])
-
-  const isSafeUrl = (value: string) => {
-    try {
-      const url = new URL(value, window.location.href)
-      return ['http:', 'https:', 'mailto:'].includes(url.protocol) ||
-        (url.protocol === 'data:' && value.startsWith('data:image/'))
-    } catch {
-      return false
-    }
+function sanitizeNode(
+  source: Node,
+  ownerDocument: Document,
+  baseUrl: string,
+  options: ReaderModeOptions,
+): Node | null {
+  if (source.nodeType === Node.TEXT_NODE) {
+    return ownerDocument.createTextNode(source.textContent ?? '')
   }
+  if (!(source instanceof Element)) return null
 
-  const sanitizeNode = (sourceNode: Node, ownerDocument: Document): Node | null => {
-    if (sourceNode.nodeType === Node.TEXT_NODE) {
-      return ownerDocument.createTextNode(sourceNode.textContent ?? '')
-    }
-
-    if (!(sourceNode instanceof Element)) {
-      return null
-    }
-
-    const tagName = sourceNode.tagName.toUpperCase()
-    if (!allowedTags.has(tagName)) {
-      const fragment = ownerDocument.createDocumentFragment()
-      sourceNode.childNodes.forEach(child => {
-        const sanitizedChild = sanitizeNode(child, ownerDocument)
-        if (sanitizedChild) {
-          fragment.appendChild(sanitizedChild)
-        }
-      })
-      return fragment
-    }
-
-    const element = ownerDocument.createElement(tagName.toLowerCase())
-    Array.from(sourceNode.attributes).forEach(attribute => {
-      const attributeName = attribute.name.toLowerCase()
-      if (!allowedAttributes.has(attributeName) || attributeName.startsWith('on')) {
-        return
-      }
-
-      if ((attributeName === 'href' || attributeName === 'src') && !isSafeUrl(attribute.value)) {
-        return
-      }
-
-      element.setAttribute(attributeName, attribute.value)
+  const tagName = source.tagName.toUpperCase()
+  if (droppedTags.has(tagName)) return null
+  if (!allowedTags.has(tagName)) {
+    const fragment = ownerDocument.createDocumentFragment()
+    source.childNodes.forEach((child) => {
+      const sanitized = sanitizeNode(child, ownerDocument, baseUrl, options)
+      if (sanitized) fragment.appendChild(sanitized)
     })
-
-    sourceNode.childNodes.forEach(child => {
-      const sanitizedChild = sanitizeNode(child, ownerDocument)
-      if (sanitizedChild) {
-        element.appendChild(sanitizedChild)
-      }
-    })
-
-    return element
-  }
-
-  const buildSafeContentFragment = (html: string) => {
-    const parsedDocument = new DOMParser().parseFromString(html, 'text/html')
-    const fragment = document.createDocumentFragment()
-
-    parsedDocument.body.childNodes.forEach(child => {
-      const sanitizedChild = sanitizeNode(child, document)
-      if (sanitizedChild) {
-        fragment.appendChild(sanitizedChild)
-      }
-    })
-
     return fragment
   }
 
-  // Appliquer le mode lecture
-  const applyReaderMode = () => {
-    if (!parsedContent.value) return
+  if (tagName === 'IMG' && !options.showImages) return null
 
-    // Créer le conteneur du mode lecture
-    const readerContent = document.createElement('div')
-    readerContent.id = 'toolglows-reader-mode'
+  const element = ownerDocument.createElement(tagName.toLowerCase())
+  source.getAttributeNames().forEach((attributeName) => {
+    const normalizedName = attributeName.toLowerCase()
+    if (!allowedAttributes.has(normalizedName)) return
+    element.setAttribute(normalizedName, source.getAttribute(attributeName) ?? '')
+  })
 
-    // Appliquer les styles de base
-    applyReaderStyles(readerContent)
-
-    const article = document.createElement('article')
-    article.className = 'reader-content'
-
-    const title = document.createElement('h1')
-    title.textContent = parsedContent.value.title
-    article.appendChild(title)
-
-    if (parsedContent.value.byline) {
-      const byline = document.createElement('p')
-      byline.className = 'byline'
-      byline.textContent = parsedContent.value.byline
-      article.appendChild(byline)
-    }
-
-    article.appendChild(buildSafeContentFragment(parsedContent.value.content))
-    readerContent.appendChild(article)
-
-    // Remplacer le contenu de la page
-    document.body.replaceChildren(readerContent)
-
-    // Appliquer le Bionic Reading si activé
-    if (settings.value.bionicReading) {
-      applyBionicReading()
-    }
-
-    // Afficher les URLs des liens si activé
-    if (settings.value.showLinks) {
-      const links = readerContent.getElementsByTagName('a')
-      Array.from(links).forEach(link => {
-        if (link.href && !link.querySelector('.link-url')) {
-          const url = link.href
-          const urlSpan = document.createElement('span')
-          urlSpan.className = 'link-url'
-          urlSpan.textContent = ` (${url})`
-          link.appendChild(urlSpan)
-        }
-      })
+  if (tagName === 'A') {
+    const href = source.getAttribute('href')
+    const resolvedHref = href ? safeUrl(href, 'link', baseUrl) : null
+    if (resolvedHref) {
+      element.setAttribute('href', resolvedHref)
+      element.setAttribute('rel', 'noreferrer noopener')
+      if (options.showLinks) element.setAttribute('data-reader-url', resolvedHref)
     }
   }
 
-  /**
-   * Apply Bionic Reading Enhancement
-   *
-   * Bolds the first half of each word to guide eye movement and increase
-   * reading speed. Based on research showing that the brain processes the
-   * beginning of words more heavily than the end.
-   *
-   * Algorithm:
-   * 1. Find all text nodes in document using XPath
-   * 2. Skip code blocks (pre, code) to preserve formatting
-   * 3. Split text into words
-   * 4. Bold first half of each word (rounded up for odd lengths)
-   * 5. Replace original text node with formatted version
-   *
-   * Performance note: XPath evaluation is fast for this use case and
-   * provides cleaner results than TreeWalker or manual recursion.
-   */
-  const applyBionicReading = () => {
-    const textNodes = document.evaluate(
-      '//text()',
-      document.body,
-      null,
-      XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
-      null
-    )
-
-    for (let i = 0; i < textNodes.snapshotLength; i++) {
-      const node = textNodes.snapshotItem(i) as Text
-      if (node.parentElement?.closest('pre, code')) continue
-
-      const words = node.textContent?.split(/\s+/) || []
-      const bionicWords = words.map(word => {
-        const midpoint = Math.ceil(word.length / 2)
-        return {
-          strongPart: word.slice(0, midpoint),
-          rest: word.slice(midpoint)
-        }
-      })
-
-      const span = document.createElement('span')
-      bionicWords.forEach((word, index) => {
-        if (index > 0) {
-          span.appendChild(document.createTextNode(' '))
-        }
-
-        const strong = document.createElement('strong')
-        strong.textContent = word.strongPart
-        span.appendChild(strong)
-        span.appendChild(document.createTextNode(word.rest))
-      })
-      node.parentNode?.replaceChild(span, node)
-    }
+  if (tagName === 'IMG') {
+    const src = source.getAttribute('src') || source.getAttribute('data-src')
+    const resolvedSrc = src ? safeUrl(src, 'image', baseUrl) : null
+    if (!resolvedSrc) return null
+    element.setAttribute('src', resolvedSrc)
+    element.setAttribute('loading', 'lazy')
+    element.setAttribute('decoding', 'async')
   }
 
-  // Appliquer les styles du mode lecture
-  const applyReaderStyles = (container: HTMLElement) => {
-    const style = document.createElement('style')
-    style.textContent = `
-      #toolglows-reader-mode {
-        max-width: ${getWidthValue()};
-        margin: 0 auto;
-        padding: 2rem;
-        font-size: ${settings.value.fontSize}px;
-        font-family: ${settings.value.fontFamily};
-        line-height: ${settings.value.lineHeight};
-        text-align: ${settings.value.textAlign};
-        column-count: ${settings.value.columnCount};
-        column-gap: 2rem;
-        background: ${getThemeColors().background};
-        color: ${getThemeColors().text};
-      }
+  source.childNodes.forEach((child) => {
+    const sanitized = sanitizeNode(child, ownerDocument, baseUrl, options)
+    if (sanitized) element.appendChild(sanitized)
+  })
+  return element
+}
 
-      #toolglows-reader-mode .link-url {
-        color: ${getThemeColors().secondary};
-        font-size: 0.9em;
-        font-style: italic;
-      }
+export function sanitizeReaderContent(
+  html: string,
+  ownerDocument: Document,
+  baseUrl: string,
+  options: ReaderModeOptions,
+) {
+  const parsed = new DOMParser().parseFromString(html, 'text/html')
+  const fragment = ownerDocument.createDocumentFragment()
+  parsed.body.childNodes.forEach((child) => {
+    const sanitized = sanitizeNode(child, ownerDocument, baseUrl, options)
+    if (sanitized) fragment.appendChild(sanitized)
+  })
+  return fragment
+}
 
-      #toolglows-reader-mode img {
-        ${settings.value.imageSize === 'small' ? 'max-width: 300px;' : ''}
-        ${settings.value.imageSize === 'hidden' ? 'display: none;' : ''}
-      }
+function normalizeDirection(value: string | null | undefined): ReaderArticle['dir'] {
+  return value === 'ltr' || value === 'rtl' ? value : 'auto'
+}
 
-      #toolglows-reader-mode h1 {
-        font-size: 2em;
-        margin-bottom: 1rem;
-      }
+export async function extractReaderArticle(
+  sourceDocument: Document = document,
+  options: ReaderModeOptions = defaultReaderModeOptions,
+): Promise<ReaderArticle | null> {
+  const clone = sourceDocument.cloneNode(true) as Document
+  clone.querySelectorAll('#toolglows-root, [data-toolglows-reader]').forEach((node) => node.remove())
 
-      #toolglows-reader-mode .byline {
-        font-style: italic;
-        color: ${getThemeColors().secondary};
-      }
-    `
-    document.head.appendChild(style)
-  }
+  const parsed = new Readability(clone).parse()
+  if (!parsed?.content?.trim()) return null
 
-  // Obtenir les couleurs du thème
-  const getThemeColors = () => {
-    switch (settings.value.theme) {
-      case 'dark':
-        return {
-          background: '#1a1a1a',
-          text: '#ffffff',
-          secondary: '#888888'
-        }
-      case 'sepia':
-        return {
-          background: '#f4ecd8',
-          text: '#5b4636',
-          secondary: '#666666'
-        }
-      default:
-        return {
-          background: '#ffffff',
-          text: '#333333',
-          secondary: '#666666'
-        }
-    }
-  }
-
-  // Obtenir la largeur en fonction du paramètre
-  const getWidthValue = () => {
-    switch (settings.value.width) {
-      case 'narrow': return '45rem'
-      case 'wide': return '75rem'
-      default: return '60rem'
-    }
-  }
-
-  // Activer/désactiver le mode lecture
-  const toggleReaderMode = async () => {
-    if (!isEnabled.value) {
-      parsedContent.value = await parseContent()
-      if (!parsedContent.value) return
-
-      const bodyContent = document.createDocumentFragment()
-      while (document.body.firstChild) {
-        bodyContent.appendChild(document.body.firstChild)
-      }
-      originalBodyContent.value = bodyContent
-
-      applyReaderMode()
-      isEnabled.value = true
-    } else {
-      if (originalBodyContent.value) {
-        document.body.replaceChildren(originalBodyContent.value)
-        originalBodyContent.value = null
-      }
-      isEnabled.value = false
-    }
-  }
-
-  // Mettre à jour les paramètres
-  const updateSettings = (newSettings: Partial<ReaderSettings>) => {
-    settings.value = { ...settings.value, ...newSettings }
-    if (isEnabled.value) {
-      applyReaderMode()
-    }
-  }
+  const content = sanitizeReaderContent(
+    parsed.content,
+    sourceDocument,
+    sourceDocument.location?.href ?? window.location.href,
+    options,
+  )
+  const readableText = content.textContent?.replace(/\s+/g, ' ').trim() ?? ''
+  if (readableText.length < 140) return null
 
   return {
-    isEnabled,
-    settings,
-    toggleReaderMode,
-    updateSettings
+    title: parsed.title?.trim() || sourceDocument.title || 'Lecture',
+    byline: parsed.byline?.trim() || '',
+    dir: normalizeDirection(parsed.dir || sourceDocument.dir),
+    lang: parsed.lang?.trim() || sourceDocument.documentElement.lang || '',
+    content,
   }
+}
+
+export function useReaderMode() {
+  return { extractReaderArticle, normalizeReaderModeOptions }
 }

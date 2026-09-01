@@ -131,6 +131,27 @@
   --tg-color-light-text: #333333;
   --tg-color-accent-default: #2196f3;
 
+  /* Isolated reader themes remain independent from the visited page and the
+     ToolGlows interface theme. */
+  --tg-reader-light-surface: #ffffff;
+  --tg-reader-light-text: #252525;
+  --tg-reader-light-muted: #5f6368;
+  --tg-reader-light-link: #1a5fb4;
+  --tg-reader-light-border: #d8dce2;
+  --tg-reader-sepia-surface: #f4ecd8;
+  --tg-reader-sepia-text: #46382d;
+  --tg-reader-sepia-muted: #716052;
+  --tg-reader-sepia-link: #72521f;
+  --tg-reader-sepia-border: #d8c9a8;
+  --tg-reader-dark-surface: #1b1f24;
+  --tg-reader-dark-text: #e1e6eb;
+  --tg-reader-dark-muted: #aeb7c1;
+  --tg-reader-dark-link: #8fc1ee;
+  --tg-reader-dark-border: #46515e;
+  --tg-reader-title-scale: 2em;
+  --tg-reader-url-scale: 0.85em;
+  --tg-motion-reduced: 0.01ms;
+
   /* Third-party page adaptation: graphite hierarchy with restrained semantic accents. */
   --tg-page-dark-canvas: #1b1f24;
   --tg-page-dark-surface: #252a31;
