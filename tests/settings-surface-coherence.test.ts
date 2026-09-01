@@ -12,6 +12,8 @@ describe('settings surface coherence', () => {
       expect(source).toContain("input:not([type='checkbox'])")
       expect(source).toContain('width: var(--tg-size-checkbox)')
       expect(source).toContain('height: var(--tg-size-checkbox)')
+      expect(source).toContain('appearance: auto')
+      expect(source).toContain('box-shadow: var(--tg-shadow-none)')
       expect(source).toContain('accent-color: var(--tg-action)')
     }
   })

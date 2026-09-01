@@ -138,9 +138,13 @@ textarea {
 }
 
 .checkbox-row input {
+  appearance: auto;
   width: var(--tg-size-checkbox);
   height: var(--tg-size-checkbox);
   margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: var(--tg-shadow-none);
   accent-color: var(--tg-action);
 }
 
