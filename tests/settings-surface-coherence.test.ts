@@ -70,4 +70,18 @@ describe('settings surface coherence', () => {
       )
     }
   })
+
+  it('keeps the toolbar-size dropdown opaque without changing every dropdown', () => {
+    const sharedStyles = readFileSync('src/assets/main.css', 'utf8')
+
+    expect(sharedStyles).toContain(
+      '.toolglows-dialog .toolglows-settings-select.p-dropdown',
+    )
+    expect(sharedStyles).toContain(
+      'background: var(--tg-surface-muted) !important',
+    )
+    expect(sharedStyles).not.toContain(
+      '.toolglows-dialog .p-dropdown {\n  background: var(--tg-surface-muted) !important',
+    )
+  })
 })

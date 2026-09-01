@@ -136,6 +136,14 @@
   border-radius: var(--tg-radius-control);
 }
 
+/* The toolbar-size control is the only PrimeVue dropdown in the settings
+   overview. Its label is intentionally transparent, so the root must own an
+   opaque field surface that remains distinct from the dialog behind it. */
+.toolglows-dialog .toolglows-settings-select.p-dropdown {
+  background: var(--tg-surface-muted) !important;
+  border: var(--tg-border-width-control) solid var(--tg-border-default) !important;
+}
+
 .p-dropdown-panel {
   background: var(--tg-surface-overlay);
   border-radius: var(--tg-radius-section);
