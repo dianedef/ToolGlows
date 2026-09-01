@@ -3,6 +3,7 @@ import { nextTick, reactive, ref } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ToolGlowsBar from '../ToolGlowsBar.vue'
+import { type ToolbarSize } from '@/utils/toolbarSize'
 
 const outsideHandler = ref<(() => void) | null>(null)
 const outsideOptions = ref<Record<string, unknown> | null>(null)
@@ -99,7 +100,7 @@ function createSettings(pinned = false) {
       isPinned: pinned,
       interfaceTheme: 'light' as const,
       toolbarColor: 'var(--tg-toolbar-color-default)',
-      toolbarSize: 'md' as 'xs' | 'sm' | 'md' | 'lg' | 'xl',
+      toolbarSize: 'md' as ToolbarSize,
       components: {}
     },
     loadSettings: vi.fn().mockResolvedValue(undefined),
@@ -136,8 +137,10 @@ async function mountToolbar(pinned = false) {
       stubs: {
         Button: { template: '<button v-bind="$attrs"><slot /></button>' },
         Checkbox: true,
-        Dialog: true,
-        Dropdown: true,
+        Dialog: {
+          props: ['visible'],
+          template: '<section><slot /></section>'
+        },
         ThemeSwatch: true,
         Toast: true
       }
@@ -167,8 +170,37 @@ async function dispatchPointer(
   await nextTick()
 }
 
+async function dispatchWheel(element: Element, deltaY: number) {
+  const event = new WheelEvent('wheel', {
+    bubbles: true,
+    cancelable: true,
+    deltaY
+  })
+  window.dispatchEvent(event)
+  await nextTick()
+}
+
 describe('ToolGlowsBar interaction invariants', () => {
   beforeEach(() => {
+    document.body.innerHTML = `
+      <div
+        id="toolglows-root"
+        style="
+          --tg-scale-toolbar-xxs: 0.3;
+          --tg-scale-toolbar-xs: 0.4;
+          --tg-scale-toolbar-xs-plus: 0.55;
+          --tg-scale-toolbar-sm: 0.75;
+          --tg-scale-toolbar-sm-plus: 0.875;
+          --tg-scale-toolbar-md: 1;
+          --tg-scale-toolbar-md-plus: 1.125;
+          --tg-scale-toolbar-lg: 1.25;
+          --tg-scale-toolbar-lg-plus: 1.375;
+          --tg-scale-toolbar-xl: 1.5;
+          --tg-scale-toolbar-xxl: 1.75;
+        "
+      ></div>
+    `
+    document.documentElement.style.removeProperty('--tg-interface-scale')
     outsideHandler.value = null
     outsideOptions.value = null
     darkModeState.isActive = true
@@ -192,33 +224,44 @@ describe('ToolGlowsBar interaction invariants', () => {
   })
 
   it.each([
-    ['xs', 'var(--tg-size-toolbar-xs)'],
-    ['sm', 'var(--tg-size-toolbar-sm)'],
-    ['md', 'var(--tg-size-toolbar-md)'],
-    ['lg', 'var(--tg-size-toolbar-lg)'],
-    ['xl', 'var(--tg-size-toolbar-xl)'],
-  ] as const)('applies the %s toolbar size token', async (size, token) => {
+    ['xxs', '0.3'],
+    ['xs', '0.4'],
+    ['xs-plus', '0.55'],
+    ['sm', '0.75'],
+    ['sm-plus', '0.875'],
+    ['md', '1'],
+    ['md-plus', '1.125'],
+    ['lg', '1.25'],
+    ['lg-plus', '1.375'],
+    ['xl', '1.5'],
+    ['xxl', '1.75'],
+  ] as const)('applies the resolved %s scale to the whole ToolGlows interface', async (size, scale) => {
     const { settingsStore, wrapper } = await mountToolbar()
 
     settingsStore.settings.toolbarSize = size
     await nextTick()
 
     expect(
-      (wrapper.get('.toolglows-bar').element as HTMLElement).style.getPropertyValue('--button-size'),
-    ).toBe(token)
+      document.documentElement.style.getPropertyValue('--tg-interface-scale'),
+    ).toBe(scale)
+    expect((wrapper.get('.toolglows-bar').element as HTMLElement).style.zoom).toBe(
+      'var(--tg-interface-scale)',
+    )
   })
 
   it('repositions the toolbar after its selected size changes', async () => {
     const { settingsStore, wrapper } = await mountToolbar()
     const toolbar = wrapper.get('.toolglows-bar').element as HTMLElement
+    const toolbarRectWidth = 160
+    const toolbarRectHeight = 112
     vi.spyOn(toolbar, 'getBoundingClientRect').mockReturnValue({
       x: 0,
       y: 0,
-      width: 160,
-      height: 112,
+      width: toolbarRectWidth,
+      height: toolbarRectHeight,
       top: 0,
-      right: 160,
-      bottom: 112,
+      right: toolbarRectWidth,
+      bottom: toolbarRectHeight,
       left: 0,
       toJSON: () => ({}),
     })
@@ -232,6 +275,61 @@ describe('ToolGlowsBar interaction invariants', () => {
 
     expect(Number.parseFloat(toolbar.style.left)).toBeLessThanOrEqual(window.innerWidth - 180)
     expect(Number.parseFloat(toolbar.style.top)).toBeLessThanOrEqual(window.innerHeight - 132)
+  })
+
+  it('active un mode de réglage de taille à la molette depuis la modale', async () => {
+    const { settingsStore, wrapper } = await mountToolbar(true)
+
+    await wrapper.get('[data-toolglows-settings]').trigger('click')
+    const wheelModeButton = wrapper.get('[data-toolglows-wheel-size]')
+    await wheelModeButton.trigger('click')
+    expect(wrapper.get('.toolglows-bar').classes()).toContain('toolglows-toolbar-wheel-mode')
+
+    await dispatchWheel(wrapper.get('.toolglows-bar').element, 100)
+    expect(settingsStore.settings.toolbarSize).toBe('sm-plus-mid')
+  })
+
+  it('désactive le mode molette au clic ou via Escape et restaure quand nécessaire', async () => {
+    const { settingsStore, wrapper } = await mountToolbar(true)
+
+    await wrapper.get('[data-toolglows-settings]').trigger('click')
+    const wheelModeButton = wrapper.get('[data-toolglows-wheel-size]')
+    await wheelModeButton.trigger('click')
+    expect(wrapper.get('.toolglows-bar').classes()).toContain('toolglows-toolbar-wheel-mode')
+
+    await dispatchWheel(wrapper.get('.toolglows-bar').element, 100)
+    expect(settingsStore.settings.toolbarSize).toBe('sm-plus-mid')
+
+    await wheelModeButton.trigger('click')
+    expect(wrapper.get('.toolglows-bar').classes()).not.toContain('toolglows-toolbar-wheel-mode')
+
+    await wheelModeButton.trigger('click')
+    await dispatchWheel(wrapper.get('.toolglows-bar').element, 100)
+    expect(settingsStore.settings.toolbarSize).toBe('sm-plus')
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    await nextTick()
+
+    expect(wrapper.get('.toolglows-bar').classes()).not.toContain('toolglows-toolbar-wheel-mode')
+    expect(settingsStore.settings.toolbarSize).toBe('sm-plus-mid')
+  })
+
+  it('désactive le mode molette quand on ferme la modale paramètres', async () => {
+    const { settingsStore, wrapper } = await mountToolbar(true)
+
+    await wrapper.get('[data-toolglows-settings]').trigger('click')
+    const wheelModeButton = wrapper.get('[data-toolglows-wheel-size]')
+    await wheelModeButton.trigger('click')
+    expect(wrapper.get('.toolglows-bar').classes()).toContain('toolglows-toolbar-wheel-mode')
+
+    await dispatchWheel(wrapper.get('.toolglows-bar').element, 100)
+    expect(settingsStore.settings.toolbarSize).toBe('sm-plus-mid')
+
+    await wrapper.get('[data-toolglows-settings]').trigger('click')
+    expect(wrapper.get('.toolglows-bar').classes()).not.toContain('toolglows-toolbar-wheel-mode')
+
+    await dispatchWheel(wrapper.get('.toolglows-bar').element, 100)
+    expect(settingsStore.settings.toolbarSize).toBe('sm-plus-mid')
   })
 
   it('opens and closes on clicks without pointer movement', async () => {

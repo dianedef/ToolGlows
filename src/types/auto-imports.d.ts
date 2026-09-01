@@ -13,8 +13,10 @@ declare global {
   const GRAPHITE_PALETTE: typeof import('../stores/darkModePalette')['GRAPHITE_PALETTE']
   const Notification: typeof import('notivue')['Notification']
   const Notivue: typeof import('notivue')['Notivue']
+  const TOOLBAR_SIZES: typeof import('../utils/toolbarSize')['TOOLBAR_SIZES']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const appRouter: typeof import('../utils/router/index')['appRouter']
+  const applyInterfaceTheme: typeof import('../composables/useInterfaceTheme')['applyInterfaceTheme']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
   const browser: typeof import('webextension-polyfill')
@@ -39,6 +41,7 @@ declare global {
   const customRef: typeof import('vue')['customRef']
   const debouncedRef: typeof import('@vueuse/core')['debouncedRef']
   const debouncedWatch: typeof import('@vueuse/core')['debouncedWatch']
+  const defaultReaderModeOptions: typeof import('../composables/useReaderMode')['defaultReaderModeOptions']
   const defaultSearchEngines: typeof import('../composables/searchEngines')['defaultSearchEngines']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
   const defineComponent: typeof import('vue')['defineComponent']
@@ -49,6 +52,7 @@ declare global {
   const elementOutline: typeof import('../utils/designTokens')['elementOutline']
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const extensionDetailsUrl: typeof import('../utils/contentScriptStatus')['extensionDetailsUrl']
+  const extractReaderArticle: typeof import('../composables/useReaderMode')['extractReaderArticle']
   const fromPickerHex: typeof import('../utils/colorPicker')['fromPickerHex']
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
@@ -74,6 +78,9 @@ declare global {
   const mapWritableState: typeof import('pinia')['mapWritableState']
   const markRaw: typeof import('vue')['markRaw']
   const nextTick: typeof import('vue')['nextTick']
+  const normalizeInterfaceTheme: typeof import('../composables/useInterfaceTheme')['normalizeInterfaceTheme']
+  const normalizeReaderModeOptions: typeof import('../composables/useReaderMode')['normalizeReaderModeOptions']
+  const normalizeToolbarSize: typeof import('../utils/toolbarSize')['normalizeToolbarSize']
   const notivue: typeof import('../utils/notifications')['notivue']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
@@ -107,6 +114,7 @@ declare global {
   const reactiveComputed: typeof import('@vueuse/core')['reactiveComputed']
   const reactiveOmit: typeof import('@vueuse/core')['reactiveOmit']
   const reactivePick: typeof import('@vueuse/core')['reactivePick']
+  const readerModeLimits: typeof import('../composables/useReaderMode')['readerModeLimits']
   const readonly: typeof import('vue')['readonly']
   const ref: typeof import('vue')['ref']
   const refAutoReset: typeof import('@vueuse/core')['refAutoReset']
@@ -119,6 +127,7 @@ declare global {
   const resolveDesignToken: typeof import('../utils/designTokens')['resolveDesignToken']
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
+  const sanitizeReaderContent: typeof import('../composables/useReaderMode')['sanitizeReaderContent']
   const scopeToolGlowsCss: typeof import('../utils/scopeCss')['scopeToolGlowsCss']
   const setActivePinia: typeof import('pinia')['setActivePinia']
   const setMapStoreSuffix: typeof import('pinia')['setMapStoreSuffix']
@@ -246,6 +255,7 @@ declare global {
   const useInstagramSavedStore: typeof import('../stores/instagramSaved')['useInstagramSavedStore']
   const useInstantOCR: typeof import('../composables/useInstantOCR')['useInstantOCR']
   const useInstantOCRStore: typeof import('../stores/instantOCR')['useInstantOCRStore']
+  const useInterfaceTheme: typeof import('../composables/useInterfaceTheme')['useInterfaceTheme']
   const useIntersectionObserver: typeof import('@vueuse/core')['useIntersectionObserver']
   const useInterval: typeof import('@vueuse/core')['useInterval']
   const useIntervalFn: typeof import('@vueuse/core')['useIntervalFn']
@@ -396,6 +406,9 @@ declare global {
   export type { SearchEngine } from '../composables/searchEngines'
   import('../composables/searchEngines')
   // @ts-ignore
+  export type { ReaderTheme, ReaderFontFamily, ReaderModeOptions, ReaderArticle } from '../composables/useReaderMode'
+  import('../composables/useReaderMode')
+  // @ts-ignore
   export type { DarkModePalettePreset, DarkModePaletteColors, DarkModePalettePreferences } from '../stores/darkModePalette'
   import('../stores/darkModePalette')
   // @ts-ignore
@@ -407,6 +420,9 @@ declare global {
   // @ts-ignore
   export type { ContentScriptStatus } from '../utils/contentScriptStatus'
   import('../utils/contentScriptStatus')
+  // @ts-ignore
+  export type { ToolbarSize } from '../utils/toolbarSize'
+  import('../utils/toolbarSize')
 }
 
 // for vue template auto import
@@ -421,8 +437,10 @@ declare module 'vue' {
     readonly GRAPHITE_PALETTE: UnwrapRef<typeof import('../stores/darkModePalette')['GRAPHITE_PALETTE']>
     readonly Notification: UnwrapRef<typeof import('notivue')['Notification']>
     readonly Notivue: UnwrapRef<typeof import('notivue')['Notivue']>
+    readonly TOOLBAR_SIZES: UnwrapRef<typeof import('../utils/toolbarSize')['TOOLBAR_SIZES']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly appRouter: UnwrapRef<typeof import('../utils/router/index')['appRouter']>
+    readonly applyInterfaceTheme: UnwrapRef<typeof import('../composables/useInterfaceTheme')['applyInterfaceTheme']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
     readonly browser: UnwrapRef<typeof import('webextension-polyfill')>
@@ -447,6 +465,7 @@ declare module 'vue' {
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>
+    readonly defaultReaderModeOptions: UnwrapRef<typeof import('../composables/useReaderMode')['defaultReaderModeOptions']>
     readonly defaultSearchEngines: UnwrapRef<typeof import('../composables/searchEngines')['defaultSearchEngines']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
@@ -457,6 +476,7 @@ declare module 'vue' {
     readonly elementOutline: UnwrapRef<typeof import('../utils/designTokens')['elementOutline']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly extensionDetailsUrl: UnwrapRef<typeof import('../utils/contentScriptStatus')['extensionDetailsUrl']>
+    readonly extractReaderArticle: UnwrapRef<typeof import('../composables/useReaderMode')['extractReaderArticle']>
     readonly fromPickerHex: UnwrapRef<typeof import('../utils/colorPicker')['fromPickerHex']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
@@ -482,6 +502,9 @@ declare module 'vue' {
     readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
+    readonly normalizeInterfaceTheme: UnwrapRef<typeof import('../composables/useInterfaceTheme')['normalizeInterfaceTheme']>
+    readonly normalizeReaderModeOptions: UnwrapRef<typeof import('../composables/useReaderMode')['normalizeReaderModeOptions']>
+    readonly normalizeToolbarSize: UnwrapRef<typeof import('../utils/toolbarSize')['normalizeToolbarSize']>
     readonly notivue: UnwrapRef<typeof import('../utils/notifications')['notivue']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
@@ -515,6 +538,7 @@ declare module 'vue' {
     readonly reactiveComputed: UnwrapRef<typeof import('@vueuse/core')['reactiveComputed']>
     readonly reactiveOmit: UnwrapRef<typeof import('@vueuse/core')['reactiveOmit']>
     readonly reactivePick: UnwrapRef<typeof import('@vueuse/core')['reactivePick']>
+    readonly readerModeLimits: UnwrapRef<typeof import('../composables/useReaderMode')['readerModeLimits']>
     readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
     readonly refAutoReset: UnwrapRef<typeof import('@vueuse/core')['refAutoReset']>
@@ -527,6 +551,7 @@ declare module 'vue' {
     readonly resolveDesignToken: UnwrapRef<typeof import('../utils/designTokens')['resolveDesignToken']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
+    readonly sanitizeReaderContent: UnwrapRef<typeof import('../composables/useReaderMode')['sanitizeReaderContent']>
     readonly scopeToolGlowsCss: UnwrapRef<typeof import('../utils/scopeCss')['scopeToolGlowsCss']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
     readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
@@ -654,6 +679,7 @@ declare module 'vue' {
     readonly useInstagramSavedStore: UnwrapRef<typeof import('../stores/instagramSaved')['useInstagramSavedStore']>
     readonly useInstantOCR: UnwrapRef<typeof import('../composables/useInstantOCR')['useInstantOCR']>
     readonly useInstantOCRStore: UnwrapRef<typeof import('../stores/instantOCR')['useInstantOCRStore']>
+    readonly useInterfaceTheme: UnwrapRef<typeof import('../composables/useInterfaceTheme')['useInterfaceTheme']>
     readonly useIntersectionObserver: UnwrapRef<typeof import('@vueuse/core')['useIntersectionObserver']>
     readonly useInterval: UnwrapRef<typeof import('@vueuse/core')['useInterval']>
     readonly useIntervalFn: UnwrapRef<typeof import('@vueuse/core')['useIntervalFn']>

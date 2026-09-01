@@ -15,6 +15,7 @@
 // import { extPay } from '@/utils/payment/extPay'
 // extPay.startBackground()
 import { onMessage, sendMessage } from 'webext-bridge/background'
+import { type ToolbarSize } from '@/utils/toolbarSize'
 import {
   DARK_MODE_PREPAINT_ALARM,
   syncDarkModePrepaint,
@@ -40,7 +41,7 @@ interface Settings {
   isPinned: boolean
   interfaceTheme?: 'light' | 'dark'
   toolbarColor?: string
-  toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  toolbarSize: ToolbarSize
   hideElement?: {
     hiddenElements: Array<{
       selector: string

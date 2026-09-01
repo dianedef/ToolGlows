@@ -4,6 +4,7 @@ const DEFAULT_TOOLGLOWS_SCOPE = [
   '#toolglows-root',
   '.toolglows-dialog',
   '.toolglows-dialog-mask',
+  '.toolglows-settings-select-panel',
   '[data-toolglows-ui]'
 ]
 

@@ -3,7 +3,9 @@ import { scopeToolGlowsCss } from '../src/utils/scopeCss'
 
 describe('ToolGlows third-party CSS isolation', () => {
   it('does not leave host-page PrimeVue fields selectable', () => {
-    const css = scopeToolGlowsCss('.p-inputtext, .p-dropdown { background: #111827; }')
+    const css = scopeToolGlowsCss(
+      '.p-inputtext, .p-dropdown { background: var(--test-background); }',
+    )
 
     expect(css).toContain('#toolglows-root .p-inputtext')
     expect(css).toContain('#toolglows-root .p-dropdown')
@@ -30,6 +32,27 @@ describe('ToolGlows third-party CSS isolation', () => {
     expect(css).not.toContain('#toolglows-root #toolglows-root')
     expect(css).not.toMatch(/(^|})\s*:root\b/m)
     expect(css).not.toMatch(/(^|})\s*body\b/m)
+  })
+
+  it('keeps the teleported settings dropdown inside the ToolGlows style boundary', () => {
+    const css = scopeToolGlowsCss(`
+      :root {
+        --text-color: var(--test-text-color);
+        --surface-overlay: var(--test-overlay);
+      }
+      .toolglows-settings-select-panel { color: var(--text-color); }
+      .toolglows-settings-select-panel.p-dropdown-panel .p-dropdown-item {
+        color: var(--text-color);
+      }
+    `)
+
+    expect(css).toContain('.toolglows-settings-select-panel {')
+    expect(css).toContain(
+      '.toolglows-settings-select-panel.p-dropdown-panel .p-dropdown-item',
+    )
+    expect(css).not.toContain(
+      '#toolglows-root .toolglows-settings-select-panel',
+    )
   })
 
   it('preserves only the namespaced page-runtime element markers', () => {

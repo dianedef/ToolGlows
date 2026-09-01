@@ -29,8 +29,28 @@ describe('settings interface redesign', () => {
     expect(dialogConsumers).toHaveLength(20)
     expect(dialogTokenRule).toBeDefined()
     expect(tokens).toContain('.toolglows-dialog,')
+    expect(tokens).toContain('.toolglows-settings-select-panel,')
     expect(sharedStyles).not.toContain(
       '--surface-card: var(--tg-surface-raised)',
+    )
+  })
+
+  it('keeps the toolbar-size dropdown readable after overlay teleportation', () => {
+    const sharedStyles = readFileSync('src/assets/main.css', 'utf8')
+    const scopedStyles = scopeToolGlowsCss(sharedStyles)
+
+    expect(scopedStyles).toContain(
+      '.toolglows-dialog .toolglows-settings-select.p-dropdown .p-dropdown-label',
+    )
+    expect(scopedStyles).toContain(
+      '.toolglows-settings-select-panel.p-dropdown-panel .p-dropdown-item',
+    )
+    expect(scopedStyles).toContain('font-size: var(--tg-text-base)')
+    expect(scopedStyles).toContain('border-radius: var(--tg-radius-section)')
+    expect(scopedStyles).toContain('padding: var(--tg-space-2) var(--tg-space-3)')
+    expect(scopedStyles).toContain('box-shadow: var(--tg-shadow-panel)')
+    expect(scopedStyles).not.toContain(
+      '#toolglows-root .toolglows-settings-select-panel.p-dropdown-panel',
     )
   })
 
@@ -91,8 +111,8 @@ describe('settings interface redesign', () => {
     expect(toolbar).toContain('<h3>Général</h3>')
     expect(toolbar).toContain('<h3>Page actuelle</h3>')
     expect(toolbar).toContain('<h3>Outils actifs</h3>')
-    expect(toolbar).toContain('input-id="toolbarSize"')
-    expect(toolbar).toContain('panel-class="toolglows-settings-select-panel"')
+    expect(toolbar).toContain('data-toolglows-wheel-size')
+    expect(toolbar).toContain('Ajuster la taille avec la molette')
     expect(toolbar).not.toContain('toolglows-setting-item')
   })
 

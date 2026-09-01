@@ -19,6 +19,7 @@
  */
 import { sendMessage, onMessage, allowWindowMessaging } from 'webext-bridge/content-script'
 import type { Tool } from '@/types/tools'
+import { TOOLBAR_SIZES, type ToolbarSize } from '@/utils/toolbarSize'
 
 // Unique namespace prevents conflicts with other extensions using webext-bridge
 const EXTENSION_NAMESPACE = 'com.toolglows.extension'
@@ -34,7 +35,7 @@ export interface Settings {
   isPinned: boolean
   interfaceTheme: 'light' | 'dark'
   toolbarColor?: string
-  toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  toolbarSize: ToolbarSize
   hideElement?: {
     hiddenElements: Array<{
       selector: string
@@ -90,7 +91,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isToolbarSize(value: unknown): value is Settings['toolbarSize'] {
-  return ['xs', 'sm', 'md', 'lg', 'xl'].includes(String(value))
+  return TOOLBAR_SIZES.includes(String(value) as ToolbarSize)
 }
 
 function isSettings(value: unknown): value is Settings {

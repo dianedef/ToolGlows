@@ -7,7 +7,8 @@
     :style="toolbarStyle"
     :class="{
       'toolglows-expanded': isExpanded || settingsStore.settings.isPinned,
-      'toolglows-dragging': isDragging
+      'toolglows-dragging': isDragging,
+      'toolglows-toolbar-wheel-mode': isToolbarResizeMode
     }"
     @pointerdown.capture="startToolbarPointer"
     @pointermove.capture="moveToolbarPointer"
@@ -133,21 +134,22 @@
         </label>
         <div class="toolglows-settings-row">
           <label for="toolbarSize">Taille de la barre d'outils</label>
-          <Dropdown
-            v-model="settingsStore.settings.toolbarSize"
-            input-id="toolbarSize"
-            :options="[
-              { label: 'Très petite', value: 'xs' },
-              { label: 'Petite', value: 'sm' },
-              { label: 'Moyenne', value: 'md' },
-              { label: 'Grande', value: 'lg' },
-              { label: 'Très grande', value: 'xl' }
-            ]"
-            option-label="label"
-            option-value="value"
-            class="toolglows-settings-select"
-            panel-class="toolglows-settings-select-panel"
-          />
+          <div class="toolglows-toolbar-size-control">
+            <Button
+              :label="isToolbarResizeMode ? 'Désactiver le réglage molette' : 'Ajuster la taille avec la molette'"
+              :severity="isToolbarResizeMode ? 'danger' : 'secondary'"
+              :aria-pressed="isToolbarResizeMode"
+              data-toolglows-wheel-size
+              class="toolglows-toolbar-size-button"
+              @click="toggleToolbarWheelSizeMode"
+            />
+            <span
+              class="toolglows-toolbar-size-indicator"
+              aria-live="polite"
+            >
+              Taille actuelle : {{ toolbarSizeLabel }}
+            </span>
+          </div>
         </div>
       </section>
 
@@ -205,7 +207,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, markRaw, onUnmounted, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, inject, markRaw, onUnmounted, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import type { Tool } from '@/types/tools'
 import { useSettingsStore } from '@/stores/settings'
 import { useToolGlowsStore } from '@/stores/toolglows'
@@ -239,12 +241,12 @@ import HideElementControl from './HideElementControl.vue'
 import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
-import Dropdown from 'primevue/dropdown'
 import { onClickOutside } from '@vueuse/core'
 import Toast from 'primevue/toast'
 import { useExcludeToolGlowsBar } from '@/composables/excludeToolGlowsBar'
 import ThemeSwatch from './ThemeSwatch.vue'
 import Tooltip from 'primevue/tooltip'
+import { TOOLBAR_SIZES, type ToolbarSize } from '@/utils/toolbarSize'
 
 const vTooltip = Tooltip
 import { useDebounceFn } from '@vueuse/core'
@@ -257,6 +259,32 @@ const isVisible = ref<Record<string, boolean>>({})
 const toolbarRef = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
 const settingsLoaded = ref(false)
+const isToolbarResizeMode = ref(false)
+const toolbarSizeRestoreTarget = ref<ToolbarSize>('md')
+
+const toolbarSizeOrder = TOOLBAR_SIZES
+
+const toolbarSizeLabels: Record<ToolbarSize, string> = {
+  'xxs': 'Microscopique',
+  'xxs-plus': 'Microscopique +',
+  'xs': 'Très petite',
+  'xs-plus': 'Très petite +',
+  'xs-plus-mid': 'Très petite ++',
+  'sm': 'Petite',
+  'sm-plus': 'Petite +',
+  'sm-plus-mid': 'Petite ++',
+  'md': 'Moyenne',
+  'md-mid': 'Moyenne intermédiaire',
+  'md-plus': 'Moyenne +',
+  'md-plus-mid': 'Moyenne ++',
+  'lg': 'Grande',
+  'lg-mid': 'Grande intermédiaire',
+  'lg-plus': 'Grande +',
+  'lg-plus-mid': 'Grande ++',
+  'xl': 'Très grande',
+  'xl-mid': 'Très grande +',
+  'xxl': 'Immense'
+}
 
 // Injection des stores avec typage
 const settingsStore = inject('settingsStore') as ReturnType<typeof useSettingsStore>
@@ -703,31 +731,62 @@ onUnmounted(() => {
 
 // Constantes pour les tailles
 const sizeClasses = {
-  'xs': { buttonSize: 'var(--tg-size-toolbar-xs)', fontSize: 'var(--tg-size-tool-font-xs)', emojiSize: 'var(--tg-size-tool-emoji-xs)' },
-  'sm': { buttonSize: 'var(--tg-size-toolbar-sm)', fontSize: 'var(--tg-size-tool-font-sm)', emojiSize: 'var(--tg-size-tool-emoji-sm)' },
-  'md': { buttonSize: 'var(--tg-size-toolbar-md)', fontSize: 'var(--tg-size-tool-font-md)', emojiSize: 'var(--tg-size-tool-emoji-md)' },
-  'lg': { buttonSize: 'var(--tg-size-toolbar-lg)', fontSize: 'var(--tg-size-tool-font-lg)', emojiSize: 'var(--tg-size-tool-emoji-lg)' },
-  'xl': { buttonSize: 'var(--tg-size-toolbar-xl)', fontSize: 'var(--tg-size-tool-font-xl)', emojiSize: 'var(--tg-size-tool-emoji-xl)' }
+  'xxs': '--tg-scale-toolbar-xxs',
+  'xxs-plus': '--tg-scale-toolbar-xxs-plus',
+  'xs': '--tg-scale-toolbar-xs',
+  'xs-plus': '--tg-scale-toolbar-xs-plus',
+  'xs-plus-mid': '--tg-scale-toolbar-xs-plus-mid',
+  'sm': '--tg-scale-toolbar-sm',
+  'sm-plus': '--tg-scale-toolbar-sm-plus',
+  'sm-plus-mid': '--tg-scale-toolbar-sm-plus-mid',
+  'md': '--tg-scale-toolbar-md',
+  'md-mid': '--tg-scale-toolbar-md-mid',
+  'md-plus': '--tg-scale-toolbar-md-plus',
+  'md-plus-mid': '--tg-scale-toolbar-md-plus-mid',
+  'lg': '--tg-scale-toolbar-lg',
+  'lg-mid': '--tg-scale-toolbar-lg-mid',
+  'lg-plus': '--tg-scale-toolbar-lg-plus',
+  'lg-plus-mid': '--tg-scale-toolbar-lg-plus-mid',
+  'xl': '--tg-scale-toolbar-xl',
+  'xl-mid': '--tg-scale-toolbar-xl-mid',
+  'xxl': '--tg-scale-toolbar-xxl'
 }
+
+watch(
+  () => settingsStore.settings.toolbarSize,
+  size => {
+    const tokenOwner = document.getElementById('toolglows-root') ?? document.documentElement
+    const resolvedScale = getComputedStyle(tokenOwner)
+      .getPropertyValue(sizeClasses[size || 'md'])
+      .trim()
+
+    document.documentElement.style.setProperty('--tg-interface-scale', resolvedScale || '1')
+  },
+  { immediate: true }
+)
 
 // Computed style qui combine le style du drag et les autres styles
 const toolbarStyle = computed(() => {
-  const size = sizeClasses[settingsStore.settings.toolbarSize || 'md']
-
   return {
     position: 'fixed' as const,
     left: `${position.value.x}px`,
     top: `${position.value.y}px`,
     backgroundColor: settingsStore.settings.toolbarColor || 'var(--tg-toolbar-color-default)',
-    '--button-size': size.buttonSize,
-    '--font-size': size.fontSize,
-    '--emoji-size': size.emojiSize,
+    '--button-size': 'var(--tg-size-toolbar-md)',
+    '--font-size': 'var(--tg-size-tool-font-md)',
+    '--emoji-size': 'var(--tg-size-tool-emoji-md)',
+    zoom: 'var(--tg-interface-scale)',
     zIndex: 'var(--tg-z-extension)'
   }
 })
 
 // Gestionnaire du clic sur le bouton principal
 const handleMainButtonClick = () => {
+  if (isToolbarResizeMode.value) {
+    exitToolbarWheelSizeMode(false)
+    return
+  }
+
   if (suppressNextClick) {
     suppressNextClick = false
     return
@@ -837,11 +896,98 @@ onMounted(async () => {
 })
 
 const closeSettings = () => {
+  exitToolbarWheelSizeMode(false)
   showSettings.value = false
 }
 
+const toolbarSizeLabel = computed(() => toolbarSizeLabels[settingsStore.settings.toolbarSize || 'md'])
+
+const toggleToolbarWheelSizeMode = () => {
+  if (isToolbarResizeMode.value) {
+    exitToolbarWheelSizeMode(false)
+    return
+  }
+
+  toolbarSizeRestoreTarget.value = settingsStore.settings.toolbarSize || 'md'
+  isToolbarResizeMode.value = true
+}
+
+const exitToolbarWheelSizeMode = (restoreToInitial: boolean) => {
+  if (!isToolbarResizeMode.value) return
+
+  if (restoreToInitial && toolbarSizeRestoreTarget.value !== settingsStore.settings.toolbarSize) {
+    const restoredSize = toolbarSizeRestoreTarget.value
+    settingsStore.settings.toolbarSize = restoredSize
+    void settingsStore.updateSettings({
+      ...settingsStore.settings,
+      toolbarSize: restoredSize
+    })
+  }
+
+  isToolbarResizeMode.value = false
+}
+
+const handleToolbarWheel = async (event: WheelEvent) => {
+  if (!isToolbarResizeMode.value) return
+
+  event.preventDefault()
+  if (event.deltaY === 0) return
+
+  const currentSize = settingsStore.settings.toolbarSize || 'md'
+  const currentIndex = toolbarSizeOrder.indexOf(currentSize as ToolbarSize)
+  if (currentIndex === -1) return
+
+  const nextIndex = currentIndex + (event.deltaY > 0 ? -1 : 1)
+  if (nextIndex < 0 || nextIndex >= toolbarSizeOrder.length) return
+
+  const nextSize = toolbarSizeOrder[nextIndex]
+  settingsStore.settings.toolbarSize = nextSize
+  await settingsStore.updateSettings({
+    ...settingsStore.settings,
+    toolbarSize: nextSize
+  })
+}
+
+const handleToolbarResizeModeKey = (event: KeyboardEvent) => {
+  if (!isToolbarResizeMode.value) return
+
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    exitToolbarWheelSizeMode(true)
+    return
+  }
+
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    exitToolbarWheelSizeMode(false)
+  }
+}
+
+watch(isToolbarResizeMode, (isActive) => {
+  if (isActive) {
+    window.addEventListener('wheel', handleToolbarWheel, { passive: false })
+    window.addEventListener('keydown', handleToolbarResizeModeKey)
+    return
+  }
+
+  window.removeEventListener('wheel', handleToolbarWheel)
+  window.removeEventListener('keydown', handleToolbarResizeModeKey)
+}, { immediate: true })
+
+watch(showSettings, (isOpen) => {
+  if (!isOpen) {
+    exitToolbarWheelSizeMode(false)
+  }
+})
+
 onUnmounted(() => {
   hideElementStore.teardown()
+  document.documentElement.style.removeProperty('--tg-interface-scale')
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('wheel', handleToolbarWheel)
+  window.removeEventListener('keydown', handleToolbarResizeModeKey)
 })
 </script>
 
@@ -869,6 +1015,11 @@ onUnmounted(() => {
   &.toolglows-dragging {
     cursor: grabbing !important;
     opacity: 0.95;
+  }
+
+  &.toolglows-toolbar-wheel-mode {
+    outline: var(--tg-element-outline-width) solid var(--tg-action);
+    outline-offset: calc(-1 * var(--tg-space-1));
   }
 
   :deep(.p-button) {
@@ -971,6 +1122,22 @@ onUnmounted(() => {
 
 .toolglows-settings-select {
   min-width: var(--tg-size-field-inline);
+}
+
+.toolglows-toolbar-size-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--tg-space-2);
+}
+
+.toolglows-toolbar-size-button {
+  width: fit-content;
+}
+
+.toolglows-toolbar-size-indicator {
+  color: var(--tg-text-secondary);
+  font-size: var(--tg-text-sm);
 }
 
 .toolglows-main-button.p-button {

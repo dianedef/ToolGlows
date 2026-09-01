@@ -140,8 +140,35 @@
    overview. Its label is intentionally transparent, so the root must own an
    opaque field surface that remains distinct from the dialog behind it. */
 .toolglows-dialog .toolglows-settings-select.p-dropdown {
+  min-height: var(--tg-size-control-comfortable);
   background: var(--tg-surface-muted) !important;
+  color: var(--tg-text-primary) !important;
   border: var(--tg-border-width-control) solid var(--tg-border-default) !important;
+  border-radius: var(--tg-radius-control) !important;
+  box-shadow: var(--tg-shadow-none) !important;
+  transition:
+    border-color var(--tg-motion-fast),
+    box-shadow var(--tg-motion-fast);
+}
+
+.toolglows-dialog .toolglows-settings-select.p-dropdown .p-dropdown-label {
+  padding: var(--tg-space-2) var(--tg-space-3) !important;
+  color: var(--tg-text-primary) !important;
+  font-size: var(--tg-text-base);
+  line-height: var(--tg-line-height-copy);
+  opacity: 1;
+}
+
+.toolglows-dialog .toolglows-settings-select.p-dropdown .p-dropdown-trigger {
+  width: var(--tg-size-control);
+  color: var(--tg-text-secondary) !important;
+  border-radius: 0 var(--tg-radius-control) var(--tg-radius-control) 0;
+  opacity: 1;
+}
+
+.toolglows-dialog .toolglows-settings-select.p-dropdown:is(.p-focus, :focus-within) {
+  border-color: var(--tg-action) !important;
+  box-shadow: 0 0 0 var(--tg-space-0-5) var(--tg-interaction-focus) !important;
 }
 
 .p-dropdown-panel {
@@ -152,14 +179,31 @@
 }
 
 .toolglows-settings-select-panel.p-dropdown-panel {
+  zoom: var(--tg-interface-scale, var(--tg-scale-toolbar-md));
   background: var(--tg-surface-overlay) !important;
   color: var(--tg-text-primary) !important;
   border: var(--tg-border-width-control) solid var(--tg-border-default) !important;
+  border-radius: var(--tg-radius-section) !important;
+  box-shadow: var(--tg-shadow-panel) !important;
+  overflow: hidden;
+}
+
+.toolglows-settings-select-panel.p-dropdown-panel .p-dropdown-items {
+  padding: var(--tg-space-2) !important;
 }
 
 .toolglows-settings-select-panel.p-dropdown-panel .p-dropdown-item {
+  margin: 0;
+  padding: var(--tg-space-2) var(--tg-space-3) !important;
   background: transparent !important;
   color: var(--tg-text-primary) !important;
+  border-radius: var(--tg-radius-control);
+  font-size: var(--tg-text-base);
+  line-height: var(--tg-line-height-copy);
+  opacity: 1;
+  transition:
+    background-color var(--tg-motion-fast),
+    color var(--tg-motion-fast);
 }
 
 .toolglows-settings-select-panel.p-dropdown-panel
@@ -206,6 +250,7 @@
 }
 
 .toolglows-dialog-mask > .toolglows-dialog.p-dialog {
+  zoom: var(--tg-interface-scale, var(--tg-scale-toolbar-md));
   max-width: calc(100vw - var(--tg-space-6));
   max-height: calc(100vh - var(--tg-space-6));
   height: auto;
@@ -602,7 +647,12 @@
 /* Tool names are rendered in a document-level PrimeVue overlay. Keep the
    tooltip readable in both themes and independent from page styles. */
 .p-tooltip {
+  zoom: var(--tg-interface-scale, var(--tg-scale-toolbar-md));
   z-index: var(--tg-z-tooltip) !important;
+}
+
+.p-toast {
+  zoom: var(--tg-interface-scale, var(--tg-scale-toolbar-md));
 }
 
 .p-tooltip .p-tooltip-text {

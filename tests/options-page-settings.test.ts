@@ -47,16 +47,30 @@ describe('options page settings persistence', () => {
     expect(wrapper.get('[role="alert"]').text()).toContain('Impossible d’enregistrer')
   })
 
-  it('offers the same five descriptive toolbar sizes as the injected settings', () => {
+  it('offers the same descriptive toolbar sizes as the injected settings', () => {
     const wrapper = mount(OptionsPage)
     const sizeSelect = wrapper.findAll('select')[1]
 
     expect(sizeSelect.findAll('option').map(option => option.text())).toEqual([
+      'Microscopique',
+      'Microscopique +',
       'Très petite',
+      'Très petite +',
+      'Très petite ++',
       'Petite',
+      'Petite +',
+      'Petite ++',
       'Moyenne',
+      'Moyenne intermédiaire',
+      'Moyenne +',
+      'Moyenne ++',
       'Grande',
+      'Grande intermédiaire',
+      'Grande +',
+      'Grande ++',
       'Très grande',
+      'Très grande +',
+      'Immense',
     ])
   })
 })

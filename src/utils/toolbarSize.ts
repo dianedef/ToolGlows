@@ -1,4 +1,24 @@
-export const TOOLBAR_SIZES = ['xs', 'sm', 'md', 'lg', 'xl'] as const
+export const TOOLBAR_SIZES = [
+  'xxs',
+  'xxs-plus',
+  'xs',
+  'xs-plus',
+  'xs-plus-mid',
+  'sm',
+  'sm-plus',
+  'sm-plus-mid',
+  'md',
+  'md-mid',
+  'md-plus',
+  'md-plus-mid',
+  'lg',
+  'lg-mid',
+  'lg-plus',
+  'lg-plus-mid',
+  'xl',
+  'xl-mid',
+  'xxl'
+] as const
 
 export type ToolbarSize = typeof TOOLBAR_SIZES[number]
 
