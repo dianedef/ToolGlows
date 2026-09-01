@@ -93,4 +93,4 @@ As a ToolGlows user, I want settings controls to follow one predictable rhythm, 
 - readiness: ready
 - implementation: complete
 - verification: passed — 87 tests, typecheck, Chrome/Firefox builds, manifest lint, drift scan and injected-dialog proof
-- delivery: pending
+- delivery: pushed to `origin/main` — `6e82b2c`
