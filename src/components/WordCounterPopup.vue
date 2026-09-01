@@ -271,8 +271,4 @@ const closeDialog = () => {
   background: var(--surface-hover);
 }
 
-:deep(.p-checkbox) {
-  width: var(--tg-size-1-25rem);
-  height: var(--tg-size-1-25rem);
-}
 </style>

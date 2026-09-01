@@ -251,21 +251,6 @@ const handleCopy = async () => {
   gap: var(--tg-space-3);
   min-width: var(--tg-size-200);
 
-  :deep(.p-checkbox) {
-    width: var(--tg-space-5);
-    height: var(--tg-space-5);
-  }
-
-  :deep(.p-checkbox-box) {
-    width: var(--tg-space-5);
-    height: var(--tg-space-5);
-    border-radius: var(--tg-radius-sm);
-  }
-
-  :deep(.p-checkbox-icon) {
-    font-size: var(--tg-space-4);
-  }
-
   label {
     font-weight: 500;
     user-select: none;

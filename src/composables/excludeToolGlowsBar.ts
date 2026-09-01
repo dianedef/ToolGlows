@@ -29,9 +29,8 @@ export function useExcludeToolGlowsBar() {
     style.textContent = `
       /* Réinitialiser les styles pour tous les composants ToolGlows et leurs enfants */
       ${TOOLGLOWS_SELECTORS},
-      ${TOOLGLOWS_SELECTORS} *,
-      .p-dialog[class*="toolglows"] *,
-      [data-component="toolglows-tool"] * {
+      .p-dialog[class*="toolglows"] *:not(.p-checkbox):not(.p-checkbox *),
+      [data-component="toolglows-tool"] *:not(.p-checkbox):not(.p-checkbox *) {
         background-color: var(--surface-card) !important;
         color: var(--text-color) !important;
       }
@@ -39,9 +38,7 @@ export function useExcludeToolGlowsBar() {
       /* Styles spécifiques pour les éléments internes */
       .p-dialog-header,
       .p-dialog-content,
-      .p-checkbox-box,
-      .p-checkbox-input,
-      input,
+      input:not([type="checkbox"]),
       .toolglows-tool-emoji,
       .toolglows-settings-group,
       .toolglows-settings-header,
@@ -59,11 +56,9 @@ export function useExcludeToolGlowsBar() {
 
       /* Styles pour les boutons et contrôles */
       .p-button,
-      input,
+      input:not([type="checkbox"]),
       select,
       textarea,
-      .p-checkbox,
-      .p-checkbox-box,
       .p-inputtext,
       .p-dropdown,
       .p-multiselect,
@@ -105,16 +100,6 @@ export function useExcludeToolGlowsBar() {
         color: var(--highlight-text-color) !important;
       }
 
-      .p-checkbox.p-highlight .p-checkbox-box {
-        background-color: var(--primary-color) !important;
-        border-color: var(--primary-color) !important;
-        color: var(--primary-color-text) !important;
-      }
-
-      .p-checkbox.p-highlight .p-checkbox-icon {
-        color: var(--primary-color-text) !important;
-      }
-
       /* Styles pour les survols */
       .toolglows-tool-item:hover,
       .toolglows-setting-item:hover,
@@ -124,7 +109,7 @@ export function useExcludeToolGlowsBar() {
       }
 
       /* Styles pour les icônes */
-      .p-icon,
+      .p-icon:not(.p-checkbox-icon),
       .pi,
       .p-toast-message-icon {
         color: var(--text-color) !important;

@@ -393,10 +393,82 @@
   flex: 0 0 auto;
 }
 
+/* PrimeVue keeps the native checkbox semantics and keyboard behavior. This
+   boundary owns its single visible surface; the transparent input remains the
+   hit target and must never become a second painted square. */
+.toolglows-dialog .p-checkbox {
+  position: relative;
+  width: var(--tg-size-checkbox) !important;
+  height: var(--tg-size-checkbox) !important;
+  background: transparent !important;
+  color: var(--tg-action-on) !important;
+}
+
+.toolglows-dialog .p-checkbox .p-checkbox-input {
+  appearance: none !important;
+  position: absolute;
+  inset: 0;
+  width: var(--tg-full-width) !important;
+  height: var(--tg-full-height) !important;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: var(--tg-radius-sm);
+  background: transparent !important;
+  box-shadow: var(--tg-shadow-none) !important;
+  opacity: 0 !important;
+}
+
 .toolglows-dialog .p-checkbox .p-checkbox-box {
-  width: var(--tg-full-width);
-  height: var(--tg-full-width);
-  border-width: var(--tg-border-width-control);
+  width: var(--tg-full-width) !important;
+  height: var(--tg-full-height) !important;
+  border: var(--tg-border-width-control) solid var(--tg-border-default) !important;
+  border-radius: var(--tg-radius-sm) !important;
+  background: var(--tg-surface-field) !important;
+  color: var(--tg-action-on) !important;
+  box-shadow: var(--tg-shadow-none) !important;
+  transition:
+    background var(--tg-motion-fast),
+    border-color var(--tg-motion-fast),
+    box-shadow var(--tg-motion-fast);
+}
+
+.toolglows-dialog
+  .p-checkbox:not(.p-disabled):has(.p-checkbox-input:hover)
+  .p-checkbox-box {
+  border-color: var(--tg-action) !important;
+  background: var(--tg-interaction-hover) !important;
+}
+
+.toolglows-dialog
+  .p-checkbox:is(.p-highlight, [data-p-highlight='true'])
+  .p-checkbox-box {
+  border-color: var(--tg-action) !important;
+  background: var(--tg-action) !important;
+}
+
+.toolglows-dialog
+  .p-checkbox:is(.p-highlight, [data-p-highlight='true']):not(.p-disabled):has(
+    .p-checkbox-input:hover
+  )
+  .p-checkbox-box {
+  border-color: var(--tg-action-hover) !important;
+  background: var(--tg-action-hover) !important;
+}
+
+.toolglows-dialog
+  .p-checkbox:not(.p-disabled):has(.p-checkbox-input:focus-visible)
+  .p-checkbox-box {
+  border-color: var(--tg-action) !important;
+  box-shadow: 0 0 0 var(--tg-space-0-5) var(--tg-interaction-focus) !important;
+  outline: none !important;
+}
+
+.toolglows-dialog .p-checkbox .p-checkbox-icon {
+  width: var(--tg-size-checkbox-icon) !important;
+  height: var(--tg-size-checkbox-icon) !important;
+  color: var(--tg-action-on) !important;
+  stroke-width: var(--tg-stroke-checkbox-icon);
 }
 
 .toolglows-dialog :is(.field-slider, .toolglows-field-slider, .width-row) {

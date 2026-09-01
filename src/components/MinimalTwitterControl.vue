@@ -178,11 +178,6 @@ onMounted(() => {
   padding: var(--tg-space-4);
 }
 
-:deep(.p-checkbox) {
-  width: var(--tg-size-1-25rem);
-  height: var(--tg-size-1-25rem);
-}
-
 :deep(.p-slider) {
   margin: var(--tg-space-2) 0;
 }

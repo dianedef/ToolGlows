@@ -28,16 +28,46 @@ describe('settings surface coherence', () => {
     expect(hoverRule).not.toContain('var(--surface-hover)')
   })
 
-  it('fills the PrimeVue checkbox surface with a restrained border', () => {
+  it('renders PrimeVue checkboxes as one compact semantic surface', () => {
     const sharedStyles = readFileSync('src/assets/main.css', 'utf8')
+    const tokens = readFileSync('src/assets/design-tokens.css', 'utf8')
+    const exclusionStyles = readFileSync(
+      'src/composables/excludeToolGlowsBar.ts',
+      'utf8',
+    )
 
     expect(sharedStyles).toContain(
       '.toolglows-dialog .p-checkbox .p-checkbox-box',
     )
-    expect(sharedStyles).toContain('width: var(--tg-full-width)')
-    expect(sharedStyles).toContain('height: var(--tg-full-width)')
+    expect(tokens).toContain('--tg-size-checkbox: var(--tg-size-20)')
+    expect(sharedStyles).toContain('background: transparent !important')
+    expect(sharedStyles).toContain('opacity: 0 !important')
+    expect(sharedStyles).toContain('background: var(--tg-surface-field) !important')
+    expect(sharedStyles).toContain('background: var(--tg-action) !important')
+    expect(sharedStyles).toContain('.p-checkbox-input:focus-visible')
+    expect(sharedStyles).toContain('color: var(--tg-action-on) !important')
     expect(sharedStyles).toContain(
-      'border-width: var(--tg-border-width-control)',
+      'border: var(--tg-border-width-control) solid var(--tg-border-default) !important',
     )
+    expect(exclusionStyles).not.toContain('      .p-checkbox-box,')
+    expect(exclusionStyles).not.toContain('      .p-checkbox-input,')
+    expect(exclusionStyles).toContain(
+      '*:not(.p-checkbox):not(.p-checkbox *)',
+    )
+    expect(exclusionStyles).not.toContain(
+      '*:not(.p-checkbox):not(.p-checkbox-box)',
+    )
+  })
+
+  it('keeps component dialogs free of checkbox size overrides', () => {
+    for (const path of [
+      'src/components/LinksExplorerControl.vue',
+      'src/components/WordCounterPopup.vue',
+      'src/components/MinimalTwitterControl.vue',
+    ]) {
+      expect(readFileSync(path, 'utf8')).not.toMatch(
+        /:deep\(\.p-checkbox(?:-box|-icon)?\)/,
+      )
+    }
   })
 })

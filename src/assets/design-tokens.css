@@ -33,6 +33,11 @@
   --tg-border-width-control: 1px;
   --tg-action: var(--primary-color, oklch(var(--p)));
   --tg-action-on: var(--primary-color-text, oklch(var(--pc)));
+  --tg-action-hover: color-mix(
+    in srgb,
+    var(--tg-action) 86%,
+    var(--tg-text-primary)
+  );
   --tg-status-warning: var(--yellow-600, oklch(var(--wa)));
   --tg-status-warning-surface: color-mix(
     in srgb,
@@ -104,7 +109,9 @@
   --tg-size-toolbar-lg: 5rem;
   --tg-size-toolbar-xl: 6rem;
   --tg-size-5rem: 5rem;
-  --tg-size-checkbox: 1.5rem;
+  --tg-size-checkbox: var(--tg-size-20);
+  --tg-size-checkbox-icon: var(--tg-space-3);
+  --tg-stroke-checkbox-icon: 2.5;
   --tg-size-tool-icon: 1.2rem;
   --tg-size-icon-xl: 1.25rem;
   --tg-size-2rem: 2rem;
