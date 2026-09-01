@@ -27,4 +27,17 @@ describe('settings surface coherence', () => {
     expect(hoverRule).toContain('background: var(--tg-interaction-hover)')
     expect(hoverRule).not.toContain('var(--surface-hover)')
   })
+
+  it('fills the PrimeVue checkbox surface with a restrained border', () => {
+    const sharedStyles = readFileSync('src/assets/main.css', 'utf8')
+
+    expect(sharedStyles).toContain(
+      '.toolglows-dialog .p-checkbox .p-checkbox-box',
+    )
+    expect(sharedStyles).toContain('width: var(--tg-full-width)')
+    expect(sharedStyles).toContain('height: var(--tg-full-width)')
+    expect(sharedStyles).toContain(
+      'border-width: var(--tg-border-width-control)',
+    )
+  })
 })

@@ -25,6 +25,7 @@
     --surface-border,
     color-mix(in srgb, var(--tg-text-primary) 18%, transparent)
   );
+  --tg-border-width-control: 1px;
   --tg-action: var(--primary-color, oklch(var(--p)));
   --tg-action-on: var(--primary-color-text, oklch(var(--pc)));
   --tg-status-warning: var(--yellow-600, oklch(var(--wa)));

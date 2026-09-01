@@ -306,6 +306,12 @@
   flex: 0 0 auto;
 }
 
+.toolglows-dialog .p-checkbox .p-checkbox-box {
+  width: var(--tg-full-width);
+  height: var(--tg-full-width);
+  border-width: var(--tg-border-width-control);
+}
+
 .toolglows-dialog :is(.field-slider, .toolglows-field-slider, .width-row) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
