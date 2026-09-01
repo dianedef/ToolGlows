@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useSettingsStore } from '@/stores/settings'
+import ToolGlowsColorPicker from '@/components/ToolGlowsColorPicker.vue'
 
 const settingsStore = useSettingsStore()
 const { settings } = storeToRefs(settingsStore)
@@ -45,10 +46,7 @@ async function saveSettings() {
       </label>
       <label>
         Couleur
-        <input
-          v-model="settings.toolbarColor"
-          type="color"
-        >
+        <ToolGlowsColorPicker v-model="settings.toolbarColor" />
       </label>
       <label>
         Taille
@@ -126,7 +124,7 @@ label {
 input,
 select,
 textarea {
-  width: 100%;
+  width: var(--tg-full-width);
   border: 1px solid var(--tg-border-default);
   border-radius: var(--tg-radius-control);
   padding: var(--tg-space-2);
@@ -139,8 +137,7 @@ textarea {
   gap: var(--tg-space-2);
 }
 
-.checkbox-row input,
-input[type='color'] {
+.checkbox-row input {
   width: auto;
 }
 

@@ -12,7 +12,7 @@
 import { computed } from 'vue'
 import { fromPickerHex, toPickerHex } from '@/utils/colorPicker'
 
-const props = defineProps<{ modelValue: string }>()
+const props = defineProps<{ modelValue?: string }>()
 const emit = defineEmits<{ (event: 'update:modelValue', value: string): void }>()
 
 const pickerValue = computed(() => `#${toPickerHex(props.modelValue)}`)
@@ -25,19 +25,23 @@ function updateColor(event: Event) {
 <style>
 .toolglows-color-picker-control {
   display: block;
-  width: var(--tg-size-control-comfortable, 2.5rem);
-  height: var(--tg-size-control-comfortable, 2.5rem);
-  padding: 0.15rem;
-  background: var(--surface-card, #ffffff);
-  border: 2px solid var(--surface-border, #94a3b8);
-  border-radius: var(--tg-radius-control, 0.5rem);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 1px 2px rgba(15, 23, 42, 0.2);
+  width: var(--tg-size-control-comfortable) !important;
+  min-width: var(--tg-size-control-comfortable);
+  height: var(--tg-size-control-comfortable) !important;
+  min-height: var(--tg-size-control-comfortable);
+  flex: 0 0 var(--tg-size-control-comfortable);
+  padding: 0 !important;
+  background: transparent;
+  border: 1px solid var(--tg-border-default);
+  border-radius: var(--tg-radius-control);
+  box-shadow: var(--tg-shadow-control);
+  overflow: hidden;
   cursor: pointer;
 }
 
 .toolglows-color-picker-control:focus-visible {
-  outline: 2px solid var(--primary-color, #3b82f6);
-  outline-offset: 2px;
+  outline: 2px solid var(--tg-action);
+  outline-offset: var(--tg-space-1);
 }
 
 .toolglows-color-picker-control::-webkit-color-swatch-wrapper {
@@ -46,6 +50,11 @@ function updateColor(event: Event) {
 
 .toolglows-color-picker-control::-webkit-color-swatch {
   border: 0;
-  border-radius: calc(var(--tg-radius-control, 0.5rem) - 0.2rem);
+  border-radius: var(--tg-radius-control);
+}
+
+.toolglows-color-picker-control::-moz-color-swatch {
+  border: 0;
+  border-radius: var(--tg-radius-control);
 }
 </style>

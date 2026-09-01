@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useSettingsStore, type ToolGlowsSettings } from '@/stores/settings'
+import ToolGlowsColorPicker from '@/components/ToolGlowsColorPicker.vue'
 
 const settingsStore = useSettingsStore()
 const form = reactive<ToolGlowsSettings>({
@@ -44,7 +45,7 @@ defineExpose({ saveState })
       <h2>Barre d’outils</h2>
       <label class="checkbox-row"><input v-model="form.expanded" type="checkbox"><span>Barre ouverte par défaut</span></label>
       <label class="checkbox-row"><input v-model="form.isPinned" type="checkbox"><span>Barre épinglée</span></label>
-      <label>Couleur <input v-model="form.toolbarColor" type="color"></label>
+      <label>Couleur <ToolGlowsColorPicker v-model="form.toolbarColor" /></label>
       <label>Taille de la barre d’outils
         <select v-model="form.toolbarSize">
           <option value="xs">Très petite</option><option value="sm">Petite</option><option value="md">Moyenne</option><option value="lg">Grande</option><option value="xl">Très grande</option>
@@ -70,7 +71,7 @@ label { display: grid; gap: var(--tg-space-2); margin-bottom: var(--tg-space-4);
 label:last-child { margin-bottom: 0; }
 input, select { width: 100%; min-height: var(--tg-size-control-comfortable); border: 1px solid var(--tg-border-default); border-radius: var(--tg-radius-control); padding: var(--tg-space-2) var(--tg-space-3); background: var(--tg-surface-field); color: var(--tg-text-primary); font: inherit; }
 .checkbox-row { display: flex; align-items: center; justify-content: flex-start; gap: var(--tg-space-2); }
-.checkbox-row input, input[type='color'] { width: auto; }
+.checkbox-row input { width: auto; }
 .save-row { display: flex; align-items: center; gap: var(--tg-space-4); padding: var(--tg-space-1) 0; flex-wrap: wrap; }
 button { min-height: var(--tg-size-control-comfortable); border: 0; border-radius: var(--tg-radius-control); background: var(--tg-action); color: var(--tg-action-on); cursor: pointer; font: inherit; font-weight: 600; padding: var(--tg-space-2) var(--tg-space-5); }
 button:disabled { cursor: wait; }
