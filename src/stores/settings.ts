@@ -26,6 +26,7 @@ import { ref, toRaw, watch } from 'vue'
 import { bridgeApi, initBridgeListeners } from '@/bridge'
 import { useToolGlowsStore } from '@/stores/toolglows'
 import { useBrowserSyncStorage } from '@/composables/useBrowserStorage'
+import { normalizeInterfaceTheme } from '@/composables/useInterfaceTheme'
 import type { HideElementSettings } from './hideElement'
 
 /**
@@ -42,7 +43,7 @@ export interface ToolGlowsSettings {
   }
   activeTools: string[]
   isPinned: boolean
-  interfaceTheme?: 'light' | 'dark'
+  interfaceTheme: 'light' | 'dark'
   toolbarColor?: string
   toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   hideElement?: HideElementSettings
@@ -62,7 +63,7 @@ export const useSettingsStore = defineStore('settings', () => {
     throw new Error('chrome.storage.sync API is not available')
   }
 
-  const { data: settings, promise: settingsLoaded } = useBrowserSyncStorage<ToolGlowsSettings>('toolglowsSettings', {
+  const defaultSettings: ToolGlowsSettings = {
     expanded: false,
     position: { x: window.innerWidth - 100, y: 20 },
     activeTools: [],
@@ -77,7 +78,29 @@ export const useSettingsStore = defineStore('settings', () => {
       enableShortcut: true
     },
     components: {}
-  } as ToolGlowsSettings)
+  }
+
+  const { data: settings, promise: settingsLoaded } = useBrowserSyncStorage<ToolGlowsSettings>(
+    'toolglowsSettings',
+    defaultSettings
+  )
+
+  const normalizeSettings = (value: Partial<ToolGlowsSettings> | undefined): ToolGlowsSettings => ({
+    ...defaultSettings,
+    ...value,
+    position: { ...defaultSettings.position, ...value?.position },
+    activeTools: Array.isArray(value?.activeTools) ? value.activeTools : defaultSettings.activeTools,
+    interfaceTheme: normalizeInterfaceTheme(value?.interfaceTheme),
+    hideElement: {
+      hiddenElements: Array.isArray(value?.hideElement?.hiddenElements)
+        ? value.hideElement.hiddenElements
+        : defaultSettings.hideElement!.hiddenElements,
+      isSelectingElement: value?.hideElement?.isSelectingElement ?? defaultSettings.hideElement!.isSelectingElement,
+      shortcut: value?.hideElement?.shortcut ?? defaultSettings.hideElement!.shortcut,
+      enableShortcut: value?.hideElement?.enableShortcut ?? defaultSettings.hideElement!.enableShortcut
+    },
+    components: { ...defaultSettings.components, ...value?.components }
+  })
 
   /**
    * Reactive Settings Watcher
@@ -141,9 +164,10 @@ export const useSettingsStore = defineStore('settings', () => {
     console.log('[INFO] Loading settings')
     try {
       // 1. Charge depuis le storage local
+      await settingsLoaded
       const result = await chrome.storage.sync.get('toolglowsSettings')
       if (result.toolglowsSettings) {
-        settings.value = result.toolglowsSettings
+        settings.value = normalizeSettings(result.toolglowsSettings)
         console.log('[SUCCESS] Settings loaded from storage:', settings.value)
         applySettings(settings.value)
       } else {
@@ -160,16 +184,19 @@ export const useSettingsStore = defineStore('settings', () => {
       // delay first render while a Manifest V3 worker wakes up.
     } catch (error) {
       console.error('[ERROR] Failed to load settings:', error)
+      throw error
     }
   }
 
   const updateSettings = async (newSettings: Partial<ToolGlowsSettings>) => {
     console.log('[INFO] Updating settings:', newSettings)
     // Met à jour localement en préservant les valeurs existantes
-    settings.value = {
+    settings.value = normalizeSettings({
       ...settings.value,
       ...newSettings
-    }
+    })
+
+    await chrome.storage.sync.set({ toolglowsSettings: toRaw(settings.value) })
 
     // The toolbar owns the local state. Background synchronization is a
     // best-effort enhancement and must never prevent the UI from rendering.
@@ -242,8 +269,9 @@ export const useSettingsStore = defineStore('settings', () => {
     onSettingsUpdate: (newSettings) => {
       if (newSettings) {
         console.log('[INFO] Received settings update from another instance:', newSettings)
-        settings.value = newSettings
-        applySettings(newSettings)
+        const normalizedSettings = normalizeSettings(newSettings)
+        settings.value = normalizedSettings
+        applySettings(normalizedSettings)
         console.log('[SUCCESS] Settings updated from another instance')
       }
     }

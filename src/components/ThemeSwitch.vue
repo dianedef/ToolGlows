@@ -1,5 +1,15 @@
 <script lang="ts" setup>
-const { isDark, toggleDark } = useTheme()
+import { computed } from 'vue'
+import { useSettingsStore } from '@/stores/settings'
+
+const settingsStore = useSettingsStore()
+const isDark = computed(() => settingsStore.settings.interfaceTheme === 'dark')
+
+function toggleDark() {
+  void settingsStore.updateSettings({
+    interfaceTheme: isDark.value ? 'light' : 'dark'
+  })
+}
 </script>
 
 <template>

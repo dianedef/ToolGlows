@@ -72,7 +72,7 @@ onMounted(checkContentScript)
             ToolGlows ne peut pas fonctionner sur les pages internes du navigateur.
           </section>
 
-          <div class="flex gap-2 justify-center mb-4">
+          <div class="popup-actions">
             <RouterLink
               to="/common/features"
               class="btn btn-primary"
@@ -81,30 +81,13 @@ onMounted(checkContentScript)
               Fonctionnalités
             </RouterLink>
             <RouterLink
-              to="/common/pricing"
-              class="btn btn-primary"
+              to="/action-popup/playground"
+              class="btn btn-secondary"
             >
-              <i-ph-presentation-chart />
-              Offre
+              <i-ph-sliders-horizontal />
+              Tester l’interface
             </RouterLink>
           </div>
-
-          <RouterLink
-            to="/common/account/login"
-            class="btn btn-secondary btn-lg"
-          >
-            <i-ph-rocket-launch />
-            Commencer
-          </RouterLink>
-
-          <br />
-
-          <RouterLink
-            to="/action-popup/playground"
-            class="btn btn-link"
-          >
-            Tester l'interface
-          </RouterLink>
 
         </div>
       </div>
@@ -115,23 +98,31 @@ onMounted(checkContentScript)
 <style scoped>
 .site-access-alert,
 .site-access-note {
-  margin: 1rem 0;
-  padding: 0.875rem;
-  border-radius: 0.75rem;
+  margin: var(--tg-space-4) 0;
+  padding: var(--tg-space-3);
+  border-radius: var(--tg-radius-control);
   text-align: left;
 }
 
 .site-access-alert {
-  border: 1px solid color-mix(in srgb, var(--color-warning, #f59e0b) 55%, transparent);
-  background: color-mix(in srgb, var(--color-warning, #f59e0b) 14%, transparent);
+  border: var(--tg-element-outline-width) solid var(--tg-status-warning-border);
+  background: var(--tg-status-warning-surface);
 }
 
 .site-access-alert p {
-  margin: 0.35rem 0 0.75rem;
+  margin: var(--tg-space-1-5) 0 var(--tg-space-3);
 }
 
 .site-access-note {
-  background: color-mix(in srgb, currentColor 7%, transparent);
-  font-size: 0.875rem;
+  background: var(--tg-surface-muted);
+  font-size: var(--tg-text-base);
+}
+
+.popup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--tg-space-2);
+  margin-bottom: var(--tg-space-4);
 }
 </style>

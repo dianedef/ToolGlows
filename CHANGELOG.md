@@ -1,5 +1,13 @@
 # Change Log
 
+## [2026-09-01]
+
+### Fixed
+- Unified interface theme persistence across the toolbar, popup and options page.
+- Made options saves truthful with visible success or error feedback.
+- Removed unavailable pricing and account actions from extension interfaces.
+- Improved narrow-screen layout, semantic design-token coverage and reduced-motion behavior.
+
 ## [2026-05-04]
 
 ### Security

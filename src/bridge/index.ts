@@ -32,7 +32,7 @@ export interface Settings {
   position: { x: number; y: number }
   activeTools: string[]
   isPinned: boolean
-  interfaceTheme?: 'light' | 'dark'
+  interfaceTheme: 'light' | 'dark'
   toolbarColor?: string
   toolbarSize: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   hideElement?: {
@@ -104,6 +104,7 @@ function isSettings(value: unknown): value is Settings {
     Array.isArray(value.activeTools) &&
     value.activeTools.every(toolId => typeof toolId === 'string') &&
     typeof value.isPinned === 'boolean' &&
+    (value.interfaceTheme === 'light' || value.interfaceTheme === 'dark') &&
     (value.toolbarColor === undefined || typeof value.toolbarColor === 'string') &&
     (value.toolbarSize === undefined || isToolbarSize(value.toolbarSize))
 }
@@ -148,9 +149,7 @@ export const bridgeApi = {
       toolbarSize: settings.toolbarSize
     }
 
-    if (settings.interfaceTheme) {
-      jsonSettings.interfaceTheme = settings.interfaceTheme
-    }
+    jsonSettings.interfaceTheme = settings.interfaceTheme
 
     if (settings.hideElement) {
       jsonSettings.hideElement = {

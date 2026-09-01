@@ -229,3 +229,26 @@
   margin: var(--tg-space-4) !important;
   cursor: default !important;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  #app *,
+  #toolglows-app *,
+  #toolglows-extension *,
+  #toolglows-root *,
+  .toolglows-dialog *,
+  .p-tooltip * {
+    scroll-behavior: auto !important;
+    transition-duration: var(--tg-motion-reduced) !important;
+    animation-duration: var(--tg-motion-reduced) !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .p-button:hover,
+  .toolglows-main-button.p-button:hover,
+  .toolglows-main-button.p-button:active,
+  .toolglows-main-button.p-button:focus,
+  .toolglows-main-button.p-button.dragging,
+  .toolglows-tools-container .p-button:hover {
+    transform: none !important;
+  }
+}

@@ -4,16 +4,21 @@
  * extension's interaction roles without hard-coding a second palette.
  */
 :root,
+#app,
 #toolglows-root {
   --tg-size-20: 1.25rem;
-  --tg-surface-canvas: var(--surface-ground);
-  --tg-surface-raised: var(--surface-card);
-  --tg-surface-overlay: var(--surface-overlay);
-  --tg-text-primary: var(--text-color);
-  --tg-text-secondary: var(--text-color-secondary);
-  --tg-border-default: var(--surface-border);
-  --tg-action: var(--primary-color);
-  --tg-action-on: var(--primary-color-text);
+  --tg-surface-canvas: var(--surface-ground, oklch(var(--b1)));
+  --tg-surface-raised: var(--surface-card, oklch(var(--b1)));
+  --tg-surface-overlay: var(--surface-overlay, oklch(var(--b1)));
+  --tg-surface-muted: color-mix(in srgb, var(--tg-text-primary) 7%, var(--tg-surface-raised));
+  --tg-text-primary: var(--text-color, oklch(var(--bc)));
+  --tg-text-secondary: var(--text-color-secondary, color-mix(in srgb, var(--tg-text-primary) 72%, transparent));
+  --tg-border-default: var(--surface-border, color-mix(in srgb, var(--tg-text-primary) 18%, transparent));
+  --tg-action: var(--primary-color, oklch(var(--p)));
+  --tg-action-on: var(--primary-color-text, oklch(var(--pc)));
+  --tg-status-warning: var(--yellow-600, oklch(var(--wa)));
+  --tg-status-warning-surface: color-mix(in srgb, var(--tg-status-warning) 14%, transparent);
+  --tg-status-warning-border: color-mix(in srgb, var(--tg-status-warning) 55%, transparent);
   --tg-interaction-hover: color-mix(in srgb, var(--tg-action) 8%, var(--tg-surface-raised));
   --tg-interaction-selected: color-mix(in srgb, var(--tg-action) 14%, var(--tg-surface-raised));
   --tg-interaction-focus: color-mix(in srgb, var(--tg-action) 28%, transparent);
@@ -33,7 +38,7 @@
   --tg-element-transition: background-color 0.2s ease-in-out, outline-color 0.2s ease-in-out;
   --tg-ocr-highlight: color-mix(in srgb, #facc15 20%, transparent);
   --tg-ocr-highlight-hover: color-mix(in srgb, #facc15 40%, transparent);
-  --tg-radius-control: var(--border-radius);
+  --tg-radius-control: var(--border-radius, var(--rounded-btn));
   --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   --tg-radius-round: 999px;
   --tg-radius-pill: 3rem;
@@ -97,6 +102,7 @@
   --tg-panel-width: 300px;
   --tg-full-width: 100%;
   --tg-full-height: 100%;
+  --tg-viewport-inline-gutter: var(--tg-space-6);
   --tg-panel-inline-end: 100%;
   --tg-text-sm: 0.8rem;
   --tg-text-md: 1rem;

@@ -1,5 +1,9 @@
 export const useOptionsStore = defineStore("options", () => {
-  const { isDark, toggleDark } = useTheme()
+  const settingsStore = useSettingsStore()
+  const isDark = computed(() => settingsStore.settings.interfaceTheme === 'dark')
+  const toggleDark = () => settingsStore.updateSettings({
+    interfaceTheme: isDark.value ? 'light' : 'dark'
+  })
 
   const { data: profile } = useBrowserSyncStorage<{
     name: string

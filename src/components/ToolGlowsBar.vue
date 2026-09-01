@@ -884,7 +884,7 @@ onUnmounted(() => {
   justify-content: center;
   width: var(--tg-full-width);
   height: var(--tg-full-height);
-  line-height: 1;
+  line-height: var(--tg-line-height-tight);
   font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
   font-style: normal;
   transform: none !important;
@@ -968,7 +968,7 @@ onUnmounted(() => {
   cursor: grab !important;
   touch-action: none;
   overflow: hidden;
-  border-radius: 50% !important;
+  border-radius: var(--tg-radius-full) !important;
 }
 
 .toolglows-clickable-setting {
@@ -995,15 +995,10 @@ onUnmounted(() => {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-right: var(--tg-space-1);
+  max-width: calc(100vw - var(--tg-viewport-inline-gutter) - var(--tg-size-main-control));
 }
 
-@media (max-width: 640px) {
-  .toolglows-bar {
-    max-width: calc(100vw - 2rem);
-  }
-
-  .toolglows-tools-container {
-    max-width: calc(100vw - 6rem);
-  }
+.toolglows-bar {
+  max-width: calc(100vw - var(--tg-viewport-inline-gutter));
 }
 </style>

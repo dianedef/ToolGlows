@@ -1,204 +1,74 @@
 <script setup lang="ts">
-import { useStorage } from '@vueuse/core'
+import { reactive, ref } from 'vue'
+import { useSettingsStore, type ToolGlowsSettings } from '@/stores/settings'
 
-const settings = useStorage('toolglows-settings', {
-  darkMode: {
-    autoSync: true,
-    excludedDomains: [] as string[],
-    sunsetTime: '19:00',
-    sunriseTime: '07:00'
-  },
-  searchJumper: {
-    defaultEngine: 'google',
-    shortcuts: true,
-    contextMenu: true
-  },
-  readerMode: {
-    fontSize: 18,
-    fontFamily: 'Arial',
-    theme: 'light'
-  },
-  richCopy: {
-    defaultFormat: 'markdown',
-    includeFavicon: true,
-    includeSource: true
-  }
+const settingsStore = useSettingsStore()
+const form = reactive<ToolGlowsSettings>({
+  ...settingsStore.settings,
+  position: { ...settingsStore.settings.position }
 })
+const saveState = ref<'idle' | 'saving' | 'success' | 'error'>('idle')
 
-const excludedDomainsText = computed({
-  get: () => settings.value.darkMode.excludedDomains.join('\n'),
-  set: (value: string) => {
-    settings.value.darkMode.excludedDomains = value
-      .split('\n')
-      .map(domain => domain.trim())
-      .filter(Boolean)
+async function saveSettings() {
+  saveState.value = 'saving'
+  try {
+    await settingsStore.updateSettings({
+      interfaceTheme: form.interfaceTheme,
+      expanded: form.expanded,
+      isPinned: form.isPinned,
+      toolbarSize: form.toolbarSize,
+      toolbarColor: form.toolbarColor
+    })
+    saveState.value = 'success'
+  } catch {
+    saveState.value = 'error'
   }
-})
-
-function saveSettings() {
-  void settings.value
 }
+
+defineExpose({ saveState })
 </script>
 
 <template>
-  <form
-    class="options-page"
-    @submit.prevent="saveSettings"
-  >
+  <form class="options-page" @submit.prevent="saveSettings">
     <h1>Paramètres ToolGlows</h1>
-
     <section>
-      <h2>Mode sombre</h2>
-      <label class="checkbox-row">
-        <input
-          v-model="settings.darkMode.autoSync"
-          type="checkbox"
-        >
-        <span>Synchronisation automatique</span>
-      </label>
-      <label>
-        Domaines exclus
-        <textarea
-          v-model="excludedDomainsText"
-          placeholder="example.com"
-          rows="4"
-        />
-      </label>
-      <div class="time-grid">
-        <label>
-          Debut
-          <input
-            v-model="settings.darkMode.sunsetTime"
-            type="time"
-          >
-        </label>
-        <label>
-          Fin
-          <input
-            v-model="settings.darkMode.sunriseTime"
-            type="time"
-          >
-        </label>
-      </div>
-    </section>
-
-    <section>
-      <h2>SearchJumper</h2>
-      <label>
-        Moteur par defaut
-        <select v-model="settings.searchJumper.defaultEngine">
-          <option value="google">Google</option>
-          <option value="bing">Bing</option>
-          <option value="duckduckgo">DuckDuckGo</option>
-        </select>
-      </label>
-      <label class="checkbox-row">
-        <input
-          v-model="settings.searchJumper.shortcuts"
-          type="checkbox"
-        >
-        <span>Activer les raccourcis</span>
-      </label>
-      <label class="checkbox-row">
-        <input
-          v-model="settings.searchJumper.contextMenu"
-          type="checkbox"
-        >
-        <span>Menu contextuel</span>
-      </label>
-    </section>
-
-    <section>
-      <h2>Mode lecture</h2>
-      <label>
-        Taille de police
-        <input
-          v-model.number="settings.readerMode.fontSize"
-          min="12"
-          max="24"
-          type="number"
-        >
-      </label>
-      <label>
-        Police
-        <select v-model="settings.readerMode.fontFamily">
-          <option value="Arial">Arial</option>
-          <option value="Times New Roman">Times New Roman</option>
-          <option value="Georgia">Georgia</option>
-        </select>
-      </label>
-      <label>
-        Theme
-        <select v-model="settings.readerMode.theme">
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="sepia">Sepia</option>
+      <h2>Interface</h2>
+      <label>Thème de l’interface
+        <select v-model="form.interfaceTheme">
+          <option value="light">Clair</option>
+          <option value="dark">Sombre</option>
         </select>
       </label>
     </section>
-
-    <button type="submit">Enregistrer</button>
+    <section>
+      <h2>Barre d’outils</h2>
+      <label class="checkbox-row"><input v-model="form.expanded" type="checkbox"><span>Barre ouverte par défaut</span></label>
+      <label class="checkbox-row"><input v-model="form.isPinned" type="checkbox"><span>Barre épinglée</span></label>
+      <label>Couleur <input v-model="form.toolbarColor" type="color"></label>
+      <label>Taille
+        <select v-model="form.toolbarSize">
+          <option value="xs">Très petite</option><option value="sm">Petite</option><option value="md">Moyenne</option><option value="lg">Grande</option><option value="xl">Très grande</option>
+        </select>
+      </label>
+    </section>
+    <div class="save-row">
+      <button type="submit" :disabled="saveState === 'saving'">{{ saveState === 'saving' ? 'Enregistrement…' : 'Enregistrer' }}</button>
+      <p v-if="saveState === 'success'" class="save-feedback" role="status">Paramètres enregistrés.</p>
+      <p v-else-if="saveState === 'error'" class="save-feedback save-feedback-error" role="alert">Impossible d’enregistrer les paramètres. Réessayez.</p>
+    </div>
   </form>
 </template>
 
 <style scoped>
-.options-page {
-  max-width: var(--tg-size-800);
-  margin: 0 auto;
-  padding: var(--tg-space-6);
-}
-
-section {
-  margin: var(--tg-space-6) 0;
-}
-
-h2 {
-  margin: 0 0 var(--tg-space-4);
-  font-size: var(--tg-size-tool-font-md);
-  font-weight: 600;
-}
-
-label {
-  display: grid;
-  gap: var(--tg-space-1-5);
-  margin-bottom: var(--tg-space-4);
-  font-weight: 500;
-}
-
-input,
-select,
-textarea {
-  width: 100%;
-  border: 1px solid var(--tg-border-default);
-  border-radius: var(--tg-radius-control);
-  padding: var(--tg-space-2);
-  font: inherit;
-}
-
-.checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: var(--tg-space-2);
-}
-
-.checkbox-row input {
-  width: auto;
-}
-
-.time-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--tg-space-4);
-}
-
-button {
-  border: 0;
-  border-radius: var(--tg-radius-control);
-  background: var(--tg-action);
-  color: var(--tg-action-on);
-  cursor: pointer;
-  font: inherit;
-  font-weight: 600;
-  padding: var(--tg-space-2) var(--tg-space-4);
-}
+.options-page { max-width: var(--tg-size-800); margin: 0 auto; padding: var(--tg-space-6); }
+section { margin: var(--tg-space-6) 0; }
+h2 { margin: 0 0 var(--tg-space-4); font-size: var(--tg-size-tool-font-md); font-weight: 600; }
+label { display: grid; gap: var(--tg-space-1-5); margin-bottom: var(--tg-space-4); font-weight: 500; }
+input, select { width: 100%; border: 1px solid var(--tg-border-default); border-radius: var(--tg-radius-control); padding: var(--tg-space-2); font: inherit; }
+.checkbox-row { display: flex; align-items: center; justify-content: flex-start; gap: var(--tg-space-2); }
+.checkbox-row input, input[type='color'] { width: auto; }
+.save-row { display: flex; align-items: center; gap: var(--tg-space-4); flex-wrap: wrap; }
+button { border: 0; border-radius: var(--tg-radius-control); background: var(--tg-action); color: var(--tg-action-on); cursor: pointer; font: inherit; font-weight: 600; padding: var(--tg-space-2) var(--tg-space-4); }
+button:disabled { cursor: wait; }
+.save-feedback { margin: 0; color: var(--tg-text-primary); }
 </style>
