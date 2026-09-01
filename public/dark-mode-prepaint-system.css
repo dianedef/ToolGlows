@@ -3,25 +3,4 @@
     background-color: #1b1f24 !important;
     color-scheme: dark !important;
   }
-
-  #toolglows-dark-mode-prepaint-overlay {
-    background: #1b1f24 !important;
-    bottom: 0 !important;
-    box-sizing: border-box !important;
-    contain: strict !important;
-    display: block !important;
-    height: 100vh !important;
-    inset: 0 !important;
-    left: 0 !important;
-    margin: 0 !important;
-    opacity: 1 !important;
-    pointer-events: none !important;
-    position: fixed !important;
-    right: 0 !important;
-    top: 0 !important;
-    transition: none !important;
-    visibility: visible !important;
-    width: 100vw !important;
-    z-index: 2147483647 !important;
-  }
 }

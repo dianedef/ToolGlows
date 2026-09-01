@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
 project: "toolglows"
 created: "2026-08-29"
-updated: "2026-08-31"
+updated: "2026-09-01"
 status: active
 source_skill: sg-design
 source_model: "Codex"
@@ -44,7 +44,7 @@ As a ToolGlows user, I want adapted web pages to remain harmonious and structura
 - Runtime-inserted content receives the same mapping and all markers are removed when dark mode stops.
 - Graphite is selectable beside Custom; changing presets is reversible and never discards the last custom colors.
 - Dark-mode setting controls persist and apply the value emitted by the interaction rather than a stale previous value.
-- Dark-mode startup uses a persistent packaged prepaint before host DOM display, never an asynchronously added opaque interstitial. It remains generic across sites and preserves exclusions, schedules and system-preference behavior.
+- Dark-mode startup uses a persistent packaged root prepaint before host DOM display, then starts the actual engine from cached state at `document_start`; it never adds an opaque interstitial or waits for page-load heuristics. It remains generic across sites and preserves exclusions, schedules and system-preference behavior.
 - Disabling or removing Dark Mode from the loaded-tool list persists `darkModeActive=false`, retires the bootstrap canvas and removes all page markers.
 - PrimeVue CSS is scoped to ToolGlows-owned containers, so host fields with classes such as `.p-inputtext` or `.p-dropdown` remain untouched while page dark mode is off.
 
@@ -115,6 +115,7 @@ Update the design-system authority and dark-mode architecture. No public claims 
 | 2026-08-31 | sg-bug | Codex | Removed the rejected readiness interstitial and its timeout while retaining dark-state loading independent from toolbar mounting. | automated proof passed | Reload the unpacked extension and confirm that the artificial middle stage is gone. |
 | 2026-08-31 | sg-bug | Codex | Assessed a generic declarative pre-paint for Chrome and Firefox. A persistent dynamically registered CSS content script can run before host DOM display, but requires `scripting`, explicit host permission and a fixed packaged fallback palette; exact schedule-boundary updates may additionally require `alarms`. | design ready — permission approval required | Choose the permitted automation scope before changing either manifest. |
 | 2026-08-31 | sg-bug | Codex | Implemented the approved persistent prepaint with packaged manual/system CSS, exact-domain exclusions, schedule alarms, readiness retirement and explicit cross-browser permissions. | automated proof passed — rendered proof pending | Reload the unpacked extension, accept its updated permissions if prompted, then visually retest Docker. |
+| 2026-09-01 | sg-bug | Codex | Removed the rejected DOM overlay and visual-readiness wait; the independent document-start entry now starts the actual engine from cached state while the Vue toolbar remains at document-end. | Docker reload accepted — delayed SVG preservation pending | Move the existing media-color preservation rule into the early engine path so marked SVGs never change color after first paint. |
 
 ## Current Chantier Flow
 
@@ -152,8 +153,12 @@ Update the design-system authority and dark-mode architecture. No public claims 
 
 2026-08-31 settling-window retest: the operator found the root background better but the central white content slower, exposing that the wildcard prepaint itself changed every descendant's computed background before DarkReader analysis. A viewport pseudo-element then proved unreliable on repeated Docker reloads. The bootstrap now injects a stable fixed DOM overlay at `document_start`; it leaves host computed styles authoritative underneath and releases only after the existing visual readiness check or its failsafe. Rebuilt proof is pending.
 
+2026-09-01 early-engine correction: operator comparison showed manual activation was immediate while reload remained about one second slower, proving the overlay and readiness wait extended the visible startup path without accelerating the engine. The overlay, large-surface polling, load gate and 15-second failsafe are removed. The cached document-start path now invokes the same normalized engine configuration used by manual activation, retires the declarative root prepaint immediately and leaves only a non-blocking root/body backdrop. Schedules, system preference and exact-domain exclusions remain unchanged; rendered human proof is pending.
+
+2026-09-01 rendered reload acceptance: the operator judged the Docker page background and central content startup visually successful. The remaining Docker logo transition is separately diagnosed: the early engine can mark its inline SVG with `data-darkreader-inline-invert`, while ToolGlows' authoritative no-inversion/media attenuation CSS is still installed by the document-end bundle. The SVG therefore changes once when that later rule takes ownership; this remains open and does not invalidate the accepted page-surface startup.
+
 - sg-design: active
 - readiness: ready
-- implementation: correction in progress
-- verification: 66 tests, typecheck and Chrome/Firefox builds pass; both packages contain the prepaint assets and permissions; manifest lint has 0 errors and 10 known generated-bundle warnings; human Docker reload proof remains pending
+- implementation: early-engine correction implemented
+- verification: focused early-start, lifecycle and prepaint tests, typecheck and Chrome/Firefox builds pass; manifest lint has 0 errors and 12 generated-bundle warnings; human Docker page-surface reload proof passed, with delayed SVG color preservation still open
 - delivery: local only

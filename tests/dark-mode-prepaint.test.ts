@@ -1,3 +1,6 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
 import {
   DARK_MODE_PREPAINT_ALARM,
@@ -8,7 +11,18 @@ import {
   type DarkModePrepaintApi
 } from '../src/background/darkModePrepaint'
 
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+
 describe('persistent dark-mode prepaint', () => {
+  it('packages only a root backdrop and no opaque viewport overlay', () => {
+    for (const file of ['dark-mode-prepaint.css', 'dark-mode-prepaint-system.css']) {
+      const css = fs.readFileSync(path.join(root, 'public', file), 'utf8')
+      expect(css).toContain(':root:not([data-toolglows-dark-prepaint-retired])')
+      expect(css).not.toContain('toolglows-dark-mode-prepaint-overlay')
+      expect(css).not.toContain('position: fixed')
+    }
+  })
+
   it('resolves manual, system and scheduled activation without a page context', () => {
     expect(resolveDarkModePrepaintMode({ isActive: true })).toBe('always')
     expect(resolveDarkModePrepaintMode({ isActive: false })).toBe('off')

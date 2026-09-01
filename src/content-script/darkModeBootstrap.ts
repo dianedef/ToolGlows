@@ -1,10 +1,13 @@
-export interface DarkModeBootstrapOptions {
-  backgroundColor?: unknown
-  textColor?: unknown
+import {
+  enableDarkModeEngine,
+  resolveDarkModeEngineOptions,
+  type DarkModeEngineOptions
+} from './darkModeEngine'
+
+export interface DarkModeBootstrapOptions extends Partial<DarkModeEngineOptions> {
   autoEnable?: unknown
   scheduleStart?: unknown
   scheduleEnd?: unknown
-  excludedDomains?: unknown
   syncWithSystem?: unknown
 }
 
@@ -18,19 +21,6 @@ export const DARK_MODE_PREPAINT_OVERLAY_ID = 'toolglows-dark-mode-prepaint-overl
 export const DARK_MODE_PREPAINT_RETIRED_ATTRIBUTE = 'data-toolglows-dark-prepaint-retired'
 
 let bootstrapGeneration = 0
-let readinessObserver: MutationObserver | null = null
-let readinessTimer: ReturnType<typeof setTimeout> | null = null
-let readinessHardTimer: ReturnType<typeof setTimeout> | null = null
-let readinessSettleTimer: ReturnType<typeof setTimeout> | null = null
-let readinessLoadListener: (() => void) | null = null
-
-const LIGHT_SURFACE_MIN_VIEWPORT_RATIO = 0.12
-const LIGHT_SURFACE_LUMINANCE = 0.8
-const VIEWPORT_SAMPLE_RATIOS = [0.2, 0.5, 0.8]
-
-function normalizeColor(value: unknown, fallback: string): string {
-  return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value : fallback
-}
 
 function getMinutes(value: unknown): number | null {
   if (typeof value !== 'string') return null
@@ -69,156 +59,33 @@ export function shouldBootstrapDarkMode(
   return state.isActive === true
 }
 
+export function retireDarkModePrepaint(): void {
+  document.documentElement?.setAttribute(DARK_MODE_PREPAINT_RETIRED_ATTRIBUTE, '')
+  // Remove the rejected overlay from already-open tabs during extension updates.
+  document.getElementById(DARK_MODE_PREPAINT_OVERLAY_ID)?.remove()
+}
+
 export function retireDarkModeBootstrap(): void {
   bootstrapGeneration += 1
-  readinessObserver?.disconnect()
-  readinessObserver = null
-  if (readinessTimer) clearTimeout(readinessTimer)
-  readinessTimer = null
-  if (readinessHardTimer) clearTimeout(readinessHardTimer)
-  readinessHardTimer = null
-  if (readinessSettleTimer) clearTimeout(readinessSettleTimer)
-  readinessSettleTimer = null
-  if (readinessLoadListener) window.removeEventListener('load', readinessLoadListener)
-  readinessLoadListener = null
-  document.documentElement?.setAttribute(DARK_MODE_PREPAINT_RETIRED_ATTRIBUTE, '')
-  document.getElementById(DARK_MODE_PREPAINT_OVERLAY_ID)?.remove()
+  retireDarkModePrepaint()
   document.getElementById(DARK_MODE_BOOTSTRAP_STYLE_ID)?.remove()
 }
 
-function isDarkModeEngineReady(): boolean {
-  if (typeof document === 'undefined') return false
-  const fallback = document.querySelector('style.darkreader--fallback')
-  return document.documentElement?.getAttribute('data-darkreader-mode') === 'dynamic' &&
-    fallback instanceof HTMLStyleElement &&
-    fallback.textContent?.trim() === ''
-}
-
-function isLightOpaqueColor(color: string): boolean {
-  const match = color.match(/^rgba?\(\s*(\d+(?:\.\d+)?)\s*[, ]\s*(\d+(?:\.\d+)?)\s*[, ]\s*(\d+(?:\.\d+)?)(?:\s*[,/]\s*(\d*(?:\.\d+)?))?\s*\)$/i)
-  if (!match) return false
-
-  const [, red, green, blue, alpha = '1'] = match
-  if (Number(alpha) < 0.85) return false
-  const luminance = (0.2126 * Number(red) + 0.7152 * Number(green) + 0.0722 * Number(blue)) / 255
-  return luminance >= LIGHT_SURFACE_LUMINANCE
-}
-
-export function hasVisibleLargeLightSurface(): boolean {
-  if (typeof document === 'undefined' || typeof window === 'undefined') return false
-  if (typeof document.elementFromPoint !== 'function') return false
-  const viewportWidth = window.innerWidth
-  const viewportHeight = window.innerHeight
-  const viewportArea = viewportWidth * viewportHeight
-  if (viewportArea <= 0) return false
-
-  const inspected = new Set<Element>()
-  for (const yRatio of VIEWPORT_SAMPLE_RATIOS) {
-    for (const xRatio of VIEWPORT_SAMPLE_RATIOS) {
-      let element: Element | null = document.elementFromPoint(viewportWidth * xRatio, viewportHeight * yRatio)
-      while (element) {
-        if (!inspected.has(element)) {
-          inspected.add(element)
-          const rect = element.getBoundingClientRect()
-          const visibleWidth = Math.max(0, Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0))
-          const visibleHeight = Math.max(0, Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0))
-          if (
-            visibleWidth * visibleHeight >= viewportArea * LIGHT_SURFACE_MIN_VIEWPORT_RATIO &&
-            isLightOpaqueColor(window.getComputedStyle(element).backgroundColor)
-          ) return true
-        }
-        element = element.parentElement
-      }
-    }
-  }
-  return false
-}
-
-export function releaseDarkModePrepaintWhenReady(hardTimeoutMs = 15_000, settleMs = 150): void {
-  readinessObserver?.disconnect()
-  if (readinessTimer) clearTimeout(readinessTimer)
-  if (readinessHardTimer) clearTimeout(readinessHardTimer)
-  if (readinessSettleTimer) clearTimeout(readinessSettleTimer)
-  if (readinessLoadListener) window.removeEventListener('load', readinessLoadListener)
-
-  let visuallyReadySince: number | null = null
-  const scheduleReleaseIfReady = () => {
-    if (typeof document === 'undefined' || typeof window === 'undefined') return false
-    if (readinessTimer) clearTimeout(readinessTimer)
-    readinessTimer = null
-    if (!isDarkModeEngineReady() || document.readyState !== 'complete' || hasVisibleLargeLightSurface()) {
-      visuallyReadySince = null
-      if (readinessSettleTimer) clearTimeout(readinessSettleTimer)
-      readinessSettleTimer = null
-      readinessTimer = setTimeout(scheduleReleaseIfReady, 100)
-      return false
-    }
-
-    const now = performance.now()
-    visuallyReadySince ??= now
-    const remainingSettleMs = Math.max(0, settleMs - (now - visuallyReadySince))
-    if (readinessSettleTimer) clearTimeout(readinessSettleTimer)
-    readinessSettleTimer = setTimeout(() => {
-      readinessSettleTimer = null
-      if (hasVisibleLargeLightSurface()) {
-        visuallyReadySince = null
-        scheduleReleaseIfReady()
-        return
-      }
-      if (performance.now() - (visuallyReadySince ?? performance.now()) >= settleMs) {
-        retireDarkModeBootstrap()
-        return
-      }
-      scheduleReleaseIfReady()
-    }, Math.min(remainingSettleMs || settleMs, 50))
-    return true
-  }
-  scheduleReleaseIfReady()
-
-  readinessObserver = new MutationObserver(() => {
-    scheduleReleaseIfReady()
-  })
-  readinessObserver.observe(document.documentElement, {
-    attributes: true,
-    childList: true,
-    subtree: true,
-    characterData: true
-  })
-  readinessLoadListener = () => scheduleReleaseIfReady()
-  window.addEventListener('load', readinessLoadListener, { once: true })
-  // This is only an emergency escape hatch. Normal retirement is visual: the
-  // page must be fully loaded, the dark-mode engine ready, and large light surfaces gone.
-  readinessHardTimer = setTimeout(() => retireDarkModeBootstrap(), hardTimeoutMs)
-}
-
 export function buildDarkModeBackdropCss(options: DarkModeBootstrapOptions = {}): string {
-  const backgroundColor = normalizeColor(options.backgroundColor, '#1a1a1a')
-  const textColor = normalizeColor(options.textColor, '#e0e0e0')
-
+  const resolved = resolveDarkModeEngineOptions(options)
   return `
-    :root { color-scheme: dark !important; background-color: ${backgroundColor} !important; }
-    html, body { background-color: ${backgroundColor} !important; color: ${textColor} !important; }
-    #${DARK_MODE_PREPAINT_OVERLAY_ID} { background-color: ${backgroundColor} !important; }
+    :root { color-scheme: dark !important; background-color: ${resolved.backgroundColor} !important; }
+    html, body { background-color: ${resolved.backgroundColor} !important; color: ${resolved.textColor} !important; }
   `
 }
 
 export function maintainDarkModeBackdrop(options: DarkModeBootstrapOptions = {}): void {
-  document.documentElement?.removeAttribute(DARK_MODE_PREPAINT_RETIRED_ATTRIBUTE)
-  let overlay = document.getElementById(DARK_MODE_PREPAINT_OVERLAY_ID)
-  if (!overlay) {
-    overlay = document.createElement('div')
-    overlay.id = DARK_MODE_PREPAINT_OVERLAY_ID
-    overlay.setAttribute('aria-hidden', 'true')
-    document.documentElement?.appendChild(overlay)
-  }
   let style = document.getElementById(DARK_MODE_BOOTSTRAP_STYLE_ID) as HTMLStyleElement | null
-
   if (!style) {
     style = document.createElement('style')
     style.id = DARK_MODE_BOOTSTRAP_STYLE_ID
     ;(document.head ?? document.documentElement).appendChild(style)
   }
-
   style.textContent = buildDarkModeBackdropCss(options)
 }
 
@@ -245,9 +112,12 @@ export async function installDarkModeBootstrap(): Promise<void> {
       return
     }
 
+    // Start the real engine at document_start. A root backdrop stays underneath,
+    // but no opaque element or readiness delay hides the page while it loads.
     maintainDarkModeBackdrop(state.options)
-    releaseDarkModePrepaintWhenReady()
+    enableDarkModeEngine(state.options)
+    retireDarkModePrepaint()
   } catch (error) {
-    console.warn('[DARK MODE] Unable to install the pre-render theme:', error)
+    console.warn('[DARK MODE] Unable to install the early theme:', error)
   }
 }
