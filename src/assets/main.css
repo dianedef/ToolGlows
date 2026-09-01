@@ -185,21 +185,6 @@
   overflow: hidden;
 }
 
-/* Legacy tool styles remain visually compatible while components migrate to
-   semantic roles. PrimeVue still owns behavior and interaction semantics. */
-.toolglows-dialog {
-  --surface-card: var(--tg-surface-raised);
-  --surface-ground: var(--tg-surface-muted);
-  --surface-overlay: var(--tg-surface-overlay);
-  --surface-hover: var(--tg-interaction-hover);
-  --surface-border: var(--tg-border-default);
-  --text-color: var(--tg-text-primary);
-  --text-color-secondary: var(--tg-text-secondary);
-  --primary-color: var(--tg-action);
-  --primary-color-text: var(--tg-action-on);
-  --border-radius: var(--tg-radius-control);
-}
-
 .toolglows-dialog .p-dialog-header {
   gap: var(--tg-space-3);
   padding: var(--tg-space-5-half) var(--tg-space-5);

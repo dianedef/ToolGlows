@@ -1,7 +1,7 @@
 ---
 artifact: design_system_authority
 metadata_schema_version: "1.0"
-artifact_version: "1.3.0"
+artifact_version: "1.3.1"
 project: "toolglows"
 created: "2026-08-28"
 updated: "2026-09-01"
@@ -22,6 +22,7 @@ supersedes: []
 evidence:
   - "Established after a design-system audit found no declared authority and 578 visual-value findings."
   - "2026-09-01: Popup, options and injected toolbar proof confirmed one persisted interface-theme authority, narrow reflow and reduced-motion behavior."
+  - "2026-09-01: Teleported dialog boundaries received semantic tokens directly after circular compatibility aliases made modal surfaces transparent."
 next_step: "Resolve the remaining documented project-owned drift findings."
 ---
 
@@ -31,7 +32,7 @@ next_step: "Resolve the remaining documented project-owned drift findings."
 
 PrimeVue theme files provide the underlying light or dark palette. ToolGlows components and runtime overlays consume semantic `--tg-*` roles rather than selecting their own colors, surfaces, interaction states, radii, shadows or motion values.
 
-Extension pages also load the same semantic entry point. The authority maps its roles to PrimeVue variables in injected UI and to DaisyUI variables in popup/options surfaces; those providers supply palette primitives but never become separate ToolGlows semantic authorities. Tokens are exposed on the extension-page `#app` boundary and the injected `#toolglows-root` boundary.
+Extension pages also load the same semantic entry point. The authority maps its roles to PrimeVue variables in injected UI and to DaisyUI variables in popup/options surfaces; those providers supply palette primitives but never become separate ToolGlows semantic authorities. Tokens are exposed on the extension-page `#app` boundary, the injected `#toolglows-root` boundary and the document-level boundaries used by teleported ToolGlows UI.
 
 Third-party page adaptation uses the separate `--tg-page-dark-*` namespace in the same canonical source. These roles define graphite surface hierarchy, action and success states, borders, focus, elevation and media glare treatment without allowing visited pages to become a competing token authority.
 
@@ -45,7 +46,7 @@ Settings controls use shared composition rows inside the dialog shell. Toggle la
 
 Settings surfaces follow one structural grammar: shell, section, row, then control or state. A section may use a muted raised surface to group a meaningful subject; a simple field row remains transparent and is separated by rhythm or a subtle divider instead of becoming another nested card. Selectable tool cards are the deliberate exception because their container communicates an interactive choice. The quick toolbar dialog and full options page may differ in density, but both consume this same hierarchy and the canonical responsive width and spacing tokens.
 
-Within the `.toolglows-dialog` boundary, maintained compatibility aliases map legacy PrimeVue semantic variables to canonical `--tg-*` roles. This is a migration bridge for older tool panels, not a second token authority; new settings code consumes the ToolGlows roles and shared settings primitives directly.
+The `.toolglows-dialog` boundary receives canonical `--tg-*` tokens directly because PrimeVue teleports the dialog beside `body`, outside `#toolglows-root`. The scoped PrimeVue provider supplies the underlying light or dark palette on that same boundary; ToolGlows semantic tokens consume those provider variables without redefining them as reverse aliases. This prevents circular custom-property resolution while keeping the visited page outside the extension theme.
 
 Dialog footers preserve source and keyboard order while exposing a consistent action hierarchy: a text-style secondary action anchors the start edge and the final primary action anchors the end edge. Shared minimum sizing keeps targets legible; narrow viewports stack actions at full width without reversing their order. Tool components provide labels and handlers but do not wrap or locally recompose footer actions.
 
@@ -66,6 +67,7 @@ Legacy theme modules may remain as unreferenced migration evidence, but they mus
 - Add new reusable visual values only to the canonical token source.
 - Use `--tg-page-dark-*` roles for visited-page adaptation; range classifiers return semantic roles rather than raw replacement colors.
 - Use the shared dialog wrapper for every product modal; do not apply a fixed global dialog `z-index` that disables PrimeVue stacking.
+- Keep semantic tokens and the scoped PrimeVue palette directly available on every teleported ToolGlows boundary; do not bridge provider variables back to the `--tg-*` roles they feed.
 - Keep dialog-shell finish on the shared wrapper and stylesheet; tool components may define content layout but must not replace the outer border, elevation or radius.
 - Compose settings as shared sections and rows; do not automatically turn each direct field into a bordered card.
 - Keep direct footer actions in semantic secondary-then-primary DOM order and let the shared dialog shell own their spacing, sizing and responsive reflow.

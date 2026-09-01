@@ -5,7 +5,12 @@
  */
 :root,
 #app,
-#toolglows-root {
+#toolglows-root,
+/* PrimeVue teleports dialogs outside the extension mount point. Keep the
+   semantic token boundary on the teleported nodes themselves. */
+.toolglows-dialog,
+.toolglows-dialog-mask,
+[data-toolglows-ui] {
   --tg-size-20: 1.25rem;
   --tg-surface-canvas: var(--surface-ground, oklch(var(--b1)));
   --tg-surface-raised: var(--surface-card, oklch(var(--b1)));

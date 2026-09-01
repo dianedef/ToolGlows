@@ -1,8 +1,11 @@
 import { readdirSync, readFileSync } from 'node:fs'
+import postcss from 'postcss'
 import { describe, expect, it } from 'vitest'
 
+import { scopeToolGlowsCss } from '../src/utils/scopeCss'
+
 describe('settings interface redesign', () => {
-  it('governs every dialog consumer through the semantic shared shell', () => {
+  it('exposes semantic tokens directly on teleported dialog boundaries', () => {
     const dialogConsumers = readdirSync('src/components')
       .filter(file => file.endsWith('.vue'))
       .filter(file =>
@@ -11,12 +14,24 @@ describe('settings interface redesign', () => {
         ),
       )
     const sharedStyles = readFileSync('src/assets/main.css', 'utf8')
+    const tokens = readFileSync('src/assets/design-tokens.css', 'utf8')
+    const scopedTokens = postcss.parse(scopeToolGlowsCss(tokens))
+    const dialogTokenRule = scopedTokens.nodes.find(
+      node =>
+        node.type === 'rule' &&
+        node.selectors.includes('.toolglows-dialog') &&
+        node.nodes.some(
+          child =>
+            child.type === 'decl' && child.prop === '--tg-surface-raised',
+        ),
+    )
 
     expect(dialogConsumers).toHaveLength(20)
-    expect(sharedStyles).toContain('--surface-card: var(--tg-surface-raised)')
-    expect(sharedStyles).toContain('--surface-hover: var(--tg-interaction-hover)')
-    expect(sharedStyles).toContain('--text-color: var(--tg-text-primary)')
-    expect(sharedStyles).toContain('--primary-color: var(--tg-action)')
+    expect(dialogTokenRule).toBeDefined()
+    expect(tokens).toContain('.toolglows-dialog,')
+    expect(sharedStyles).not.toContain(
+      '--surface-card: var(--tg-surface-raised)',
+    )
   })
 
   it('uses cards for sections rather than every simple field', () => {
