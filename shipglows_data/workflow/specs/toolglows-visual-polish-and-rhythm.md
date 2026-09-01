@@ -1,13 +1,13 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.9.0"
+artifact_version: "1.0.0"
 project: "toolglows"
 created: "2026-09-01"
 created_at: "2026-09-01 12:37:37 UTC"
 updated: "2026-09-01"
-updated_at: "2026-09-01 12:46:00 UTC"
-status: verified
+updated_at: "2026-09-01 12:46:28 UTC"
+status: complete
 source_skill: sg-design
 source_model: "Codex"
 scope: "visual-polish-spacing-radius-controls"
@@ -30,7 +30,7 @@ supersedes: []
 evidence:
   - "Operator feedback 2026-09-01: interface coherence is present but spacing and rounding need a beauty pass."
   - "The toolbar-size native select renders with a transparent background; the same component family must be checked globally."
-next_step: "Persist the verified implementation and close delivery."
+next_step: "Chantier closed; use rendered feedback to choose any future visual direction."
 ---
 
 # ToolGlows Visual Polish and Rhythm
@@ -97,11 +97,12 @@ As a ToolGlows user, I want settings and controls to feel spacious, structured a
 |----------|-------|-------|--------|--------|-----------|
 | 2026-09-01 12:37 UTC | sg-design | Codex | Created the approved visual-polish contract including the global selector-background check. | ready | Implement Batch 1. |
 | 2026-09-01 12:46 UTC | sg-development | Codex | Applied canonical spacing, panel radii and selector surfaces; repaired shared-header reflow discovered by zoom proof. | verified | Persist the milestone and close delivery. |
+| 2026-09-01 12:46 UTC | sg-design | Codex | Delivered the verified visual-polish milestone to `origin/main` in commit `8e23e62`. | complete | Chantier closed. |
 
 ## Current Chantier Flow
 
-- sg-design: verified
+- sg-design: complete
 - readiness: ready
 - implementation: complete
 - verification: passed — 82 tests, typecheck, Chrome/Firefox builds, manifest lint, drift scan and isolated Edge proof
-- delivery: pending
+- delivery: pushed to `origin/main` — `8e23e62`
