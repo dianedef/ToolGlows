@@ -170,11 +170,11 @@
 
 /* PrimeVue retains dialog semantics and focus management; this shared shell
    owns ToolGlows' visual consistency for every teleported modal. */
-.p-dialog-mask:has(> .toolglows-dialog) {
+.toolglows-dialog-mask {
   padding: var(--tg-space-4);
 }
 
-.p-dialog-mask > .toolglows-dialog.p-dialog {
+.toolglows-dialog-mask > .toolglows-dialog.p-dialog {
   max-width: calc(100vw - var(--tg-space-6));
   max-height: calc(100vh - var(--tg-space-6));
   height: auto;
@@ -204,9 +204,12 @@
 }
 
 .toolglows-dialog .p-dialog-content {
+  min-height: 0;
   padding: var(--tg-space-4);
   background: var(--tg-surface-raised);
   color: var(--tg-text-primary);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .toolglows-dialog .p-dialog-footer {
@@ -230,7 +233,7 @@
   margin-inline-end: auto;
 }
 
-.toolglows-settings-dialog.p-dialog {
+.toolglows-dialog.toolglows-settings-dialog.p-dialog {
   width: min(
     var(--tg-size-settings-dialog),
     calc(var(--tg-full-width) - var(--tg-space-6))

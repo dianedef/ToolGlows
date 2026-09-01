@@ -10,6 +10,8 @@ describe('shared ToolGlows dialog shell', () => {
     expect(wrapper).toContain(':auto-z-index="true"')
     expect(wrapper).toContain(':base-z-index="dialogBaseZIndex"')
     expect(wrapper).toContain(':style="dialogShellStyle"')
+    expect(wrapper).toContain(':pt="dialogPassThrough"')
+    expect(wrapper).toContain("mask: { class: 'toolglows-dialog-mask' }")
   })
 
   it('owns shell and settings-group finish in the shared stylesheet', () => {
@@ -17,7 +19,7 @@ describe('shared ToolGlows dialog shell', () => {
     expect(css).toContain('.toolglows-dialog .p-dialog-header')
     expect(css).toContain('.toolglows-dialog .p-dialog-content')
     expect(css).toContain('.toolglows-dialog .p-dialog-footer')
-    expect(css).toContain('.p-dialog-mask > .toolglows-dialog.p-dialog')
+    expect(css).toContain('.toolglows-dialog-mask > .toolglows-dialog.p-dialog')
     expect(css).toContain('var(--tg-radius-floating-shell)')
     expect(css).toContain('var(--tg-radius-section)')
     expect(css).toContain('var(--tg-shadow-dialog)')

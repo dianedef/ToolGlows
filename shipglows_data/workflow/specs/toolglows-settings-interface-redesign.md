@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.0.2"
 project: "toolglows"
 created: "2026-09-01"
 updated: "2026-09-01"
@@ -32,7 +32,9 @@ evidence:
   - "Operator approval 2026-09-01: replace piecemeal settings fixes with a precise, structured redesign across settings surfaces."
   - "UI audit 2026-09-01: 20 dialog consumers, 23 legacy-theme consumers, duplicated options implementations and blanket field cardification."
   - "Edge observation 2026-09-01: circular compatibility aliases invalidated teleported dialog surface tokens and made modal backgrounds transparent."
-next_step: "Collect operator-rendered light, dark and narrow proof in the loaded Edge extension after the modal-boundary repair."
+  - "Operator Edge captures 2026-09-01: main and tool-specific modal backgrounds are opaque after the token-boundary repair."
+  - "Edge capture 2026-09-01: the main settings dialog remained too narrow and exceeded the viewport because mask, shell and settings-width selectors became impossible descendants after CSS scoping."
+next_step: "Reload the rebuilt Edge extension and collect a new main-settings capture proving bounded width, height and internal scrolling."
 ---
 
 # ToolGlows Settings Interface Redesign
@@ -67,13 +69,14 @@ As a ToolGlows user, I want every settings surface to follow one calm and predic
 - [x] Simple fields no longer receive an automatic nested card surface.
 - [x] Meaningful groups and selectable tool cards retain one clear surface each.
 - [x] Teleported settings dialogs receive semantic ToolGlows tokens without circular provider aliases.
+- [x] Operator Edge captures confirm opaque main and tool-specific modal surfaces after the token-boundary repair.
 - [x] Checkbox, select, slider, numeric and action rows share consistent sizing and focus treatment.
 - [x] Quick settings expose clear General, Site and Tools sections with the destructive action visually separated.
 - [x] Both options implementations use the same section, row and control grammar.
 - [x] Labels and accessible control relationships are valid; DOM/keyboard order remains logical.
 - [x] Normal and narrow layouts use a tokenized bounded dialog and responsive row reflow.
 - [x] Focused contracts, full tests, typecheck, Chrome/Firefox builds, manifest lint and drift checks pass.
-- [ ] Rendered light/dark/narrow proof is collected or the remaining manual proof is reported explicitly.
+- [ ] A post-reload Edge capture confirms the corrected main-dialog width, viewport height bound and internal scrolling in representative light/dark/narrow states.
 - [x] Design-system authority and changelog are aligned.
 
 ## Proof Strategy
@@ -81,7 +84,7 @@ As a ToolGlows user, I want every settings surface to follow one calm and predic
 - Evidence-first UI implementation backed by source-contract tests over all dialog consumers.
 - Full design-system drift scan and automated project baseline.
 - Rendered browser geometry, theme, hover and focus inspection when the unpacked extension target is callable.
-- Rendered Edge validation remains the explicit final proof after the modal-boundary regression repair.
+- Operator Edge captures validate opaque modal surfaces; rendered geometry remains the explicit final proof after the mask-boundary and scoped-selector repair.
 
 ## Execution Batches
 
@@ -107,11 +110,13 @@ As a ToolGlows user, I want every settings surface to follow one calm and predic
 | 2026-09-01 15:42 UTC | sg-development | Codex | Opened the approved implementation with an evidence-first UI proof path. | in progress | Implement shared hierarchy. |
 | 2026-09-01 16:12 UTC | sg-design + sg-development | Codex | Migrated shared and primary settings surfaces, added source contracts and completed automated validation. | partial | Collect operator-rendered proof in Chrome. |
 | 2026-09-01 16:32 UTC | sg-bug | Codex | Removed circular modal aliases, exposed tokens directly on teleported boundaries and added a scoped-CSS regression contract. | partial | Collect operator-rendered proof in Edge. |
+| 2026-09-01 16:56 UTC | sg-bug | Codex | Reviewed operator Edge captures: modal surfaces are opaque, while the main settings dialog is too narrow and extends beyond the viewport because its geometry selectors are inapplicable after scoping. | partial — surface passed, geometry failed | Repair teleported mask and settings-root selector boundaries. |
+| 2026-09-01 17:04 UTC | sg-bug | Codex | Added a dedicated teleported mask boundary, preserved compound same-element selectors through CSS scoping, bounded the shared shell and made dialog content internally scrollable; focused tests and typecheck pass. | implemented — rendered geometry proof pending | Reload the rebuilt extension and capture the corrected main settings dialog in Edge. |
 
 ## Current Chantier Flow
 
 - sg-design: partial
 - readiness: ready
 - implementation: complete
-- verification: partial — rendered Edge proof after the modal-boundary repair remains pending
+- verification: partial — operator captures validate opaque main and tool modal surfaces; a new Edge capture after reload is still required for corrected width, viewport bounds and internal scrolling
 - delivery: in progress

@@ -12,6 +12,13 @@ const TOOLGLOWS_PAGE_RUNTIME_SELECTORS = [
   '.toolglows-hidden-element-restore'
 ]
 
+function startsAtSelectorBoundary(selector: string, scope: string): boolean {
+  if (!selector.startsWith(scope)) return false
+
+  const nextCharacter = selector.charAt(scope.length)
+  return !nextCharacter || [' ', '\t', '\r', '\n', '>', '+', '~', '.', '#', ':', '['].includes(nextCharacter)
+}
+
 function scopeSelector(selector: string, scopes: string[]): string[] {
   const trimmed = selector.trim()
   if (!trimmed) return []
@@ -19,7 +26,7 @@ function scopeSelector(selector: string, scopes: string[]): string[] {
   // Keep selectors that already belong to a ToolGlows container. Prefixing
   // them again would produce impossible selectors such as
   // `#toolglows-root #toolglows-root *` and break the extension UI.
-  if (scopes.some(scope => trimmed === scope || trimmed.startsWith(`${scope} `) || trimmed.startsWith(`${scope}:`))) {
+  if (scopes.some(scope => startsAtSelectorBoundary(trimmed, scope))) {
     return [trimmed]
   }
 

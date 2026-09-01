@@ -45,6 +45,45 @@ describe('settings interface redesign', () => {
     expect(sharedStyles).toContain('.toolglows-settings-row {')
   })
 
+  it('keeps teleported settings geometry applicable after CSS scoping', () => {
+    const sharedStyles = readFileSync('src/assets/main.css', 'utf8')
+    const scopedStyles = postcss.parse(scopeToolGlowsCss(sharedStyles))
+    const ruleFor = (selector: string) => {
+      let matchingRule: postcss.Rule | undefined
+      scopedStyles.walkRules(rule => {
+        if (rule.selectors.includes(selector)) matchingRule = rule
+      })
+      return matchingRule
+    }
+    const declarationFor = (rule: postcss.Rule | undefined, property: string) =>
+      rule?.nodes.find(
+        node => node.type === 'decl' && node.prop === property,
+      )
+
+    const shellRule = ruleFor(
+      '.toolglows-dialog-mask > .toolglows-dialog.p-dialog',
+    )
+    const contentRule = ruleFor('.toolglows-dialog .p-dialog-content')
+    const settingsRule = ruleFor(
+      '.toolglows-dialog.toolglows-settings-dialog.p-dialog',
+    )
+
+    expect(declarationFor(shellRule, 'max-height')).toBeDefined()
+    expect(declarationFor(shellRule, 'overflow')).toMatchObject({
+      value: 'hidden',
+    })
+    expect(declarationFor(contentRule, 'min-height')).toMatchObject({
+      value: '0',
+    })
+    expect(declarationFor(contentRule, 'overflow-y')).toMatchObject({
+      value: 'auto',
+    })
+    expect(declarationFor(settingsRule, 'width')).toBeDefined()
+    expect(scopeToolGlowsCss(sharedStyles)).not.toMatch(
+      /\.toolglows-dialog\s+\.toolglows-dialog(?:-mask|\.toolglows-settings-dialog)/,
+    )
+  })
+
   it('gives quick settings a clear three-section hierarchy', () => {
     const toolbar = readFileSync('src/components/ToolGlowsBar.vue', 'utf8')
 

@@ -7,6 +7,7 @@
     :auto-z-index="true"
     :base-z-index="dialogBaseZIndex"
     :style="dialogShellStyle"
+    :pt="dialogPassThrough"
     class="toolglows-dialog"
   >
     <template
@@ -42,5 +43,8 @@ const dialogShellStyle = {
   border: '1px solid var(--tg-border-default)',
   borderRadius: 'var(--tg-radius-floating-shell)',
   boxShadow: 'var(--tg-shadow-dialog)',
+}
+const dialogPassThrough = {
+  mask: { class: 'toolglows-dialog-mask' },
 }
 </script>
