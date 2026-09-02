@@ -27,6 +27,7 @@ describe('persistent dark-mode prepaint', () => {
     expect(resolveDarkModePrepaintMode({ isActive: true })).toBe('always')
     expect(resolveDarkModePrepaintMode({ isActive: false })).toBe('off')
     expect(resolveDarkModePrepaintMode({ options: { syncWithSystem: true } })).toBe('system')
+    expect(resolveDarkModePrepaintMode({ isActive: true, options: { palettePreset: 'latte' } })).toBe('off')
     expect(resolveDarkModePrepaintMode({
       options: { autoEnable: true, scheduleStart: '20:00', scheduleEnd: '07:00' }
     }, new Date(2026, 7, 31, 23, 0))).toBe('always')

@@ -11,6 +11,7 @@
  * - Support for both sync (cross-device) and local storage
  */
 import { ref, watch, nextTick } from "vue"
+import { toPlainStorageValue } from "@/utils/storageSerialization"
 
 /**
  * Deep Merge Algorithm for Storage Values
@@ -144,7 +145,7 @@ function useBrowserStorage<T>(key: string, defaultValue: T, storageType: "sync" 
 		(newValue) => {
 			if (!isUpdatingFromStorage) {
 				if (checkType(defaultValue, newValue)) {
-					chrome.storage[storageType].set({ [key]: toRaw(newValue) })
+					chrome.storage[storageType].set({ [key]: toPlainStorageValue(newValue) })
 				} else {
 					console.error("not updating " + key + ": type mismatch")
 				}
@@ -157,8 +158,12 @@ function useBrowserStorage<T>(key: string, defaultValue: T, storageType: "sync" 
 	chrome.storage[storageType].onChanged.addListener(async function (changes) {
 		if (changes?.[key]) {
 			isUpdatingFromStorage = true
-			const { oldValue, newValue } = changes[key]
-			data.value = newValue
+			const { newValue } = changes[key]
+			if (defaultIsObject && isObject(newValue)) {
+				data.value = mergeDeep(defaultValue, newValue)
+			} else if (checkType(defaultValue, newValue)) {
+				data.value = convertValue(defaultValue, newValue)
+			}
 			await nextTick()
 			isUpdatingFromStorage = false
 		}

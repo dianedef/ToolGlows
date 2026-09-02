@@ -3,12 +3,14 @@ import {
   resolveDarkModeEngineOptions,
   type DarkModeEngineOptions
 } from './darkModeEngine'
+import { startExactTextColors, stopExactTextColors } from './exactTextColors'
 
 export interface DarkModeBootstrapOptions extends Partial<DarkModeEngineOptions> {
   autoEnable?: unknown
   scheduleStart?: unknown
   scheduleEnd?: unknown
   syncWithSystem?: unknown
+  palettePreset?: unknown
 }
 
 export interface DarkModeBootstrapState {
@@ -73,12 +75,14 @@ export function retireDarkModeBootstrap(): void {
 
 export function buildDarkModeBackdropCss(options: DarkModeBootstrapOptions = {}): string {
   const resolved = resolveDarkModeEngineOptions(options)
+  const isLatte = options.palettePreset === 'latte'
   return `
-    :root { color-scheme: dark !important; background-color: ${resolved.backgroundColor} !important; }
+    :root { color-scheme: ${isLatte ? 'light' : 'dark'} !important; background-color: ${resolved.backgroundColor} !important; }
     html, body { background-color: ${resolved.backgroundColor} !important; color: ${resolved.textColor} !important; }
+    body a { color: ${resolved.linkColor} !important; }
     body :is(img, picture, video, svg, canvas, [role="img"]),
     body [data-darkreader-inline-invert] {
-      filter: brightness(0.68) contrast(0.92) saturate(0.92) !important;
+      filter: ${isLatte ? 'none' : 'brightness(0.68) contrast(0.92) saturate(0.92)'} !important;
       transition: var(--tg-page-dark-media-transition);
     }
     #toolglows-root img,
@@ -121,6 +125,7 @@ export async function installDarkModeBootstrap(): Promise<void> {
     const systemPrefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
 
     if (!shouldBootstrapDarkMode(state, window.location.hostname, systemPrefersDark)) {
+      stopExactTextColors()
       retireDarkModeBootstrap()
       return
     }
@@ -129,6 +134,12 @@ export async function installDarkModeBootstrap(): Promise<void> {
     // but no opaque element or readiness delay hides the page while it loads.
     maintainDarkModeBackdrop(state.options)
     enableDarkModeEngine(state.options)
+    if (state.options?.palettePreset === 'custom' || state.options?.palettePreset === 'latte') {
+      const resolved = resolveDarkModeEngineOptions(state.options)
+      startExactTextColors(resolved.textColor, resolved.linkColor)
+    } else {
+      stopExactTextColors()
+    }
     retireDarkModePrepaint()
   } catch (error) {
     console.warn('[DARK MODE] Unable to install the early theme:', error)

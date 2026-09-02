@@ -22,13 +22,14 @@
  * Each tab receives update → Apply to local UI
  */
 import { defineStore } from 'pinia'
-import { ref, toRaw, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { bridgeApi, initBridgeListeners } from '@/bridge'
 import { useToolGlowsStore } from '@/stores/toolglows'
 import { useBrowserSyncStorage } from '@/composables/useBrowserStorage'
 import { normalizeInterfaceTheme } from '@/composables/useInterfaceTheme'
 import { normalizeToolbarSize, type ToolbarSize } from '@/utils/toolbarSize'
 import type { HideElementSettings } from './hideElement'
+import { toPlainStorageValue } from '@/utils/storageSerialization'
 
 /**
  * Settings Data Structure
@@ -199,11 +200,12 @@ export const useSettingsStore = defineStore('settings', () => {
       ...newSettings
     })
 
-    await chrome.storage.sync.set({ toolglowsSettings: toRaw(settings.value) })
+    const plainSettings = toPlainStorageValue(settings.value)
+    await chrome.storage.sync.set({ toolglowsSettings: plainSettings })
 
     // The toolbar owns the local state. Background synchronization is a
     // best-effort enhancement and must never prevent the UI from rendering.
-    void bridgeApi.updateSettings(settings.value)
+    void bridgeApi.updateSettings(plainSettings)
       .then(() => console.log('[SUCCESS] Settings update sent to background'))
       .catch(error => console.error('[ERROR] Failed to update settings:', error))
   }

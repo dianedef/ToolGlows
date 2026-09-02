@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   GRAPHITE_PALETTE,
+  LATTE_PALETTE,
   resolveDarkModePalettePreferences,
   switchDarkModePalette
 } from '../src/stores/darkModePalette'
@@ -35,5 +36,20 @@ describe('dark mode palette presets', () => {
     const graphite = switchDarkModePalette(custom, 'graphite')
     expect(graphite).toMatchObject(GRAPHITE_PALETTE)
     expect(switchDarkModePalette(graphite, 'custom')).toMatchObject(custom)
+  })
+
+  it('offers a reversible built-in Latte palette without overwriting custom colors', () => {
+    const custom = resolveDarkModePalettePreferences({
+      palettePreset: 'custom',
+      customColors: {
+        backgroundColor: '#202124',
+        textColor: '#f1f3f4',
+        linkColor: '#8ab4f8'
+      }
+    })
+    const latte = switchDarkModePalette(custom, 'latte')
+    expect(latte).toMatchObject(LATTE_PALETTE)
+    expect(latte.customColors).toEqual(custom.customColors)
+    expect(switchDarkModePalette(latte, 'custom')).toMatchObject(custom)
   })
 })

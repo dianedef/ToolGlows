@@ -26,29 +26,6 @@ function normalizeHexColor(value: unknown, fallback: string): string {
   return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : fallback
 }
 
-function relativeLuminance(hex: string): number {
-  const channels = [1, 3, 5].map(index => Number.parseInt(hex.slice(index, index + 2), 16) / 255)
-  const [red, green, blue] = channels.map(channel =>
-    channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
-  )
-  return 0.2126 * red + 0.7152 * green + 0.0722 * blue
-}
-
-function contrastRatio(first: string, second: string): number {
-  const lighter = Math.max(relativeLuminance(first), relativeLuminance(second))
-  const darker = Math.min(relativeLuminance(first), relativeLuminance(second))
-  return (lighter + 0.05) / (darker + 0.05)
-}
-
-function ensureReadableColor(preferred: string, background: string, minimumRatio: number): string {
-  if (contrastRatio(preferred, background) >= minimumRatio) return preferred
-  const lightFallback = '#f2f2f2'
-  const darkFallback = '#111111'
-  return contrastRatio(lightFallback, background) >= contrastRatio(darkFallback, background)
-    ? lightFallback
-    : darkFallback
-}
-
 export function resolveDarkModeEngineOptions(
   options: Partial<DarkModeEngineOptions> | undefined
 ): ResolvedDarkModeEngineOptions {
@@ -64,8 +41,8 @@ export function resolveDarkModeEngineOptions(
 
   return {
     backgroundColor,
-    textColor: ensureReadableColor(requestedTextColor, backgroundColor, 4.5),
-    linkColor: ensureReadableColor(requestedLinkColor, backgroundColor, 3),
+    textColor: requestedTextColor,
+    linkColor: requestedLinkColor,
     contrastLevel: requestedContrast,
     contrast: Math.round(100 + (requestedContrast - 1) * 40),
     transitionDuration,
@@ -79,7 +56,6 @@ export function enableDarkModeEngine(
   options: Partial<DarkModeEngineOptions> | undefined
 ): ResolvedDarkModeEngineOptions {
   const resolved = resolveDarkModeEngineOptions(options)
-
   enable({
     mode: 1,
     brightness: 100,

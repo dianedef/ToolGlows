@@ -9,6 +9,13 @@ import {
   type DarkModePaletteColors,
   type DarkModePalettePreset
 } from './darkModePalette'
+import { toPlainStorageValue } from '@/utils/storageSerialization'
+import {
+  normalizeSavedDarkThemes,
+  renameDarkTheme,
+  saveDarkTheme,
+  type SavedDarkTheme
+} from './darkModeThemes'
 
 // Type pour la sérialisation JSON
 type JsonValue = string | number | boolean | { [key: string]: JsonValue } | JsonValue[]
@@ -16,6 +23,8 @@ type JsonValue = string | number | boolean | { [key: string]: JsonValue } | Json
 interface DarkModeOptions {
   palettePreset: DarkModePalettePreset
   customColors: DarkModePaletteColors
+  customThemes: SavedDarkTheme[]
+  activeCustomThemeId: string | null
   backgroundColor: string
   textColor: string
   linkColor: string
@@ -37,6 +46,8 @@ interface SyncMessage {
 
 const defaultOptions: DarkModeOptions = {
   ...resolveDarkModePalettePreferences({}),
+  customThemes: [],
+  activeCustomThemeId: null,
   contrastLevel: 1,
   autoEnable: false,
   scheduleStart: '20:00',
@@ -166,6 +177,10 @@ export const useDarkModeStore = defineStore('darkMode', () => {
           ...defaultOptions,
           ...savedOptionsWithoutLegacyImageInversion,
           ...palettePreferences,
+          customThemes: normalizeSavedDarkThemes(savedOptions.customThemes),
+          activeCustomThemeId: typeof savedOptions.activeCustomThemeId === 'string'
+            ? savedOptions.activeCustomThemeId
+            : null,
           excludedDomains: Array.isArray(excludedDomains) ? excludedDomains : []
         }
 
@@ -213,14 +228,19 @@ export const useDarkModeStore = defineStore('darkMode', () => {
           linkColor: options.value.linkColor
         }
       }
+      options.value.customThemes = normalizeSavedDarkThemes(options.value.customThemes)
+      if (!options.value.customThemes.some(theme => theme.id === options.value.activeCustomThemeId)) {
+        options.value.activeCustomThemeId = null
+      }
 
+      const plainOptions = toPlainStorageValue(options.value)
       await Promise.all([
-        chrome.storage.sync.set({ darkModeOptions: options.value }),
+        chrome.storage.sync.set({ darkModeOptions: plainOptions }),
         chrome.storage.local.set({
           darkModeActive: isActive.value,
           toolglowsDarkModeBootstrap: {
             isActive: isActive.value,
-            options: options.value
+            options: plainOptions
           }
         })
       ])
@@ -252,12 +272,14 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     if (!value) applyDarkModeEngine({
       isActive: false,
       options: {
+        palettePreset: options.value.palettePreset,
         backgroundColor: options.value.backgroundColor,
         textColor: options.value.textColor,
         linkColor: options.value.linkColor,
         contrastLevel: options.value.contrastLevel,
         transitionDuration: options.value.transitionDuration,
-        excludedDomains: [...options.value.excludedDomains]
+        excludedDomains: [...options.value.excludedDomains],
+        preserveExactColors: options.value.palettePreset !== 'graphite'
       }
     })
   }
@@ -267,6 +289,7 @@ export const useDarkModeStore = defineStore('darkMode', () => {
       ...options.value,
       ...switchDarkModePalette(options.value, preset)
     }
+    options.value.activeCustomThemeId = null
     await saveOptions()
   }
 
@@ -282,6 +305,48 @@ export const useDarkModeStore = defineStore('darkMode', () => {
         [color]: normalizedValue
       }
     }
+    options.value.activeCustomThemeId = null
+    await saveOptions()
+  }
+
+  async function saveCustomTheme(name: string) {
+    const id = crypto.randomUUID()
+    options.value.customThemes = saveDarkTheme(
+      options.value.customThemes,
+      name,
+      options.value.customColors,
+      id
+    )
+    options.value.activeCustomThemeId = id
+    await saveOptions()
+  }
+
+  async function applyCustomTheme(id: string) {
+    const theme = options.value.customThemes.find(candidate => candidate.id === id)
+    if (!theme) return
+    const colors: DarkModePaletteColors = {
+      backgroundColor: theme.backgroundColor,
+      textColor: theme.textColor,
+      linkColor: theme.linkColor
+    }
+    options.value = {
+      ...options.value,
+      palettePreset: 'custom',
+      activeCustomThemeId: id,
+      customColors: colors,
+      ...colors
+    }
+    await saveOptions()
+  }
+
+  async function renameCustomTheme(id: string, name: string) {
+    options.value.customThemes = renameDarkTheme(options.value.customThemes, id, name)
+    await saveOptions()
+  }
+
+  async function deleteCustomTheme(id: string) {
+    options.value.customThemes = options.value.customThemes.filter(theme => theme.id !== id)
+    if (options.value.activeCustomThemeId === id) options.value.activeCustomThemeId = null
     await saveOptions()
   }
 
@@ -326,12 +391,14 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     const message: DarkModeMessage = {
       isActive: shouldApply,
       options: {
+        palettePreset: options.value.palettePreset,
         backgroundColor: normalizeHexColor(options.value.backgroundColor, defaultOptions.backgroundColor),
         textColor: normalizeHexColor(options.value.textColor, defaultOptions.textColor),
         linkColor: normalizeHexColor(options.value.linkColor, defaultOptions.linkColor),
         contrastLevel: options.value.contrastLevel,
         transitionDuration: options.value.transitionDuration,
-        excludedDomains: [...options.value.excludedDomains]
+        excludedDomains: [...options.value.excludedDomains],
+        preserveExactColors: options.value.palettePreset !== 'graphite'
       }
     }
     const applied = applyDarkModeEngine(message)
@@ -375,6 +442,10 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     updateOptions,
     setPalettePreset,
     setPaletteColor,
+    saveCustomTheme,
+    applyCustomTheme,
+    renameCustomTheme,
+    deleteCustomTheme,
     setActive,
     setSyncWithSystem,
     setAutoEnable,

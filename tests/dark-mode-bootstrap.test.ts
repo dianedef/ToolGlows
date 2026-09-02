@@ -60,15 +60,33 @@ describe('dark mode early startup', () => {
   })
 
   it('keeps only a non-blocking root backdrop', () => {
-    const css = buildDarkModeBackdropCss({ backgroundColor: '#202124', textColor: '#f1f3f4' })
+    const css = buildDarkModeBackdropCss({
+      backgroundColor: '#202124',
+      textColor: '#f1f3f4',
+      linkColor: '#8ab4f8'
+    })
     expect(css).toContain('background-color: #202124 !important')
     expect(css).toContain('color: #f1f3f4 !important')
+    expect(css).toContain('body a { color: #8ab4f8 !important; }')
+    expect(css).toContain('color: #f1f3f4 !important;')
     expect(css).not.toContain(DARK_MODE_PREPAINT_OVERLAY_ID)
 
     maintainDarkModeBackdrop({ backgroundColor: '#202124' })
     maintainDarkModeBackdrop({ backgroundColor: '#242526' })
     expect(document.querySelectorAll(`#${DARK_MODE_BOOTSTRAP_STYLE_ID}`)).toHaveLength(1)
     expect(document.getElementById(DARK_MODE_PREPAINT_OVERLAY_ID)).toBeNull()
+  })
+
+  it('uses a light canvas and preserves media for the Latte palette', () => {
+    const css = buildDarkModeBackdropCss({
+      palettePreset: 'latte',
+      backgroundColor: '#eff1f5',
+      textColor: '#4c4f69',
+      linkColor: '#1e66f5'
+    })
+    expect(css).toContain('color-scheme: light')
+    expect(css).toContain('background-color: #eff1f5')
+    expect(css).toContain('filter: none !important')
   })
 
   it('installs media color preservation before the engine can mark inline SVGs', () => {

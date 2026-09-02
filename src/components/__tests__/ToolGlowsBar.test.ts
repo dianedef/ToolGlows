@@ -273,8 +273,8 @@ describe('ToolGlowsBar interaction invariants', () => {
     await nextTick()
     await nextTick()
 
-    expect(Number.parseFloat(toolbar.style.left)).toBeLessThanOrEqual(window.innerWidth - 180)
-    expect(Number.parseFloat(toolbar.style.top)).toBeLessThanOrEqual(window.innerHeight - 132)
+    expect(Number.parseFloat(toolbar.style.left)).toBeLessThanOrEqual(window.innerWidth - toolbarRectWidth)
+    expect(Number.parseFloat(toolbar.style.top)).toBeLessThanOrEqual(window.innerHeight - toolbarRectHeight)
   })
 
   it('active un mode de réglage de taille à la molette depuis la modale', async () => {
@@ -360,6 +360,17 @@ describe('ToolGlowsBar interaction invariants', () => {
     expect(settingsStore.updateSettings).toHaveBeenCalledWith(
       expect.objectContaining({ position: expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }) })
     )
+  })
+
+  it('captures the pointer as soon as dragging starts', async () => {
+    const { wrapper } = await mountToolbar()
+    const button = wrapper.get('.toolglows-main-button')
+    const capturePointer = vi.fn()
+    ;(button.element as HTMLElement).setPointerCapture = capturePointer
+
+    await dispatchPointer(button.element, 'pointerdown', { pointerId: 7, clientX: 100, clientY: 100 })
+
+    expect(capturePointer).toHaveBeenCalledWith(7)
   })
 
   it('excludes dialog overlays from outside-click dismissal', async () => {

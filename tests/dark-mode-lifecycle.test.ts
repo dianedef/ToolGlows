@@ -41,6 +41,11 @@ describe('dark mode DOM lifecycle', () => {
   })
 
   it('globally dims host-page images while leaving ToolGlows media unchanged', () => {
+    darkModeEngine.enable.mockImplementationOnce(() => {
+      const immediateCss = document.getElementById('toolglows-dark-mode-bootstrap')?.textContent
+      expect(immediateCss).toContain('body a { color: #8ab4f8 !important; }')
+    })
+
     expect(applyDarkMode({
       isActive: true,
       options: {
@@ -60,6 +65,7 @@ describe('dark mode DOM lifecycle', () => {
     expect(darkModeFixes.ignoreImageAnalysis).toEqual(expect.arrayContaining([
       'img', 'picture', 'video', 'svg', 'canvas', '[role="img"]'
     ]))
+    expect(darkModeFixes.css).toBe('')
 
     const css = document.getElementById('toolglows-dark-mode-bootstrap')?.textContent
     expect(css).toContain('body :is(img, picture, video, svg, canvas, [role="img"]),')
@@ -72,6 +78,7 @@ describe('dark mode DOM lifecycle', () => {
     expect(css).toContain('filter: none !important;')
 
     const lateCss = document.getElementById('toolglows-dark-mode-overrides')?.textContent
+    expect(lateCss).toContain('body a { color: #8ab4f8 !important; }')
     expect(lateCss).not.toContain('data-darkreader-inline-invert')
   })
 })

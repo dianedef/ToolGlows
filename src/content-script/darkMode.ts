@@ -8,14 +8,17 @@ import {
 import { enableDarkModeEngine } from './darkModeEngine'
 import { buildSiteDarkModeOverrides } from './darkModeSiteOverrides'
 import { startSofteningBrightSurfaces, stopSofteningBrightSurfaces } from './softenBrightSurfaces'
+import { startExactTextColors, stopExactTextColors } from './exactTextColors'
 
 export interface DarkModeThemeOptions {
+  palettePreset?: 'graphite' | 'latte' | 'custom'
   backgroundColor: string
   textColor: string
   linkColor: string
   contrastLevel: number
   transitionDuration: number
   excludedDomains: string[]
+  preserveExactColors?: boolean
 }
 
 export interface DarkModeMessage {
@@ -43,7 +46,9 @@ function isDarkModeMessage(data: unknown): data is DarkModeMessage {
     typeof options.contrastLevel === 'number' && Number.isFinite(options.contrastLevel) &&
     typeof options.transitionDuration === 'number' && Number.isFinite(options.transitionDuration) &&
     Array.isArray(options.excludedDomains) &&
-    options.excludedDomains.every(domain => typeof domain === 'string')
+    options.excludedDomains.every(domain => typeof domain === 'string') &&
+    (options.palettePreset === undefined || ['graphite', 'latte', 'custom'].includes(options.palettePreset)) &&
+    (options.preserveExactColors === undefined || typeof options.preserveExactColors === 'boolean')
 }
 
 function isCurrentDomainExcluded(excludedDomains: string[]): boolean {
@@ -57,12 +62,16 @@ export function applyDarkMode(message: DarkModeMessage): boolean {
       return removeDarkMode()
     }
 
-    const { linkColor, transitionDuration } = enableDarkModeEngine(message.options)
-    const siteOverrides = buildSiteDarkModeOverrides(window.location.hostname)
     // Keep a stable dark canvas underneath the dark-mode engine. Some sites replace their
-    // body styles after hydration and would otherwise reintroduce a white page.
+    // body styles after hydration and would otherwise reintroduce a white page. Install it
+    // before DarkReader recalculates the page so custom canvas and link colors react at once.
     maintainDarkModeBackdrop(message.options)
     retireDarkModePrepaint()
+    const { linkColor, transitionDuration } = enableDarkModeEngine(message.options)
+    const siteOverrides =
+      message.options.palettePreset === 'latte'
+        ? ''
+        : buildSiteDarkModeOverrides(window.location.hostname)
 
     let overrideStyle = document.getElementById(OVERRIDE_STYLE_ID) as HTMLStyleElement | null
     if (!overrideStyle) {
@@ -117,8 +126,16 @@ export function applyDarkMode(message: DarkModeMessage): boolean {
       }
       ${siteOverrides}
     `
-    startSofteningBrightSurfaces()
-
+    if (message.options.palettePreset === 'latte') {
+      stopSofteningBrightSurfaces()
+    } else {
+      startSofteningBrightSurfaces()
+    }
+    if (message.options.preserveExactColors) {
+      startExactTextColors(message.options.textColor, message.options.linkColor)
+    } else {
+      stopExactTextColors()
+    }
     isDarkModeActive = true
     return true
   } catch (error) {
@@ -132,6 +149,7 @@ export function removeDarkMode(): boolean {
     retireDarkModeBootstrap()
     if (isEnabled()) disable()
     document.getElementById(OVERRIDE_STYLE_ID)?.remove()
+    stopExactTextColors()
     stopSofteningBrightSurfaces()
     isDarkModeActive = false
     return true

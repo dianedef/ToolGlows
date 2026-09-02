@@ -192,10 +192,13 @@
   --tg-loading-surface: color-mix(in srgb, #000 70%, transparent);
   --tg-motion-fast: 0.2s ease-in-out;
   --tg-motion-standard: 0.3s ease;
+  --tg-motion-attention: 1.2s ease-out 1;
+  --tg-motion-attention-scale: 1.035;
   --tg-transition-all-fast: all 0.2s ease-in-out;
   --tg-transition-all-standard: all 0.3s ease;
   --tg-motion-panel: 0.3s;
   --tg-shadow-control: 0 2px 5px rgba(0, 0, 0, 0.2);
+  --tg-shadow-attention: 0 0 0 0.3rem var(--tg-interaction-focus);
   --tg-shadow-none: none;
   --tg-shadow-control-dragging: 0 4px 15px rgba(0, 0, 0, 0.3);
   --tg-shadow-card: var(--card-shadow);

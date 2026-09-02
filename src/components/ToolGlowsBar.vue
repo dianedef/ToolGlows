@@ -19,6 +19,7 @@
   >
     <!-- Bouton principal -->
     <Button
+      v-tooltip.bottom="'ToolGlows'"
       class="toolglows-main-button p-button-rounded"
       :class="{ dragging: isDragging }"
       :icon="isExpanded ? 'pi pi-times' : 'pi pi-bars'"
@@ -26,7 +27,6 @@
       raised
       aria-label="ToolGlows"
       data-toolglows-main
-      v-tooltip.bottom="'ToolGlows'"
       @click.stop="handleMainButtonClick"
     >
       <span class="toolglows-tool-emoji">🔧</span>
@@ -39,11 +39,11 @@
     >
       <!-- Bouton paramètres -->
       <Button
+        v-tooltip.top="'Paramètres'"
         class="p-button-rounded p-button-text"
         severity="secondary"
         aria-label="Paramètres"
         data-toolglows-settings
-        v-tooltip.top="'Paramètres'"
         @click="showSettings = !showSettings"
       >
         <span class="toolglows-tool-emoji">⚙️</span>
@@ -55,6 +55,7 @@
         :key="tool.id"
       >
         <Button
+          v-tooltip.top="tool.name"
           class="toolglows-tool-button p-button-rounded p-button-text"
           :class="{
             'toolglows-tool-button-active': isToolEnabled(tool.id),
@@ -64,7 +65,6 @@
           :aria-pressed="tool.interaction === 'command' ? undefined : isToolEnabled(tool.id)"
           :title="toolButtonTitle(tool)"
           :data-tool-id="tool.id"
-          v-tooltip.top="tool.name"
           @click="toggleToolActivation(tool.id)"
         >
           <span class="toolglows-tool-emoji">{{ tool.emoji }}</span>
@@ -464,30 +464,40 @@ const initialTools: Tool[] = [
 ]
 
 // Fonction pour calculer les limites de position
-const toolbarSafeMargin = Number.parseFloat(
-  getComputedStyle(document.documentElement).getPropertyValue('--tg-size-20').trim() || '20'
-) || 20
+const toolbarSafeMargin = 0
 const toolbarDefaultOffset = Number.parseFloat(
   getComputedStyle(document.documentElement).getPropertyValue('--tg-size-50').trim() || '100'
 ) || 100
+
+const getInterfaceScale = () => {
+  const scale = Number.parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue('--tg-interface-scale').trim()
+  )
+  return Number.isFinite(scale) && scale > 0 ? scale : 1
+}
 
 const calculateBoundaries = (x: number, y: number) => {
   if (!toolbarRef.value) return { x, y }
 
   // Obtenir les dimensions réelles de la barre
   const rect = toolbarRef.value.getBoundingClientRect()
+  const interfaceScale = getInterfaceScale()
   const margin = toolbarSafeMargin // Marge de sécurité
 
-  // Calculer les limites en s'assurant que la barre reste entièrement visible
-  const maxX = Math.max(margin, Math.min(window.innerWidth - rect.width - margin, x))
-  const maxY = Math.max(margin, Math.min(window.innerHeight - rect.height - margin, y))
+  // Edge applique `zoom` aux dimensions mais aussi à `left` / `top`. Les
+  // limites du viewport doivent donc être reconverties en coordonnées CSS.
+  const minPosition = margin / interfaceScale
+  const maxPositionX = (window.innerWidth - rect.width - margin) / interfaceScale
+  const maxPositionY = (window.innerHeight - rect.height - margin) / interfaceScale
+  const maxX = Math.max(minPosition, Math.min(maxPositionX, x))
+  const maxY = Math.max(minPosition, Math.min(maxPositionY, y))
 
   // Si la barre est près du bord droit et est ou va être étendue,
   // on la décale pour qu'elle reste entièrement visible
   const isExpanded = settingsStore.settings.expanded || settingsStore.settings.isPinned
-  if (isExpanded && maxX + rect.width > window.innerWidth - margin) {
+  if (isExpanded && maxX * interfaceScale + rect.width > window.innerWidth - margin) {
     return {
-      x: window.innerWidth - rect.width - margin,
+      x: maxPositionX,
       y: maxY
     }
   }
@@ -528,6 +538,7 @@ const dragThreshold = 5
 let suppressNextClick = false
 let pointerState: {
   pointerId: number
+  captureTarget: HTMLElement
   startX: number
   startY: number
   originX: number
@@ -560,8 +571,16 @@ const persistToolbarPosition = async () => {
 const startToolbarPointer = (event: PointerEvent) => {
   if (event.button !== 0) return
 
+  // Capture immediately so the drag keeps receiving events even when the
+  // pointer leaves the icon before crossing the movement threshold.
+  const captureTarget = event.target instanceof HTMLElement
+    ? event.target
+    : event.currentTarget as HTMLElement
+  captureTarget.setPointerCapture?.(event.pointerId)
+
   pointerState = {
     pointerId: event.pointerId,
+    captureTarget,
     startX: event.clientX,
     startY: event.clientY,
     originX: position.value.x,
@@ -579,11 +598,11 @@ const moveToolbarPointer = (event: PointerEvent) => {
   if (!pointerState.moved && Math.hypot(deltaX, deltaY) < dragThreshold) return
 
   pointerState.moved = true
-  ;(event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId)
   isDragging.value = true
+  const interfaceScale = getInterfaceScale()
   position.value = calculateBoundaries(
-    pointerState.originX + deltaX,
-    pointerState.originY + deltaY
+    pointerState.originX + deltaX / interfaceScale,
+    pointerState.originY + deltaY / interfaceScale
   )
 }
 
@@ -592,11 +611,11 @@ const finishToolbarPointer = (event: PointerEvent) => {
 
   suppressNextClick = pointerState.moved
   const shouldPersist = pointerState.moved
+  const captureTarget = pointerState.captureTarget
   pointerState = null
   isDragging.value = false
-  const toolbar = event.currentTarget as HTMLElement
-  if (toolbar.hasPointerCapture?.(event.pointerId)) {
-    toolbar.releasePointerCapture(event.pointerId)
+  if (captureTarget.hasPointerCapture?.(event.pointerId)) {
+    captureTarget.releasePointerCapture(event.pointerId)
   }
 
   if (shouldPersist) void persistToolbarPosition()
