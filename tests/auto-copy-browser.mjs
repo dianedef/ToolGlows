@@ -18,15 +18,11 @@ try {
       `--load-extension=${extensionPath}`
     ]
   })
-  await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
-    origin: 'https://example.com'
-  })
-
   const serviceWorker = context.serviceWorkers()[0]
     ?? await context.waitForEvent('serviceworker')
   await serviceWorker.evaluate(async () => {
     await chrome.storage.sync.set({
-      toolglowsSettings: { activeTools: ['autoCopy'] },
+      toolglowsSettings: { activeTools: ['wordCounter'] },
       autoCopySettings: {
         activeFormat: 'text',
         preserveFormatting: true,
@@ -41,6 +37,13 @@ try {
   page.on('console', message => diagnostics.push(message.text()))
   await page.goto('https://example.com')
   await page.locator('#toolglows-root').waitFor()
+  await page.locator('[data-toolglows-main]').click()
+  const autoCopyButton = page.locator('[data-tool-id="autoCopy"]')
+  await autoCopyButton.click()
+  if (await autoCopyButton.getAttribute('aria-pressed') !== 'true') {
+    throw new Error('Auto Copy did not become active through the toolbar')
+  }
+  await page.locator('h1').evaluate(element => element.classList.add('p-4', 'gap-2'))
   const headingBox = await page.locator('h1').boundingBox()
   if (!headingBox) throw new Error('Example heading bounds not found')
   await page.mouse.move(headingBox.x + 2, headingBox.y + headingBox.height / 2)
@@ -56,6 +59,7 @@ try {
 
   const toast = page.locator('.p-toast-message')
   await toast.waitFor()
+  await context.grantPermissions(['clipboard-read'], { origin: 'https://example.com' })
   const clipboard = await page.evaluate(() => navigator.clipboard.readText())
   const notificationCount = await toast.count()
   const notificationText = await toast.first().innerText()

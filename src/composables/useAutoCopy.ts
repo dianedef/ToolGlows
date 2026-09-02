@@ -131,10 +131,10 @@ export function useAutoCopy() {
 
   // Function to check if an element should be excluded from the copy
   const isElementExcluded = (element: HTMLElement): boolean => {
-    // Check if the element or one of its parents matches the exclusion selectors
-    const isExcluded = element.matches('#toolglows-extension, .toolglows-extension, [id^="toolglows-"], [class*="toolglows-"], [class*="p-"], .p-component, [class*="primevue-"]') ||
-                      element.closest('#toolglows-extension, .toolglows-extension, [id^="toolglows-"], [class*="toolglows-"], [class*="p-"], .p-component, [class*="primevue-"]') !== null
-    return isExcluded
+    // The ToolGlows root is the ownership boundary. Generic PrimeVue-like
+    // selectors such as `[class*="p-"]` also match ordinary host-page utility
+    // classes (`p-4`, `gap-2`, etc.) and would silently reject valid selections.
+    return element.closest('#toolglows-root, #toolglows-extension, .toolglows-extension') !== null
   }
 
   // Function to copy the selected text

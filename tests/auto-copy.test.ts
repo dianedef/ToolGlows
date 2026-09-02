@@ -133,6 +133,19 @@ describe('Auto Copy interaction contract', () => {
     expect(log.mock.calls.flat().join(' ')).not.toContain('Sensitive text')
   })
 
+  it('copies host-page text inside common utility classes', async () => {
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    document.querySelector('#selection')?.classList.add('p-4', 'gap-2')
+    wrapper = mount(Harness)
+    selectNodeContents(document.querySelector('#selection')!)
+
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    await flushCopy()
+
+    expect(clipboardWrite).toHaveBeenCalledTimes(1)
+    expect(toastAdd).toHaveBeenCalledTimes(1)
+  })
+
   it('uses an error notification when every clipboard method fails', async () => {
     useSettingsStore().settings.activeTools = ['autoCopy']
     clipboardWrite.mockRejectedValue(new Error('denied'))
