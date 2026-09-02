@@ -1,10 +1,10 @@
 ---
 artifact: technical_architecture
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: "toolglows"
 created: "2026-08-28"
-updated: "2026-08-29"
+updated: "2026-09-02"
 status: reviewed
 source_skill: sg-docs
 scope: extension-architecture
@@ -31,6 +31,7 @@ evidence:
   - "Manifest V3 configuration declares the Chrome and Firefox entrypoints and permission baseline."
   - "The content script mounts the Vue toolbar and the background worker owns privileged browser actions."
   - "The packaged Dark Mode engine applies the configurable dynamic dark theme inside each content-script context."
+  - "Auto Copy regression coverage proves activation, single-gesture idempotence, redacted diagnostics, truthful failure feedback and clipboard fallback cleanup."
 next_review: "2026-11-28"
 next_step: "Refresh after a manifest, bridge or browser-context change."
 ---
@@ -66,6 +67,8 @@ web page DOM
 ```
 
 `ToolGlowsBar.vue` is the current registry of the user-facing tools. Its components use dedicated stores and composables for individual capabilities; a tool added outside that registry is not part of the toolbar promise.
+
+Auto Copy is owned entirely by the top-frame content script and never crosses the privileged background bridge. Its global selection listeners may be mounted while settings are visible, but they act only while `autoCopy` is present in the registered active-tool state. A completed pointer selection, keyboard-selection completion, format shortcut or Alt element-selection gesture produces at most one in-flight clipboard write. Selected content is not logged; success and failure use distinct notifications; the legacy `execCommand` fallback always removes its temporary element; and preserved HTML or Markdown formatting is derived from cloned selection ranges rather than from plain text alone.
 
 The round ToolGlows button owns both primary gestures: a pointer movement drags the toolbar, while a press and release without movement opens or closes it. Document-level dialogs and tooltips do not count as outside clicks for collapse.
 

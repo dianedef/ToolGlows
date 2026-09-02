@@ -44,12 +44,7 @@
               :binary="true"
               @change="() => {
                 copyStore.saveSettings();
-                toast.add({
-                  severity: 'success',
-                  summary: 'Formatting',
-                  detail: copyStore.settings.preserveFormatting ? 'Formatting enabled' : 'Formatting disabled',
-                  life: 3000
-                });
+                notifySetting('Formatting', copyStore.settings.preserveFormatting ? 'Formatting enabled' : 'Formatting disabled');
               }"
             />
             <label>Preserve Formatting</label>
@@ -61,12 +56,7 @@
               :binary="true"
               @change="() => {
                 copyStore.saveSettings();
-                toast.add({
-                  severity: 'success',
-                  summary: 'Source',
-                  detail: copyStore.settings.includeSource ? 'Source included' : 'Source not included',
-                  life: 3000
-                });
+                notifySetting('Source', copyStore.settings.includeSource ? 'Source included' : 'Source not included');
               }"
             />
             <label>Include Source</label>
@@ -78,12 +68,7 @@
               :binary="true"
               @change="() => {
                 copyStore.saveSettings();
-                toast.add({
-                  severity: 'success',
-                  summary: 'Notifications',
-                  detail: copyStore.settings.showNotifications ? 'Notifications enabled' : 'Notifications disabled',
-                  life: 3000
-                });
+                notifySetting('Notifications', 'Notifications enabled');
               }"
             />
             <label>Show Notifications</label>
@@ -95,12 +80,7 @@
               :binary="true"
               @change="() => {
                 copyStore.saveSettings();
-                toast.add({
-                  severity: 'success',
-                  summary: 'Alt Selection',
-                  detail: copyStore.settings.enableAltSelection ? 'Alt Selection enabled' : 'Alt Selection disabled',
-                  life: 3000
-                });
+                notifySetting('Alt Selection', copyStore.settings.enableAltSelection ? 'Alt Selection enabled' : 'Alt Selection disabled');
               }"
             />
             <label>Enable Alt Selection</label>
@@ -123,6 +103,11 @@ import { useExcludeToolGlowsBar } from '@/composables/excludeToolGlowsBar'
 const copyStore = useAutoCopyStore()
 const toast = useToast()
 
+const notifySetting = (summary: string, detail: string) => {
+  if (!copyStore.settings.showNotifications) return
+  toast.add({ severity: 'success', summary, detail, life: 3000 })
+}
+
 // Initialize the composable
 useAutoCopy()
 
@@ -130,15 +115,11 @@ useAutoCopy()
 useExcludeToolGlowsBar()
 
 onMounted(async () => {
-  console.log('[DEBUG] Before loadSettings - formats:', copyStore.settings.formats)
   await copyStore.loadSettings()
-  console.log('[DEBUG] After loadSettings - formats:', copyStore.settings.formats)
 })
 
 const closeDialog = () => {
   copyStore.setActive(false)
-  console.log('[DEBUG] Dialog closure - formats:', copyStore.settings.formats)
-  toast.add({ severity: 'info', summary: 'Auto Copy', detail: 'Settings saved', life: 3000 })
 }
 </script>
 

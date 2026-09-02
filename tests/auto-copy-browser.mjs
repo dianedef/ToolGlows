@@ -1,0 +1,123 @@
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { chromium } from 'playwright'
+
+const extensionPath = resolve('dist/chrome')
+const profilePath = await mkdtemp(join(tmpdir(), 'toolglows-auto-copy-'))
+const chromiumPath = 'C:\\Users\\Diane\\AppData\\Local\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe'
+const diagnostics = []
+let context
+
+try {
+  context = await chromium.launchPersistentContext(profilePath, {
+    executablePath: chromiumPath,
+    headless: true,
+    args: [
+      `--disable-extensions-except=${extensionPath}`,
+      `--load-extension=${extensionPath}`
+    ]
+  })
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
+    origin: 'https://example.com'
+  })
+
+  const serviceWorker = context.serviceWorkers()[0]
+    ?? await context.waitForEvent('serviceworker')
+  await serviceWorker.evaluate(async () => {
+    await chrome.storage.sync.set({
+      toolglowsSettings: { activeTools: ['autoCopy'] },
+      autoCopySettings: {
+        activeFormat: 'text',
+        preserveFormatting: true,
+        includeSource: false,
+        showNotifications: true,
+        enableAltSelection: true
+      }
+    })
+  })
+
+  const page = context.pages()[0] ?? await context.newPage()
+  page.on('console', message => diagnostics.push(message.text()))
+  await page.goto('https://example.com')
+  await page.locator('#toolglows-root').waitFor()
+  const headingBox = await page.locator('h1').boundingBox()
+  if (!headingBox) throw new Error('Example heading bounds not found')
+  await page.mouse.move(headingBox.x + 2, headingBox.y + headingBox.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(
+    headingBox.x + headingBox.width - 2,
+    headingBox.y + headingBox.height / 2,
+    { steps: 12 }
+  )
+  await page.mouse.up()
+  const selectedText = await page.evaluate(() => window.getSelection()?.toString() ?? '')
+  if (!selectedText.trim()) throw new Error('Pointer gesture produced no text selection')
+
+  const toast = page.locator('.p-toast-message')
+  await toast.waitFor()
+  const clipboard = await page.evaluate(() => navigator.clipboard.readText())
+  const notificationCount = await toast.count()
+  const notificationText = await toast.first().innerText()
+  const leakedSelection = diagnostics.some(message => message.includes(clipboard))
+
+  if (clipboard.trim() !== selectedText.trim()) {
+    throw new Error(`Unexpected clipboard value: ${JSON.stringify(clipboard)}`)
+  }
+  if (notificationCount !== 1) {
+    throw new Error(`Expected one notification, observed ${notificationCount}`)
+  }
+  if (!notificationText.includes('Text copied')) {
+    throw new Error(`Unexpected notification: ${JSON.stringify(notificationText)}`)
+  }
+  if (leakedSelection) {
+    throw new Error('Clipboard content appeared in content-script diagnostics')
+  }
+
+  await context.clearPermissions()
+  const deniedPage = await context.newPage()
+  deniedPage.on('console', message => diagnostics.push(message.text()))
+  await deniedPage.goto('https://example.com')
+  await deniedPage.locator('#toolglows-root').waitFor()
+  await deniedPage.evaluate(() => {
+    const heading = document.querySelector('h1')
+    if (!heading) throw new Error('Example heading not found')
+    const range = document.createRange()
+    range.selectNodeContents(heading)
+    const selection = window.getSelection()
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+  })
+  await deniedPage.locator('h1').dispatchEvent('mouseup')
+
+  const deniedToast = deniedPage.locator('.p-toast-message')
+  await deniedToast.waitFor()
+  const deniedNotificationCount = await deniedToast.count()
+  const deniedNotificationText = await deniedToast.first().innerText()
+  const deniedNotificationClass = await deniedToast.first().getAttribute('class') ?? ''
+  if (deniedNotificationCount !== 1 || !deniedNotificationText.includes('Text copied')) {
+    throw new Error(`Unexpected denied-permission fallback result: ${JSON.stringify(deniedNotificationText)}`)
+  }
+  if (diagnostics.some(message => message.includes(selectedText.trim()))) {
+    throw new Error('Selected content appeared in diagnostics during denied clipboard flow')
+  }
+
+  console.log(JSON.stringify({
+    ok: true,
+    copiedCharacters: clipboard.trim().length,
+    notificationCount,
+    notification: notificationText.replace(/\s+/g, ' ').trim(),
+    deniedPermissionFallback: deniedNotificationClass.includes('p-toast-message-success')
+      ? 'copied-with-success-notification'
+      : 'unexpected-notification-state',
+    diagnosticsRedacted: true
+  }))
+} finally {
+  await context?.close()
+  const resolvedProfile = resolve(profilePath)
+  const resolvedTemp = resolve(tmpdir())
+  if (!resolvedProfile.startsWith(`${resolvedTemp}\\toolglows-auto-copy-`)) {
+    throw new Error(`Refusing to remove unexpected profile path: ${resolvedProfile}`)
+  }
+  await rm(resolvedProfile, { recursive: true, force: true })
+}

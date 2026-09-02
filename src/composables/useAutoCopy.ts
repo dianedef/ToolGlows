@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, inject } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useAutoCopyStore } from '@/stores/autoCopy'
 import { useToolGlowsStore } from '@/stores/toolglows'
 import { useToast } from 'primevue/usetoast'
@@ -11,6 +11,10 @@ export function useAutoCopy() {
   const isCopying = ref(false)
   const isAltMode = ref(false)
   const highlightedElements = ref<HTMLElement[]>([])
+  const highlightHandlers = new Map<HTMLElement, {
+    mouseenter: () => void
+    mouseleave: () => void
+  }>()
   const altKeyTimer = ref<number | null>(null)
   const ALT_DELAY = 200 // Délai en millisecondes avant d'activer le mode ALT
   const isAltCombination = ref(false) // Pour détecter si ALT est utilisé avec une autre touche
@@ -23,38 +27,52 @@ export function useAutoCopy() {
     const url = window.location.href
     const title = document.title
 
-    let result = activeFormat.template
+    const template = store.settings.includeSource
+      ? activeFormat.template
+      : activeFormat.template
+          .split('\n')
+          .filter(line => !line.includes('{url}') && !/^\s*>?\s*Source:/i.test(line))
+          .join('\n')
+
+    return template
       .replace('{content}', text)
       .replace('{url}', url)
       .replace('{title}', title)
-
-    // If we don't want to include the source, we remove the corresponding line
-    if (!store.settings.includeSource) {
-      result = result.split('\n').filter(line => !line.includes('Source:')).join('\n')
-    }
-
-    return result
   }
 
-  // Function to format the text according to the chosen format
-  const formatText = (text: string): string => {
+  const isEnabled = () => toolglowsStore.activeTools.includes('autoCopy')
+
+  const getSelectionContent = (selection: Selection) => {
+    const container = document.createElement('div')
+    for (let index = 0; index < selection.rangeCount; index += 1) {
+      container.appendChild(selection.getRangeAt(index).cloneContents())
+    }
+
+    return {
+      text: selection.toString(),
+      html: container.innerHTML
+    }
+  }
+
+  // Function to format the selection according to the chosen format
+  const formatText = ({ text, html }: { text: string; html: string }): string => {
     let formattedText = text
 
-    if (!store.settings.preserveFormatting) {
-      formattedText = formattedText.replace(/<[^>]+>/g, '')
-    } else {
+    if (store.settings.preserveFormatting) {
       switch (store.settings.activeFormat) {
         case 'markdown':
-          formattedText = formattedText
-            .replace(/<b>(.*?)<\/b>/g, '**$1**')
-            .replace(/<i>(.*?)<\/i>/g, '_$1_')
-            .replace(/<a href="(.*?)">(.*?)<\/a>/g, '[$2]($1)')
+          formattedText = html
+            .replace(/<(b|strong)>([\s\S]*?)<\/(b|strong)>/gi, '**$2**')
+            .replace(/<(i|em)>([\s\S]*?)<\/(i|em)>/gi, '_$2_')
+            .replace(/<a\s+[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)')
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<[^>]+>/g, '')
           break
         case 'html':
-          // Keep HTML as is
+          formattedText = html
           break
         default:
-          formattedText = formattedText.replace(/<[^>]+>/g, '')
+          formattedText = text
       }
     }
 
@@ -62,16 +80,20 @@ export function useAutoCopy() {
   }
 
   // Function to send a notification
-  const sendNotification = (title: string, message: string) => {
+  const sendNotification = (
+    severity: 'success' | 'error',
+    title: string,
+    message: string
+  ) => {
     try {
       toast.add({
-        severity: 'success',
+        severity,
         summary: title,
         detail: message,
         life: 3000
       })
-    } catch (error) {
-      console.log('[DEBUG] Error sending notification:', error)
+    } catch {
+      console.warn('[Auto Copy] Notification unavailable')
     }
   }
 
@@ -82,32 +104,28 @@ export function useAutoCopy() {
       try {
         await navigator.clipboard.writeText(text)
         return true
-      } catch (error) {
-        console.log('[DEBUG] Failed to copy with navigator.clipboard:', error)
+      } catch {
+        console.warn('[Auto Copy] Clipboard API unavailable, trying fallback')
       }
     }
 
     // Fallback method with execCommand
+    const textarea = document.createElement('textarea')
     try {
-      const textarea = document.createElement('textarea')
       textarea.value = text
+      textarea.dataset.toolglowsAutoCopyFallback = 'true'
       textarea.style.position = 'fixed'
       textarea.style.opacity = '0'
       document.body.appendChild(textarea)
       textarea.select()
 
       const success = document.execCommand('copy')
-      document.body.removeChild(textarea)
-
-      if (success) {
-        return true
-      } else {
-        console.log('[DEBUG] Copy failed with execCommand')
-        return false
-      }
-    } catch (error) {
-      console.error('[ERROR] Copy failed with all methods:', error)
+      return success
+    } catch {
+      console.error('[Auto Copy] Clipboard fallback failed')
       return false
+    } finally {
+      textarea.remove()
     }
   }
 
@@ -121,6 +139,8 @@ export function useAutoCopy() {
 
   // Function to copy the selected text
   const copySelection = async () => {
+    if (!isEnabled() || isCopying.value) return
+
     const selection = window.getSelection()
     if (!selection || selection.rangeCount === 0) return
 
@@ -130,34 +150,30 @@ export function useAutoCopy() {
     const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : container as HTMLElement
 
     if (!element || isElementExcluded(element)) {
-      console.log('[DEBUG] Selection in an excluded element, copy ignored')
       return
     }
 
-    const text = selection.toString()
-    if (!text) return
+    const content = getSelectionContent(selection)
+    if (!content.text) return
 
-    console.log('[DEBUG] Attempting to copy text:', text)
     isCopying.value = true
 
     try {
-      const formattedText = formatText(text)
-      console.log('[DEBUG] Formatted text:', formattedText)
+      const formattedText = formatText(content)
 
       const success = await copyToClipboard(formattedText)
 
       if (success) {
-        console.log('[DEBUG] Text copied successfully')
         if (store.settings.showNotifications) {
-          sendNotification('Text copied', 'The selected text has been copied to the clipboard')
+          sendNotification('success', 'Text copied', 'The selected text has been copied to the clipboard')
         }
       } else {
         throw new Error('Failed to copy text')
       }
-    } catch (error) {
-      console.error('[ERROR] Error during copy:', error)
+    } catch {
+      console.error('[Auto Copy] Copy failed')
       if (store.settings.showNotifications) {
-        sendNotification('Error', 'Failed to copy the selected text')
+        sendNotification('error', 'Error', 'Failed to copy the selected text')
       }
     } finally {
       isCopying.value = false
@@ -165,8 +181,16 @@ export function useAutoCopy() {
   }
 
   // Event handler for text selection
-  const handleSelection = () => {
-    copySelection()
+  const handleSelection = (event: MouseEvent | KeyboardEvent) => {
+    if (!isEnabled() || isAltMode.value) return
+
+    if (event instanceof KeyboardEvent) {
+      const isSelectionCompletion = event.key === 'Shift'
+        || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a')
+      if (!isSelectionCompletion) return
+    }
+
+    void copySelection()
   }
 
   // Keyboard shortcut handler
@@ -190,13 +214,13 @@ export function useAutoCopy() {
 
     if (format) {
       store.setActiveFormat(format.id)
-      copySelection()
+      void copySelection()
     }
   }
 
   // Function to enable ALT mode with delay
   const enableAltMode = () => {
-    if (!store.settings.enableAltSelection) return
+    if (!isEnabled() || !store.settings.enableAltSelection) return
 
     // Nettoyer le timer existant si présent
     if (altKeyTimer.value !== null) {
@@ -218,19 +242,23 @@ export function useAutoCopy() {
           el.style.outline = elementOutline('dashed')
           el.style.transition = resolveDesignToken('--tg-element-transition')
 
-          // Add hover handlers
-          el.addEventListener('mouseenter', () => {
+          const handlers = {
+            mouseenter: () => {
             if (isAltMode.value) {
               el.style.outline = elementOutline('solid')
               el.style.backgroundColor = resolveDesignToken('--tg-element-hover')
             }
-          })
-          el.addEventListener('mouseleave', () => {
+            },
+            mouseleave: () => {
             if (isAltMode.value) {
               el.style.outline = elementOutline('dashed')
               el.style.backgroundColor = el.dataset.originalBackground || ''
             }
-          })
+            }
+          }
+          el.addEventListener('mouseenter', handlers.mouseenter)
+          el.addEventListener('mouseleave', handlers.mouseleave)
+          highlightHandlers.set(el, handlers)
 
           highlightedElements.value.push(el)
         }
@@ -257,16 +285,19 @@ export function useAutoCopy() {
       delete el.dataset.originalTransition
       delete el.dataset.originalBackground
 
-      // Remove hover handlers
-      el.removeEventListener('mouseenter', () => {})
-      el.removeEventListener('mouseleave', () => {})
+      const handlers = highlightHandlers.get(el)
+      if (handlers) {
+        el.removeEventListener('mouseenter', handlers.mouseenter)
+        el.removeEventListener('mouseleave', handlers.mouseleave)
+        highlightHandlers.delete(el)
+      }
     })
     highlightedElements.value = []
   }
 
   // ALT mode click handler
   const handleAltClick = (event: MouseEvent) => {
-    if (!isAltMode.value || !store.settings.enableAltSelection) return
+    if (!isEnabled() || !isAltMode.value || !store.settings.enableAltSelection) return
 
     const target = event.target as HTMLElement
     if (!target || isElementExcluded(target)) return
@@ -280,12 +311,13 @@ export function useAutoCopy() {
     selection.removeAllRanges()
     selection.addRange(range)
 
-    copySelection()
+    void copySelection()
     event.preventDefault()
   }
 
   // Gestionnaire de touche ALT enfoncée
   const handleAltKeyDown = (event: KeyboardEvent) => {
+    if (!isEnabled()) return
     // Si une autre touche est déjà pressée avec ALT, on considère que c'est un raccourci
     if (event.key === 'Alt' && !event.ctrlKey && !event.shiftKey && !event.metaKey) {
       if (!store.settings.enableAltSelection || isAltMode.value) return
@@ -310,6 +342,7 @@ export function useAutoCopy() {
 
   // Gestionnaire global des touches
   const handleKeyDown = (event: KeyboardEvent) => {
+    if (!isEnabled()) return
     // Si une autre touche est pressée pendant que ALT est maintenu
     if (event.altKey && event.key !== 'Alt') {
       isAltCombination.value = true
