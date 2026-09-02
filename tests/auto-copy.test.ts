@@ -68,7 +68,7 @@ describe('Auto Copy interaction contract', () => {
     })
     Object.defineProperty(document, 'execCommand', {
       configurable: true,
-      value: vi.fn(() => true)
+      value: vi.fn(() => false)
     })
   })
 
@@ -146,6 +146,45 @@ describe('Auto Copy interaction contract', () => {
     expect(toastAdd).toHaveBeenCalledTimes(1)
   })
 
+  it('copies the exact selection without appending the page URL', async () => {
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    const store = useAutoCopyStore()
+    store.settings.includeSource = true
+    wrapper = mount(Harness)
+    selectNodeContents(document.querySelector('#selection')!)
+
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    await flushCopy()
+
+    expect(clipboardWrite).toHaveBeenCalledWith('Sensitive text')
+  })
+
+  it('restores the visible page selection after the synchronous fallback', async () => {
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined })
+    vi.mocked(document.execCommand).mockReturnValue(true)
+    wrapper = mount(Harness)
+    const selectedElement = document.querySelector('#selection')!
+    selectNodeContents(selectedElement)
+
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    await flushCopy()
+
+    expect(window.getSelection()?.toString()).toBe('Sensitive text')
+    expect(window.getSelection()?.getRangeAt(0).commonAncestorContainer).toBe(selectedElement)
+  })
+
+  it('installs visible selection feedback only while Auto Copy is mounted and active', async () => {
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+
+    const style = document.querySelector('#toolglows-auto-copy-selection-style')
+    expect(style?.textContent).toContain('rgba(255, 105, 180, 0.55)')
+
+    wrapper.unmount()
+    expect(document.querySelector('#toolglows-auto-copy-selection-style')).toBeNull()
+  })
+
   it('uses an error notification when every clipboard method fails', async () => {
     useSettingsStore().settings.activeTools = ['autoCopy']
     clipboardWrite.mockRejectedValue(new Error('denied'))
@@ -162,7 +201,7 @@ describe('Auto Copy interaction contract', () => {
     }))
   })
 
-  it('preserves selected markup for the HTML format', async () => {
+  it('preserves selected markup for the explicit HTML shortcut', async () => {
     useSettingsStore().settings.activeTools = ['autoCopy']
     const store = useAutoCopyStore()
     store.settings.activeFormat = 'html'
@@ -170,7 +209,7 @@ describe('Auto Copy interaction contract', () => {
     wrapper = mount(Harness)
     selectNodeContents(document.querySelector('#selection')!)
 
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'h', altKey: true, bubbles: true }))
     await flushCopy()
 
     expect(clipboardWrite).toHaveBeenCalledWith(expect.stringContaining('<strong>Sensitive</strong> text'))

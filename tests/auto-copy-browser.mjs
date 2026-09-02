@@ -26,7 +26,7 @@ try {
       autoCopySettings: {
         activeFormat: 'text',
         preserveFormatting: true,
-        includeSource: false,
+        includeSource: true,
         showNotifications: true,
         enableAltSelection: true
       }
@@ -56,6 +56,12 @@ try {
   await page.mouse.up()
   const selectedText = await page.evaluate(() => window.getSelection()?.toString() ?? '')
   if (!selectedText.trim()) throw new Error('Pointer gesture produced no text selection')
+  const selectionColor = await page.locator('h1').evaluate(element =>
+    getComputedStyle(element, '::selection').backgroundColor
+  )
+  if (!selectionColor.includes('255, 105, 180')) {
+    throw new Error(`Selection feedback is not visible: ${JSON.stringify(selectionColor)}`)
+  }
 
   const toast = page.locator('.p-toast-message')
   await toast.waitFor()
@@ -63,6 +69,15 @@ try {
   const clipboard = await page.evaluate(() => navigator.clipboard.readText())
   const notificationCount = await toast.count()
   const notificationText = await toast.first().innerText()
+  const notificationStyle = await toast.first().evaluate(element => {
+    const style = getComputedStyle(element)
+    const content = element.querySelector('.p-toast-message-content')
+    return {
+      backgroundColor: style.backgroundColor,
+      opacity: style.opacity,
+      contentDisplay: content ? getComputedStyle(content).display : ''
+    }
+  })
   const leakedSelection = diagnostics.some(message => message.includes(clipboard))
 
   if (clipboard.trim() !== selectedText.trim()) {
@@ -73,6 +88,11 @@ try {
   }
   if (!notificationText.includes('Text copied')) {
     throw new Error(`Unexpected notification: ${JSON.stringify(notificationText)}`)
+  }
+  if (notificationStyle.opacity !== '1'
+    || notificationStyle.backgroundColor === 'rgba(0, 0, 0, 0)'
+    || notificationStyle.contentDisplay !== 'grid') {
+    throw new Error(`Unreadable notification style: ${JSON.stringify(notificationStyle)}`)
   }
   if (leakedSelection) {
     throw new Error('Clipboard content appeared in content-script diagnostics')
@@ -111,6 +131,8 @@ try {
     copiedCharacters: clipboard.trim().length,
     notificationCount,
     notification: notificationText.replace(/\s+/g, ' ').trim(),
+    notificationStyle,
+    selectionColor,
     deniedPermissionFallback: deniedNotificationClass.includes('p-toast-message-success')
       ? 'copied-with-success-notification'
       : 'unexpected-notification-state',

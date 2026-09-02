@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useAutoCopyStore } from '@/stores/autoCopy'
 import { useToolGlowsStore } from '@/stores/toolglows'
 import { useToast } from 'primevue/usetoast'
@@ -18,6 +18,27 @@ export function useAutoCopy() {
   const altKeyTimer = ref<number | null>(null)
   const ALT_DELAY = 200 // Délai en millisecondes avant d'activer le mode ALT
   const isAltCombination = ref(false) // Pour détecter si ALT est utilisé avec une autre touche
+  const selectionFeedbackStyleId = 'toolglows-auto-copy-selection-style'
+
+  const syncSelectionFeedbackStyle = () => {
+    const existingStyle = document.getElementById(selectionFeedbackStyleId)
+    if (!isEnabled()) {
+      existingStyle?.remove()
+      return
+    }
+    if (existingStyle) return
+
+    const style = document.createElement('style')
+    style.id = selectionFeedbackStyleId
+    style.textContent = `
+      ::selection {
+        background-color: rgba(255, 105, 180, 0.55) !important;
+        color: inherit !important;
+        text-shadow: none !important;
+      }
+    `
+    document.documentElement.appendChild(style)
+  }
 
   // Function to apply the template to the text
   const applyTemplate = (text: string, format: string): string => {
@@ -99,17 +120,13 @@ export function useAutoCopy() {
 
   // Function to copy text to the clipboard
   const copyToClipboard = async (text: string): Promise<boolean> => {
-    // First try with the modern Clipboard API
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      try {
-        await navigator.clipboard.writeText(text)
-        return true
-      } catch {
-        console.warn('[Auto Copy] Clipboard API unavailable, trying fallback')
-      }
-    }
-
-    // Fallback method with execCommand
+    // execCommand must run synchronously inside the mouseup gesture. Preserve
+    // the page selection because selecting the hidden textarea would otherwise
+    // remove the user's visible highlight.
+    const selection = window.getSelection()
+    const selectedRanges = selection
+      ? Array.from({ length: selection.rangeCount }, (_, index) => selection.getRangeAt(index).cloneRange())
+      : []
     const textarea = document.createElement('textarea')
     try {
       textarea.value = text
@@ -119,14 +136,27 @@ export function useAutoCopy() {
       document.body.appendChild(textarea)
       textarea.select()
 
-      const success = document.execCommand('copy')
-      return success
+      if (document.execCommand('copy')) return true
     } catch {
-      console.error('[Auto Copy] Clipboard fallback failed')
-      return false
+      console.warn('[Auto Copy] Synchronous clipboard copy unavailable')
     } finally {
       textarea.remove()
+      if (selection && selectedRanges.length > 0) {
+        selection.removeAllRanges()
+        selectedRanges.forEach(range => selection.addRange(range))
+      }
     }
+
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text)
+        return true
+      } catch {
+        console.warn('[Auto Copy] Clipboard API unavailable')
+      }
+    }
+
+    return false
   }
 
   // Function to check if an element should be excluded from the copy
@@ -138,7 +168,7 @@ export function useAutoCopy() {
   }
 
   // Function to copy the selected text
-  const copySelection = async () => {
+  const copySelection = async (preserveFormat = false) => {
     if (!isEnabled() || isCopying.value) return
 
     const selection = window.getSelection()
@@ -159,7 +189,10 @@ export function useAutoCopy() {
     isCopying.value = true
 
     try {
-      const formattedText = formatText(content)
+      // Pointer and keyboard selections implement the Auto Copy promise:
+      // copy exactly what is selected. Formatting templates remain available
+      // only through their explicit keyboard shortcuts.
+      const formattedText = preserveFormat ? formatText(content) : content.text
 
       const success = await copyToClipboard(formattedText)
 
@@ -214,7 +247,7 @@ export function useAutoCopy() {
 
     if (format) {
       store.setActiveFormat(format.id)
-      void copySelection()
+      void copySelection(true)
     }
   }
 
@@ -359,6 +392,7 @@ export function useAutoCopy() {
 
   // Mount/unmount event listeners
   onMounted(() => {
+    syncSelectionFeedbackStyle()
     document.addEventListener('mouseup', handleSelection)
     document.addEventListener('keyup', handleSelection)
     document.addEventListener('keydown', handleShortcut)
@@ -370,6 +404,7 @@ export function useAutoCopy() {
   })
 
   onUnmounted(() => {
+    document.getElementById(selectionFeedbackStyleId)?.remove()
     document.removeEventListener('mouseup', handleSelection)
     document.removeEventListener('keyup', handleSelection)
     document.removeEventListener('keydown', handleShortcut)
@@ -381,6 +416,8 @@ export function useAutoCopy() {
     // Ensure styles are cleaned up
     disableAltMode()
   })
+
+  watch(() => toolglowsStore.activeTools.includes('autoCopy'), syncSelectionFeedbackStyle)
 
   return {
     isCopying,

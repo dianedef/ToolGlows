@@ -1,5 +1,9 @@
 <template>
-  <Toast position="bottom-right" />
+  <Toast
+    position="bottom-right"
+    class="toolglows-toast"
+    data-toolglows-ui="true"
+  />
   <div
     v-if="!isLoading"
     ref="toolbarRef"

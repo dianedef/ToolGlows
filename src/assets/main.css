@@ -651,8 +651,50 @@
   z-index: var(--tg-z-tooltip) !important;
 }
 
-.p-toast {
+[data-toolglows-ui].p-toast {
   zoom: var(--tg-interface-scale, var(--tg-scale-toolbar-md));
+  width: min(var(--tg-size-400), calc(100vw - var(--tg-space-6))) !important;
+  opacity: 1 !important;
+}
+
+[data-toolglows-ui].p-toast .p-toast-message {
+  overflow: hidden !important;
+  border: var(--tg-border-width-control) solid var(--tg-border-default) !important;
+  border-radius: var(--tg-radius-control) !important;
+  background: var(--tg-surface-raised) !important;
+  color: var(--tg-text-primary) !important;
+  box-shadow: var(--tg-shadow-dialog) !important;
+  opacity: 1 !important;
+}
+
+[data-toolglows-ui].p-toast .p-toast-message-content {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: var(--tg-space-3) !important;
+  padding: var(--tg-space-4) !important;
+}
+
+[data-toolglows-ui].p-toast .p-toast-message-text {
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+[data-toolglows-ui].p-toast .p-toast-summary,
+[data-toolglows-ui].p-toast .p-toast-detail {
+  display: block !important;
+  color: inherit !important;
+  overflow-wrap: anywhere !important;
+}
+
+[data-toolglows-ui].p-toast .p-toast-summary {
+  margin-bottom: var(--tg-space-1) !important;
+  font-weight: 700 !important;
+}
+
+[data-toolglows-ui].p-toast .p-toast-detail {
+  margin: 0 !important;
+  color: var(--tg-text-secondary) !important;
 }
 
 .p-tooltip .p-tooltip-text {
