@@ -10,6 +10,7 @@ export function useAutoCopy() {
   const toolglowsStore = useToolGlowsStore()
   const toast = useToast()
   const isCopying = ref(false)
+  const copyState = ref<'idle' | 'copying' | 'confirmed' | 'failed'>('idle')
   const isAltMode = ref(false)
   const altKeyTimer = ref<number | null>(null)
   const ALT_DELAY = 200 // Délai en millisecondes avant d'activer le mode ALT
@@ -18,6 +19,14 @@ export function useAutoCopy() {
   const altFeedbackStyleId = 'toolglows-auto-copy-alt-style'
   const altHighlightId = 'toolglows-auto-copy-alt-highlight'
   const selectableElementSelector = 'div, p, article, section, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, code, table, tr, td, th'
+  const highlightHoldMs = 1200
+  const highlightFadeStepMs = 150
+  let pointerSelectionAtStart: string | null = null
+  let keyboardSelectionAtStart: string | null = null
+  let highlightHoldTimer: number | null = null
+  let highlightFadeTimer: number | null = null
+  let highlightClearTimer: number | null = null
+  let stateResetTimer: number | null = null
 
   const syncSelectionFeedbackStyle = () => {
     const existingStyle = document.getElementById(selectionFeedbackStyleId)
@@ -35,6 +44,12 @@ export function useAutoCopy() {
         background-color: color-mix(in srgb, ${selectionColor} 55%, transparent) !important;
         color: inherit !important;
         text-shadow: none !important;
+      }
+      html[data-toolglows-auto-copy-selection='fading'] ::selection {
+        background-color: color-mix(in srgb, ${selectionColor} 28%, transparent) !important;
+      }
+      html[data-toolglows-auto-copy-selection='fading-out'] ::selection {
+        background-color: color-mix(in srgb, ${selectionColor} 8%, transparent) !important;
       }
     `
     document.documentElement.appendChild(style)
@@ -63,14 +78,24 @@ export function useAutoCopy() {
 
   const isEnabled = () => toolglowsStore.activeTools.includes('autoCopy')
 
+  const selectedEditableText = (target?: EventTarget | null): string | null => {
+    if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return null
+    if (target instanceof HTMLInputElement && target.type === 'password') return ''
+    const start = target.selectionStart
+    const end = target.selectionEnd
+    if (start === null || end === null || start === end) return ''
+    return target.value.slice(Math.min(start, end), Math.max(start, end))
+  }
+
+  const currentSelectionText = (target?: EventTarget | null): string => {
+    const editableText = selectedEditableText(target)
+    return editableText === null ? window.getSelection()?.toString() ?? '' : editableText
+  }
+
   const getSelectionContent = (selection: Selection, eventTarget?: EventTarget | null) => {
-    if (eventTarget instanceof HTMLInputElement || eventTarget instanceof HTMLTextAreaElement) {
-      if (eventTarget instanceof HTMLInputElement && eventTarget.type === 'password') return null
-      const start = eventTarget.selectionStart
-      const end = eventTarget.selectionEnd
-      if (start === null || end === null || start === end) return null
-      const text = eventTarget.value.slice(Math.min(start, end), Math.max(start, end))
-      return { text, html: text }
+    const editableText = selectedEditableText(eventTarget)
+    if (editableText !== null) {
+      return editableText ? { text: editableText, html: editableText } : null
     }
 
     const container = document.createElement('div')
@@ -116,15 +141,60 @@ export function useAutoCopy() {
     message: string
   ) => {
     try {
+      toast.removeGroup('auto-copy')
       toast.add({
+        group: 'auto-copy',
         severity,
         summary: title,
         detail: message,
-        life: 3000
+        life: 2200,
+        closable: false
       })
     } catch {
       console.warn('[Auto Copy] Notification unavailable')
     }
+  }
+
+  const clearHighlightTimers = () => {
+    if (highlightHoldTimer !== null) window.clearTimeout(highlightHoldTimer)
+    if (highlightFadeTimer !== null) window.clearTimeout(highlightFadeTimer)
+    if (highlightClearTimer !== null) window.clearTimeout(highlightClearTimer)
+    highlightHoldTimer = null
+    highlightFadeTimer = null
+    highlightClearTimer = null
+    delete document.documentElement.dataset.toolglowsAutoCopySelection
+  }
+
+  const scheduleHighlightExpiry = (target: EventTarget | null | undefined, copiedText: string) => {
+    clearHighlightTimers()
+    document.documentElement.dataset.toolglowsAutoCopySelection = 'confirmed'
+    highlightHoldTimer = window.setTimeout(() => {
+      if (currentSelectionText(target) !== copiedText) {
+        clearHighlightTimers()
+        return
+      }
+
+      document.documentElement.dataset.toolglowsAutoCopySelection = 'fading'
+      highlightFadeTimer = window.setTimeout(() => {
+        if (currentSelectionText(target) !== copiedText) {
+          clearHighlightTimers()
+          return
+        }
+        document.documentElement.dataset.toolglowsAutoCopySelection = 'fading-out'
+      }, highlightFadeStepMs)
+      highlightClearTimer = window.setTimeout(() => {
+        if (currentSelectionText(target) === copiedText) {
+          if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+            const end = target.selectionEnd ?? target.value.length
+            target.setSelectionRange(end, end)
+          } else {
+            window.getSelection()?.removeAllRanges()
+          }
+        }
+        clearHighlightTimers()
+        copyState.value = 'idle'
+      }, highlightFadeStepMs * 2)
+    }, highlightHoldMs)
   }
 
   // Function to check if an element should be excluded from the copy
@@ -184,6 +254,7 @@ export function useAutoCopy() {
     }
 
     isCopying.value = true
+    copyState.value = 'copying'
 
     try {
       // Pointer and keyboard selections implement the Auto Copy promise:
@@ -194,6 +265,8 @@ export function useAutoCopy() {
       const success = await copyTextToClipboard(formattedText)
 
       if (success) {
+        copyState.value = 'confirmed'
+        scheduleHighlightExpiry(eventTarget, content.text)
         if (store.settings.showNotifications) {
           sendNotification('success', 'Text copied', 'The selected text has been copied to the clipboard')
         }
@@ -201,6 +274,12 @@ export function useAutoCopy() {
         throw new Error('Failed to copy text')
       }
     } catch {
+      copyState.value = 'failed'
+      if (stateResetTimer !== null) window.clearTimeout(stateResetTimer)
+      stateResetTimer = window.setTimeout(() => {
+        copyState.value = 'idle'
+        stateResetTimer = null
+      }, 2200)
       console.error('[Auto Copy] Copy failed')
       if (store.settings.showNotifications) {
         sendNotification('error', 'Error', 'Failed to copy the selected text')
@@ -218,9 +297,34 @@ export function useAutoCopy() {
       const isSelectionCompletion = event.key === 'Shift'
         || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a')
       if (!isSelectionCompletion) return
+      const selectedText = currentSelectionText(event.target)
+      if (keyboardSelectionAtStart !== null && selectedText === keyboardSelectionAtStart) {
+        keyboardSelectionAtStart = null
+        return
+      }
+      keyboardSelectionAtStart = null
+    } else {
+      const selectedText = currentSelectionText(event.target)
+      if (pointerSelectionAtStart !== null && selectedText === pointerSelectionAtStart) {
+        pointerSelectionAtStart = null
+        return
+      }
+      pointerSelectionAtStart = null
     }
 
     void copySelection(false, event.target)
+  }
+
+  const handleSelectionStart = (event: PointerEvent) => {
+    if (!isEnabled() || isAltMode.value) return
+    pointerSelectionAtStart = currentSelectionText(event.target)
+  }
+
+  const handleSelectionKeyDown = (event: KeyboardEvent) => {
+    if (!isEnabled() || isAltMode.value || event.repeat) return
+    const startsSelection = event.key === 'Shift'
+      || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a')
+    if (startsSelection) keyboardSelectionAtStart = currentSelectionText(event.target)
   }
 
   // Keyboard shortcut handler
@@ -369,9 +473,11 @@ export function useAutoCopy() {
   onMounted(() => {
     syncSelectionFeedbackStyle()
     document.addEventListener('pointerup', handleSelection)
+    document.addEventListener('pointerdown', handleSelectionStart, true)
     document.addEventListener('pointermove', updateAltHighlight, true)
     document.addEventListener('keyup', handleSelection)
     document.addEventListener('keydown', handleShortcut)
+    document.addEventListener('keydown', handleSelectionKeyDown)
     document.addEventListener('keydown', handleAltKeyDown)
     document.addEventListener('keyup', handleAltKeyUp)
     document.addEventListener('keydown', handleKeyDown)
@@ -381,10 +487,14 @@ export function useAutoCopy() {
 
   onUnmounted(() => {
     document.getElementById(selectionFeedbackStyleId)?.remove()
+    clearHighlightTimers()
+    if (stateResetTimer !== null) window.clearTimeout(stateResetTimer)
     document.removeEventListener('pointerup', handleSelection)
+    document.removeEventListener('pointerdown', handleSelectionStart, true)
     document.removeEventListener('pointermove', updateAltHighlight, true)
     document.removeEventListener('keyup', handleSelection)
     document.removeEventListener('keydown', handleShortcut)
+    document.removeEventListener('keydown', handleSelectionKeyDown)
     document.removeEventListener('keydown', handleAltKeyDown)
     document.removeEventListener('keyup', handleAltKeyUp)
     document.removeEventListener('keydown', handleKeyDown)
@@ -394,10 +504,27 @@ export function useAutoCopy() {
     disableAltMode()
   })
 
-  watch(() => toolglowsStore.activeTools.includes('autoCopy'), syncSelectionFeedbackStyle)
+  watch(() => toolglowsStore.activeTools.includes('autoCopy'), enabled => {
+    syncSelectionFeedbackStyle()
+    if (!enabled) {
+      clearHighlightTimers()
+      if (stateResetTimer !== null) window.clearTimeout(stateResetTimer)
+      stateResetTimer = null
+      pointerSelectionAtStart = null
+      keyboardSelectionAtStart = null
+      copyState.value = 'idle'
+      disableAltMode()
+      try {
+        toast.removeGroup('auto-copy')
+      } catch {
+        // The notification host may already be gone during teardown.
+      }
+    }
+  })
 
   return {
     isCopying,
+    copyState,
     isAltMode,
     settings: store.settings,
     updateSettings: store.updateSettings,

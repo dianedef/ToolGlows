@@ -4,6 +4,12 @@
     class="toolglows-toast"
     data-toolglows-ui="true"
   />
+  <Toast
+    group="auto-copy"
+    position="bottom-right"
+    class="toolglows-toast toolglows-auto-copy-toast"
+    data-toolglows-ui="true"
+  />
   <div
     v-if="!isLoading"
     ref="toolbarRef"

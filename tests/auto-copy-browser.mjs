@@ -63,7 +63,7 @@ try {
     throw new Error(`Selection feedback is not visible: ${JSON.stringify(selectionColor)}`)
   }
 
-  const toast = page.locator('.p-toast-message')
+  const toast = page.locator('.toolglows-auto-copy-toast .p-toast-message')
   await toast.waitFor()
   await context.grantPermissions(['clipboard-read'], { origin: 'https://example.com' })
   const clipboard = await page.evaluate(() => navigator.clipboard.readText())
@@ -78,6 +78,27 @@ try {
       contentDisplay: content ? getComputedStyle(content).display : ''
     }
   })
+  await toast.first().evaluate(element => { element.dataset.testInstance = 'initial-copy' })
+  await page.locator('p').first().dispatchEvent('pointerdown')
+  await page.locator('p').first().dispatchEvent('pointerup')
+  await page.waitForTimeout(100)
+  const duplicateGesture = await page.evaluate(() => ({
+    notificationCount: document.querySelectorAll('.toolglows-auto-copy-toast .p-toast-message').length,
+    originalNotificationStillPresent: document.querySelector('[data-test-instance="initial-copy"]') !== null
+  }))
+  if (duplicateGesture.notificationCount !== 1 || !duplicateGesture.originalNotificationStillPresent) {
+    throw new Error(`An unchanged selection triggered new feedback: ${JSON.stringify(duplicateGesture)}`)
+  }
+  await page.waitForFunction(() => ['fading', 'fading-out'].includes(
+    document.documentElement.dataset.toolglowsAutoCopySelection ?? ''
+  ))
+  const fadeStateObserved = await page.evaluate(() =>
+    document.documentElement.dataset.toolglowsAutoCopySelection
+  )
+  await page.waitForFunction(() => (window.getSelection()?.toString() ?? '') === '')
+  const selectionCleared = await page.evaluate(() =>
+    !document.documentElement.dataset.toolglowsAutoCopySelection
+  )
   const leakedSelection = diagnostics.some(message => message.includes(clipboard))
 
   if (clipboard.trim() !== selectedText.trim()) {
@@ -97,6 +118,9 @@ try {
   if (leakedSelection) {
     throw new Error('Clipboard content appeared in content-script diagnostics')
   }
+  if (!selectionCleared) {
+    throw new Error('Selection feedback state remained after the selection was cleared')
+  }
 
   await context.clearPermissions()
   const deniedPage = await context.newPage()
@@ -114,7 +138,7 @@ try {
   })
   await deniedPage.locator('h1').dispatchEvent('pointerup')
 
-  const deniedToast = deniedPage.locator('.p-toast-message')
+  const deniedToast = deniedPage.locator('.toolglows-auto-copy-toast .p-toast-message')
   await deniedToast.waitFor()
   const deniedNotificationCount = await deniedToast.count()
   const deniedNotificationText = await deniedToast.first().innerText()
@@ -197,6 +221,9 @@ try {
     notification: notificationText.replace(/\s+/g, ' ').trim(),
     notificationStyle,
     selectionColor,
+    duplicateGesture,
+    fadeStateObserved,
+    selectionCleared,
     iframeClipboard: frameClipboard,
     altPerformance,
     deniedPermissionFallback: deniedNotificationClass.includes('p-toast-message-success')

@@ -5,9 +5,10 @@ import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const toastAdd = vi.fn()
+const toastRemoveGroup = vi.fn()
 
 vi.mock('primevue/usetoast', () => ({
-  useToast: () => ({ add: toastAdd })
+  useToast: () => ({ add: toastAdd, removeGroup: toastRemoveGroup })
 }))
 
 vi.mock('webext-bridge/content-script', () => ({
@@ -61,6 +62,7 @@ describe('Auto Copy interaction contract', () => {
     setActivePinia(createPinia())
     document.body.innerHTML = '<main><p id="selection"><strong>Sensitive</strong> text</p></main>'
     toastAdd.mockReset()
+    toastRemoveGroup.mockReset()
     clipboardWrite.mockReset().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -144,6 +146,56 @@ describe('Auto Copy interaction contract', () => {
 
     expect(clipboardWrite).toHaveBeenCalledTimes(1)
     expect(toastAdd).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not copy or notify again when a click leaves the selection unchanged', async () => {
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+    const selected = document.querySelector('#selection')!
+    selectNodeContents(selected)
+
+    selected.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    await flushCopy()
+    selected.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    selected.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    await flushCopy()
+
+    expect(clipboardWrite).toHaveBeenCalledTimes(1)
+    expect(toastAdd).toHaveBeenCalledTimes(1)
+  })
+
+  it('softens then clears a confirmed selection after 1.5 seconds', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+    selectNodeContents(document.querySelector('#selection')!)
+
+    document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    await flushCopy()
+    expect(document.documentElement.dataset.toolglowsAutoCopySelection).toBe('confirmed')
+
+    await vi.advanceTimersByTimeAsync(1200)
+    expect(document.documentElement.dataset.toolglowsAutoCopySelection).toBe('fading')
+    await vi.advanceTimersByTimeAsync(150)
+    expect(document.documentElement.dataset.toolglowsAutoCopySelection).toBe('fading-out')
+    await vi.advanceTimersByTimeAsync(150)
+    expect(window.getSelection()?.toString()).toBe('')
+    expect(document.documentElement.dataset.toolglowsAutoCopySelection).toBeUndefined()
+  })
+
+  it('replaces the current Auto Copy toast instead of stacking notifications', async () => {
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+    selectNodeContents(document.querySelector('#selection')!)
+
+    document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    await flushCopy()
+
+    expect(toastRemoveGroup).toHaveBeenCalledWith('auto-copy')
+    expect(toastAdd).toHaveBeenCalledWith(expect.objectContaining({
+      group: 'auto-copy',
+      closable: false
+    }))
   })
 
   it('copies the exact selection without appending the page URL', async () => {

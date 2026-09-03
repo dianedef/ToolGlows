@@ -697,6 +697,44 @@
   color: var(--tg-text-secondary) !important;
 }
 
+[data-toolglows-ui].p-toast .p-toast-message-enter-active {
+  animation: toolglows-toast-enter var(--tg-motion-standard) both !important;
+}
+
+[data-toolglows-ui].p-toast .p-toast-message-leave-active {
+  animation: toolglows-toast-leave var(--tg-motion-fast) both !important;
+}
+
+@keyframes toolglows-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--tg-space-3));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toolglows-toast-leave {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(var(--tg-space-2));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-toolglows-ui].p-toast .p-toast-message-enter-active,
+  [data-toolglows-ui].p-toast .p-toast-message-leave-active {
+    animation-duration: var(--tg-motion-reduced) !important;
+    transform: none !important;
+  }
+}
+
 .p-tooltip .p-tooltip-text {
   background: var(--tg-tooltip-background) !important;
   color: var(--tg-tooltip-text) !important;
