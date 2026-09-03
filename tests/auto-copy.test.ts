@@ -84,7 +84,7 @@ describe('Auto Copy interaction contract', () => {
     wrapper = mount(Harness)
     selectNodeContents(document.querySelector('#selection')!)
 
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
     await flushCopy()
 
     expect(clipboardWrite).not.toHaveBeenCalled()
@@ -103,7 +103,7 @@ describe('Auto Copy interaction contract', () => {
     expect(toastAdd).toHaveBeenCalledTimes(1)
   })
 
-  it('copies once when Alt element selection emits mouseup and click', async () => {
+  it('copies once when Alt element selection emits pointerup and click', async () => {
     vi.useFakeTimers()
     useSettingsStore().settings.activeTools = ['autoCopy']
     wrapper = mount(Harness)
@@ -111,7 +111,7 @@ describe('Auto Copy interaction contract', () => {
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }))
     await vi.advanceTimersByTimeAsync(200)
-    target.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
     target.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     await flushCopy()
 
@@ -127,7 +127,7 @@ describe('Auto Copy interaction contract', () => {
     wrapper = mount(Harness)
     selectNodeContents(document.querySelector('#selection')!)
 
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
     await flushCopy()
 
     expect(log.mock.calls.flat().join(' ')).not.toContain('Sensitive text')
@@ -139,7 +139,7 @@ describe('Auto Copy interaction contract', () => {
     wrapper = mount(Harness)
     selectNodeContents(document.querySelector('#selection')!)
 
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
     await flushCopy()
 
     expect(clipboardWrite).toHaveBeenCalledTimes(1)
@@ -153,7 +153,7 @@ describe('Auto Copy interaction contract', () => {
     wrapper = mount(Harness)
     selectNodeContents(document.querySelector('#selection')!)
 
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
     await flushCopy()
 
     expect(clipboardWrite).toHaveBeenCalledWith('Sensitive text')
@@ -167,11 +167,44 @@ describe('Auto Copy interaction contract', () => {
     const selectedElement = document.querySelector('#selection')!
     selectNodeContents(selectedElement)
 
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
     await flushCopy()
 
     expect(window.getSelection()?.toString()).toBe('Sensitive text')
     expect(window.getSelection()?.getRangeAt(0).commonAncestorContainer).toBe(selectedElement)
+  })
+
+  it('preserves focus and the selected range in editable fields', async () => {
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined })
+    vi.mocked(document.execCommand).mockReturnValue(true)
+    document.body.innerHTML = '<input id="editable" value="Selected field value">'
+    wrapper = mount(Harness)
+    const input = document.querySelector<HTMLInputElement>('#editable')!
+    input.focus()
+    input.setSelectionRange(0, 8)
+
+    input.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch' }))
+    await flushCopy()
+
+    expect(document.activeElement).toBe(input)
+    expect([input.selectionStart, input.selectionEnd]).toEqual([0, 8])
+    expect(toastAdd).toHaveBeenCalledTimes(1)
+  })
+
+  it('never copies a password field selection', async () => {
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    document.body.innerHTML = '<input id="password" type="password" value="secret value">'
+    wrapper = mount(Harness)
+    const input = document.querySelector<HTMLInputElement>('#password')!
+    input.focus()
+    input.setSelectionRange(0, input.value.length)
+
+    input.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    await flushCopy()
+
+    expect(clipboardWrite).not.toHaveBeenCalled()
+    expect(toastAdd).not.toHaveBeenCalled()
   })
 
   it('installs visible selection feedback only while Auto Copy is mounted and active', async () => {
@@ -179,7 +212,7 @@ describe('Auto Copy interaction contract', () => {
     wrapper = mount(Harness)
 
     const style = document.querySelector('#toolglows-auto-copy-selection-style')
-    expect(style?.textContent).toContain('rgba(255, 105, 180, 0.55)')
+    expect(style?.textContent).toContain('55%, transparent')
 
     wrapper.unmount()
     expect(document.querySelector('#toolglows-auto-copy-selection-style')).toBeNull()
@@ -192,7 +225,7 @@ describe('Auto Copy interaction contract', () => {
     wrapper = mount(Harness)
     selectNodeContents(document.querySelector('#selection')!)
 
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
     await flushCopy()
 
     expect(toastAdd).toHaveBeenLastCalledWith(expect.objectContaining({
@@ -224,7 +257,7 @@ describe('Auto Copy interaction contract', () => {
     wrapper = mount(Harness)
     selectNodeContents(document.querySelector('#selection')!)
 
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
     await flushCopy()
 
     expect(document.querySelector('textarea')).toBeNull()

@@ -11,7 +11,10 @@
     >
       <div class="copy-options">
         <div class="field mb-3">
-          <h4>Active Format</h4>
+          <h4>Formatted copy shortcuts</h4>
+          <p class="section-description">
+            Automatic copy always keeps the exact selected text. These formats apply only to their keyboard shortcuts.
+          </p>
           <div class="formats-list">
             <div
               v-for="format in copyStore.settings.formats"
@@ -37,7 +40,7 @@
         </div>
 
         <div class="field mb-3">
-          <h4>Options</h4>
+          <h4>Shortcut options</h4>
           <div class="field-checkbox mb-2">
             <Checkbox
               v-model="copyStore.settings.preserveFormatting"
@@ -61,6 +64,8 @@
             />
             <label>Include Source</label>
           </div>
+
+          <h4 class="feedback-heading">Automatic copy</h4>
 
           <div class="field-checkbox mb-2">
             <Checkbox
@@ -135,6 +140,15 @@ const closeDialog = () => {
 .field h4 {
   margin-bottom: var(--tg-space-3);
   color: var(--text-color);
+}
+
+.section-description {
+  margin: 0 0 var(--tg-space-3);
+  color: var(--tg-text-secondary);
+}
+
+.feedback-heading {
+  margin-top: var(--tg-space-5);
 }
 
 .formats-list {

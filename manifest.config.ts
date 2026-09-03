@@ -40,6 +40,13 @@ export default {
       matches: ["<all_urls>"],
       run_at: "document_end",
     },
+    {
+      all_frames: true,
+      match_about_blank: true,
+      js: ["src/content-script/autoCopyFrameEntry.ts"],
+      matches: ["<all_urls>"],
+      run_at: "document_end",
+    },
   ],
   side_panel: {
     default_path: "src/ui/side-panel/index.html",

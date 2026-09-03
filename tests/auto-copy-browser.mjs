@@ -59,7 +59,7 @@ try {
   const selectionColor = await page.locator('h1').evaluate(element =>
     getComputedStyle(element, '::selection').backgroundColor
   )
-  if (!selectionColor.includes('255, 105, 180')) {
+  if (selectionColor === 'rgba(0, 0, 0, 0)' || selectionColor === 'transparent') {
     throw new Error(`Selection feedback is not visible: ${JSON.stringify(selectionColor)}`)
   }
 
@@ -112,7 +112,7 @@ try {
     selection?.removeAllRanges()
     selection?.addRange(range)
   })
-  await deniedPage.locator('h1').dispatchEvent('mouseup')
+  await deniedPage.locator('h1').dispatchEvent('pointerup')
 
   const deniedToast = deniedPage.locator('.p-toast-message')
   await deniedToast.waitFor()
@@ -126,6 +126,70 @@ try {
     throw new Error('Selected content appeared in diagnostics during denied clipboard flow')
   }
 
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'https://example.com' })
+  await serviceWorker.evaluate(() => chrome.storage.sync.set({
+    toolglowsSettings: { activeTools: ['autoCopy'] }
+  }))
+  const framePage = await context.newPage()
+  await framePage.route('https://example.com/auto-copy-*', route => {
+    const isChild = route.request().url().endsWith('auto-copy-child')
+    return route.fulfill({
+      contentType: 'text/html',
+      body: isChild
+        ? '<p id="frame-selection">iframe selected value</p>'
+        : '<iframe src="/auto-copy-child"></iframe>'
+    })
+  })
+  await framePage.goto('https://example.com/auto-copy-parent')
+  await framePage.locator('#toolglows-root').waitFor()
+  await framePage.locator('[data-toolglows-main]').click()
+  const framePageAutoCopy = framePage.locator('[data-tool-id="autoCopy"]')
+  if (await framePageAutoCopy.getAttribute('aria-pressed') !== 'true') {
+    await framePageAutoCopy.click()
+  }
+  const childFrame = framePage.frames().find(frame => frame.url().endsWith('auto-copy-child'))
+  if (!childFrame) throw new Error('Auto Copy child frame was not created')
+  await childFrame.locator('#frame-selection').evaluate(element => {
+    const range = document.createRange()
+    range.selectNodeContents(element)
+    const selection = getSelection()
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+    element.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+  })
+  const frameToast = childFrame.locator('#toolglows-frame-copy-status')
+  await framePage.waitForTimeout(500)
+  const frameClipboard = await framePage.evaluate(() => navigator.clipboard.readText())
+  if (frameClipboard !== 'iframe selected value') {
+    throw new Error(`Iframe selection was not copied exactly: ${JSON.stringify(frameClipboard)}`)
+  }
+  await frameToast.waitFor({ timeout: 5000 })
+
+  const performancePage = await context.newPage()
+  await performancePage.route('https://example.com/auto-copy-performance', route => route.fulfill({
+    contentType: 'text/html',
+    body: `<main>${'<div>block</div>'.repeat(10000)}</main>`
+  }))
+  await performancePage.goto('https://example.com/auto-copy-performance')
+  await performancePage.locator('#toolglows-root').waitFor()
+  const altPerformance = await performancePage.evaluate(async () => {
+    const start = performance.now()
+    let timerDelay = 0
+    const probe = new Promise(resolve => setTimeout(() => {
+      timerDelay = performance.now() - start - 205
+      resolve(undefined)
+    }, 205))
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }))
+    await probe
+    const inlineOutlines = [...document.querySelectorAll('div')]
+      .filter(element => element.style.outline).length
+    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt', bubbles: true }))
+    return { timerDelayMs: Math.round(timerDelay), inlineOutlines }
+  })
+  if (altPerformance.timerDelayMs > 100 || altPerformance.inlineOutlines !== 0) {
+    throw new Error(`Alt mode exceeded its constant-work budget: ${JSON.stringify(altPerformance)}`)
+  }
+
   console.log(JSON.stringify({
     ok: true,
     copiedCharacters: clipboard.trim().length,
@@ -133,6 +197,8 @@ try {
     notification: notificationText.replace(/\s+/g, ' ').trim(),
     notificationStyle,
     selectionColor,
+    iframeClipboard: frameClipboard,
+    altPerformance,
     deniedPermissionFallback: deniedNotificationClass.includes('p-toast-message-success')
       ? 'copied-with-success-notification'
       : 'unexpected-notification-state',

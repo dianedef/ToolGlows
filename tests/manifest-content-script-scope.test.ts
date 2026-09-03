@@ -19,4 +19,14 @@ describe('content script frame scope', () => {
     expect(bootstrapScript).toBeDefined()
     expect(bootstrapScript?.all_frames).toBe(true)
   })
+
+  it('runs the lightweight auto-copy listener in subframes without mounting another toolbar', () => {
+    const frameScript = manifest.content_scripts?.find(script =>
+      script.js?.includes('src/content-script/autoCopyFrameEntry.ts')
+    )
+
+    expect(frameScript).toBeDefined()
+    expect(frameScript?.all_frames).toBe(true)
+    expect(frameScript?.match_about_blank).toBe(true)
+  })
 })

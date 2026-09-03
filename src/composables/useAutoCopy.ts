@@ -2,7 +2,8 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useAutoCopyStore } from '@/stores/autoCopy'
 import { useToolGlowsStore } from '@/stores/toolglows'
 import { useToast } from 'primevue/usetoast'
-import { elementOutline, resolveDesignToken } from '@/utils/designTokens'
+import { elementOutline, resolveDesignColorToken, resolveDesignToken } from '@/utils/designTokens'
+import { copyTextToClipboard } from '@/utils/clipboard'
 
 export function useAutoCopy() {
   const store = useAutoCopyStore()
@@ -10,15 +11,13 @@ export function useAutoCopy() {
   const toast = useToast()
   const isCopying = ref(false)
   const isAltMode = ref(false)
-  const highlightedElements = ref<HTMLElement[]>([])
-  const highlightHandlers = new Map<HTMLElement, {
-    mouseenter: () => void
-    mouseleave: () => void
-  }>()
   const altKeyTimer = ref<number | null>(null)
   const ALT_DELAY = 200 // Délai en millisecondes avant d'activer le mode ALT
   const isAltCombination = ref(false) // Pour détecter si ALT est utilisé avec une autre touche
   const selectionFeedbackStyleId = 'toolglows-auto-copy-selection-style'
+  const altFeedbackStyleId = 'toolglows-auto-copy-alt-style'
+  const altHighlightId = 'toolglows-auto-copy-alt-highlight'
+  const selectableElementSelector = 'div, p, article, section, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, code, table, tr, td, th'
 
   const syncSelectionFeedbackStyle = () => {
     const existingStyle = document.getElementById(selectionFeedbackStyleId)
@@ -29,10 +28,11 @@ export function useAutoCopy() {
     if (existingStyle) return
 
     const style = document.createElement('style')
+    const selectionColor = resolveDesignColorToken('--tg-color-brand-default')
     style.id = selectionFeedbackStyleId
     style.textContent = `
       ::selection {
-        background-color: rgba(255, 105, 180, 0.55) !important;
+        background-color: color-mix(in srgb, ${selectionColor} 55%, transparent) !important;
         color: inherit !important;
         text-shadow: none !important;
       }
@@ -63,7 +63,16 @@ export function useAutoCopy() {
 
   const isEnabled = () => toolglowsStore.activeTools.includes('autoCopy')
 
-  const getSelectionContent = (selection: Selection) => {
+  const getSelectionContent = (selection: Selection, eventTarget?: EventTarget | null) => {
+    if (eventTarget instanceof HTMLInputElement || eventTarget instanceof HTMLTextAreaElement) {
+      if (eventTarget instanceof HTMLInputElement && eventTarget.type === 'password') return null
+      const start = eventTarget.selectionStart
+      const end = eventTarget.selectionEnd
+      if (start === null || end === null || start === end) return null
+      const text = eventTarget.value.slice(Math.min(start, end), Math.max(start, end))
+      return { text, html: text }
+    }
+
     const container = document.createElement('div')
     for (let index = 0; index < selection.rangeCount; index += 1) {
       container.appendChild(selection.getRangeAt(index).cloneContents())
@@ -118,47 +127,6 @@ export function useAutoCopy() {
     }
   }
 
-  // Function to copy text to the clipboard
-  const copyToClipboard = async (text: string): Promise<boolean> => {
-    // execCommand must run synchronously inside the mouseup gesture. Preserve
-    // the page selection because selecting the hidden textarea would otherwise
-    // remove the user's visible highlight.
-    const selection = window.getSelection()
-    const selectedRanges = selection
-      ? Array.from({ length: selection.rangeCount }, (_, index) => selection.getRangeAt(index).cloneRange())
-      : []
-    const textarea = document.createElement('textarea')
-    try {
-      textarea.value = text
-      textarea.dataset.toolglowsAutoCopyFallback = 'true'
-      textarea.style.position = 'fixed'
-      textarea.style.opacity = '0'
-      document.body.appendChild(textarea)
-      textarea.select()
-
-      if (document.execCommand('copy')) return true
-    } catch {
-      console.warn('[Auto Copy] Synchronous clipboard copy unavailable')
-    } finally {
-      textarea.remove()
-      if (selection && selectedRanges.length > 0) {
-        selection.removeAllRanges()
-        selectedRanges.forEach(range => selection.addRange(range))
-      }
-    }
-
-    if (navigator.clipboard?.writeText) {
-      try {
-        await navigator.clipboard.writeText(text)
-        return true
-      } catch {
-        console.warn('[Auto Copy] Clipboard API unavailable')
-      }
-    }
-
-    return false
-  }
-
   // Function to check if an element should be excluded from the copy
   const isElementExcluded = (element: HTMLElement): boolean => {
     // The ToolGlows root is the ownership boundary. Generic PrimeVue-like
@@ -167,24 +135,53 @@ export function useAutoCopy() {
     return element.closest('#toolglows-root, #toolglows-extension, .toolglows-extension') !== null
   }
 
+  const findSelectableTarget = (event: Event): HTMLElement | null => {
+    const pathTarget = event.composedPath().find(candidate => candidate instanceof Element)
+    const element = pathTarget instanceof Element ? pathTarget : event.target instanceof Element ? event.target : null
+    const target = element?.closest<HTMLElement>(selectableElementSelector) ?? null
+    return target && !isElementExcluded(target) ? target : null
+  }
+
+  const updateAltHighlight = (event: PointerEvent) => {
+    if (!isAltMode.value) return
+    const highlight = document.getElementById(altHighlightId)
+    const target = findSelectableTarget(event)
+    if (!highlight || !target) {
+      if (highlight) highlight.style.display = 'none'
+      return
+    }
+
+    const rect = target.getBoundingClientRect()
+    Object.assign(highlight.style, {
+      display: 'block',
+      transform: `translate(${rect.left}px, ${rect.top}px)`,
+      width: `${rect.width}px`,
+      height: `${rect.height}px`
+    })
+  }
+
   // Function to copy the selected text
-  const copySelection = async (preserveFormat = false) => {
+  const copySelection = async (preserveFormat = false, eventTarget?: EventTarget | null) => {
     if (!isEnabled() || isCopying.value) return
 
     const selection = window.getSelection()
-    if (!selection || selection.rangeCount === 0) return
+    if (!selection) return
+
+    const content = getSelectionContent(selection, eventTarget)
+    if (!content?.text) return
 
     // Check if the selection is in an excluded element
-    const range = selection.getRangeAt(0)
-    const container = range.commonAncestorContainer
-    const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : container as HTMLElement
+    const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null
+    const container = range?.commonAncestorContainer
+    const element = eventTarget instanceof HTMLElement
+      ? eventTarget
+      : container?.nodeType === Node.TEXT_NODE
+        ? container.parentElement
+        : container as HTMLElement | undefined
 
     if (!element || isElementExcluded(element)) {
       return
     }
-
-    const content = getSelectionContent(selection)
-    if (!content.text) return
 
     isCopying.value = true
 
@@ -194,7 +191,7 @@ export function useAutoCopy() {
       // only through their explicit keyboard shortcuts.
       const formattedText = preserveFormat ? formatText(content) : content.text
 
-      const success = await copyToClipboard(formattedText)
+      const success = await copyTextToClipboard(formattedText)
 
       if (success) {
         if (store.settings.showNotifications) {
@@ -214,7 +211,7 @@ export function useAutoCopy() {
   }
 
   // Event handler for text selection
-  const handleSelection = (event: MouseEvent | KeyboardEvent) => {
+  const handleSelection = (event: PointerEvent | KeyboardEvent) => {
     if (!isEnabled() || isAltMode.value) return
 
     if (event instanceof KeyboardEvent) {
@@ -223,7 +220,7 @@ export function useAutoCopy() {
       if (!isSelectionCompletion) return
     }
 
-    void copySelection()
+    void copySelection(false, event.target)
   }
 
   // Keyboard shortcut handler
@@ -247,7 +244,7 @@ export function useAutoCopy() {
 
     if (format) {
       store.setActiveFormat(format.id)
-      void copySelection(true)
+      void copySelection(true, event.target)
     }
   }
 
@@ -263,39 +260,30 @@ export function useAutoCopy() {
     // Définir un nouveau timer
     altKeyTimer.value = window.setTimeout(() => {
       isAltMode.value = true
-      document.body.style.cursor = 'pointer'
-      // Select all text elements except those of our extension
-      const selector = 'div, p, article, section, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, code, table, tr, td, th'
-      const elements = document.querySelectorAll(selector)
-      elements.forEach((el) => {
-        if (el instanceof HTMLElement && !isElementExcluded(el)) {
-          el.dataset.originalOutline = el.style.outline
-          el.dataset.originalTransition = el.style.transition
-          el.dataset.originalBackground = el.style.backgroundColor
-          el.style.outline = elementOutline('dashed')
-          el.style.transition = resolveDesignToken('--tg-element-transition')
-
-          const handlers = {
-            mouseenter: () => {
-            if (isAltMode.value) {
-              el.style.outline = elementOutline('solid')
-              el.style.backgroundColor = resolveDesignToken('--tg-element-hover')
-            }
-            },
-            mouseleave: () => {
-            if (isAltMode.value) {
-              el.style.outline = elementOutline('dashed')
-              el.style.backgroundColor = el.dataset.originalBackground || ''
-            }
-            }
-          }
-          el.addEventListener('mouseenter', handlers.mouseenter)
-          el.addEventListener('mouseleave', handlers.mouseleave)
-          highlightHandlers.set(el, handlers)
-
-          highlightedElements.value.push(el)
+      const style = document.createElement('style')
+      const highlight = document.createElement('div')
+      style.id = altFeedbackStyleId
+      style.textContent = `
+        html[data-toolglows-auto-copy-alt='true'] body { cursor: pointer !important; }
+        #${altHighlightId} {
+          position: fixed !important;
+          inset: 0 auto auto 0 !important;
+          pointer-events: none !important;
+          box-sizing: border-box !important;
+          z-index: ${resolveDesignToken('--tg-z-overlay')} !important;
+          outline: ${elementOutline('solid')} !important;
+          background-color: ${resolveDesignColorToken('--tg-element-hover')} !important;
+          transition: ${resolveDesignToken('--tg-element-transition')} !important;
         }
-      })
+      `
+      highlight.id = altHighlightId
+      highlight.dataset.toolglowsUi = 'true'
+      highlight.style.display = 'none'
+      document.getElementById(altFeedbackStyleId)?.remove()
+      document.getElementById(altHighlightId)?.remove()
+      document.documentElement.appendChild(style)
+      document.documentElement.appendChild(highlight)
+      document.documentElement.dataset.toolglowsAutoCopyAlt = 'true'
     }, ALT_DELAY)
   }
 
@@ -309,31 +297,17 @@ export function useAutoCopy() {
 
     isAltMode.value = false
     isAltCombination.value = false
-    document.body.style.cursor = 'default'
-    highlightedElements.value.forEach((el) => {
-      el.style.outline = el.dataset.originalOutline || ''
-      el.style.transition = el.dataset.originalTransition || ''
-      el.style.backgroundColor = el.dataset.originalBackground || ''
-      delete el.dataset.originalOutline
-      delete el.dataset.originalTransition
-      delete el.dataset.originalBackground
-
-      const handlers = highlightHandlers.get(el)
-      if (handlers) {
-        el.removeEventListener('mouseenter', handlers.mouseenter)
-        el.removeEventListener('mouseleave', handlers.mouseleave)
-        highlightHandlers.delete(el)
-      }
-    })
-    highlightedElements.value = []
+    delete document.documentElement.dataset.toolglowsAutoCopyAlt
+    document.getElementById(altFeedbackStyleId)?.remove()
+    document.getElementById(altHighlightId)?.remove()
   }
 
   // ALT mode click handler
   const handleAltClick = (event: MouseEvent) => {
     if (!isEnabled() || !isAltMode.value || !store.settings.enableAltSelection) return
 
-    const target = event.target as HTMLElement
-    if (!target || isElementExcluded(target)) return
+    const target = findSelectableTarget(event)
+    if (!target) return
 
     const range = document.createRange()
     range.selectNodeContents(target)
@@ -344,8 +318,9 @@ export function useAutoCopy() {
     selection.removeAllRanges()
     selection.addRange(range)
 
-    void copySelection()
+    void copySelection(false, target)
     event.preventDefault()
+    event.stopImmediatePropagation()
   }
 
   // Gestionnaire de touche ALT enfoncée
@@ -393,26 +368,28 @@ export function useAutoCopy() {
   // Mount/unmount event listeners
   onMounted(() => {
     syncSelectionFeedbackStyle()
-    document.addEventListener('mouseup', handleSelection)
+    document.addEventListener('pointerup', handleSelection)
+    document.addEventListener('pointermove', updateAltHighlight, true)
     document.addEventListener('keyup', handleSelection)
     document.addEventListener('keydown', handleShortcut)
     document.addEventListener('keydown', handleAltKeyDown)
     document.addEventListener('keyup', handleAltKeyUp)
     document.addEventListener('keydown', handleKeyDown)
     document.addEventListener('keydown', handleEscapeKey)
-    document.addEventListener('click', handleAltClick)
+    document.addEventListener('click', handleAltClick, true)
   })
 
   onUnmounted(() => {
     document.getElementById(selectionFeedbackStyleId)?.remove()
-    document.removeEventListener('mouseup', handleSelection)
+    document.removeEventListener('pointerup', handleSelection)
+    document.removeEventListener('pointermove', updateAltHighlight, true)
     document.removeEventListener('keyup', handleSelection)
     document.removeEventListener('keydown', handleShortcut)
     document.removeEventListener('keydown', handleAltKeyDown)
     document.removeEventListener('keyup', handleAltKeyUp)
     document.removeEventListener('keydown', handleKeyDown)
     document.removeEventListener('keydown', handleEscapeKey)
-    document.removeEventListener('click', handleAltClick)
+    document.removeEventListener('click', handleAltClick, true)
     // Ensure styles are cleaned up
     disableAltMode()
   })
