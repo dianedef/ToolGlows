@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import manifest from '../manifest.config'
+import chromeManifestConfig from '../manifest.chrome.config'
+import firefoxManifestConfig from '../manifest.firefox.config'
+
+async function resolveManifest(config: unknown) {
+  if (typeof config === 'function') {
+    return config({ command: 'build', mode: 'production' })
+  }
+  return config
+}
 
 describe('content script frame scope', () => {
   it('mounts the toolbar only in the top-level document', () => {
@@ -28,5 +37,19 @@ describe('content script frame scope', () => {
     expect(frameScript).toBeDefined()
     expect(frameScript?.all_frames).toBe(true)
     expect(frameScript?.match_about_blank).toBe(true)
+  })
+})
+
+describe('browser support floors', () => {
+  it('requires a Chrome version that supports the declared side panel', async () => {
+    const chromeManifest = await resolveManifest(chromeManifestConfig) as Record<string, unknown>
+    expect(chromeManifest.minimum_chrome_version).toBe('114')
+  })
+
+  it('requires a Firefox version that supports data collection permissions', async () => {
+    const firefoxManifest = await resolveManifest(firefoxManifestConfig) as {
+      browser_specific_settings?: { gecko?: { strict_min_version?: string } }
+    }
+    expect(firefoxManifest.browser_specific_settings?.gecko?.strict_min_version).toBe('142.0')
   })
 })

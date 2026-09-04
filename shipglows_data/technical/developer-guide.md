@@ -1,10 +1,10 @@
 ---
 artifact: developer_guide
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: "toolglows"
 created: "2026-08-28"
-updated: "2026-08-28"
+updated: "2026-09-04"
 status: reviewed
 source_skill: sg-docs
 scope: maintainer-workflow
@@ -28,6 +28,7 @@ supersedes:
 evidence:
   - "package.json pins pnpm 10.33.2 and defines the build, typecheck and manifest-lint commands."
   - "ENVIRONMENT.md defines the local browser-extension loading workflow."
+  - "Browser manifests declare Chrome 114 and Firefox 142 as the minimum supported versions for their current browser-specific fields."
 next_review: "2026-11-28"
 next_step: "Refresh when the toolchain, validation baseline or browser workflow changes."
 ---
@@ -51,6 +52,8 @@ Load the generated directory manually in the browser extension manager:
 
 - Chrome: `dist/chrome`
 - Firefox: `dist/firefox`
+
+The current manifest contract supports Chrome 114 or newer and Firefox 142 or newer. These floors cover Chrome's declared side panel and Firefox's `data_collection_permissions` manifest field; raise them whenever a newly used browser API requires a later release.
 
 The ShipGlows local-server tooling may open the extension manager and generated directory, but it must not install the extension into a personal browser profile. `ENVIRONMENT.md` is the durable reference for that workflow.
 

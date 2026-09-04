@@ -9,6 +9,7 @@ export default defineManifest((env) => ({
   browser_specific_settings: {
     gecko: {
       id: env["FIREFOX_ADDON_ID"] || "toolglows-v2@example.com",
+      strict_min_version: "142.0",
       data_collection_permissions: {
         required: ["none"],
       },
