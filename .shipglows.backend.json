@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "shipglows.backend.v1",
+  "provider": "none",
+  "mode": "none",
+  "reason": "ToolGlows runs as a browser extension using browser storage and page-level tools. Optional third-party resource and sunrise lookups do not require an application backend at launch.",
+  "command": null,
+  "dependencies": [],
+  "readiness": null
+}
