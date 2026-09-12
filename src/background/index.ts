@@ -15,12 +15,24 @@
 // import { extPay } from '@/utils/payment/extPay'
 // extPay.startBackground()
 import { onMessage, sendMessage } from 'webext-bridge/background'
-import { type ToolbarSize } from '@/utils/toolbarSize'
 import {
   DARK_MODE_PREPAINT_ALARM,
   syncDarkModePrepaint,
   type DarkModePrepaintApi
 } from './darkModePrepaint'
+import { reloadAllTabs } from './reloadAllTabs'
+import { isContentScriptReady } from './contentScriptReady'
+import { persistThenNotify, notifyAfterAcceptance } from './syncAcknowledgement'
+import { fetchDarkModeResource } from './darkModeResource'
+import { DARK_MODE_RESOURCE_MESSAGE } from '../utils/darkModeResourcePolicy'
+
+onMessage(DARK_MODE_RESOURCE_MESSAGE, ({ data, sender }) => fetchDarkModeResource(data, sender))
+import {
+  assertInternalBridgeSender,
+  normalizeActiveToolIds,
+  normalizeSettingsPayload,
+  type BackgroundSettings,
+} from './messageSecurity'
 
 interface ErrorDetails {
   message: string
@@ -34,31 +46,10 @@ interface ErrorDetails {
  * Settings structure that defines the toolbar state and appearance
  * These settings are synchronized across all tabs via chrome.storage.sync
  */
-interface Settings {
-  expanded: boolean
-  position: { x: number; y: number }
-  activeTools: string[]
-  isPinned: boolean
-  interfaceTheme?: 'light' | 'dark'
-  toolbarColor?: string
-  toolbarSize: ToolbarSize
-  hideElement?: {
-    hiddenElements: Array<{
-      selector: string
-      domain: string
-      timestamp: number
-      name?: string
-    }>
-    isSelectingElement: boolean
-    shortcut: string
-    enableShortcut: boolean
-  }
-}
-
 interface MessageData {
-  [key: string]: any
-  settings?: Settings
-  tools?: string[]
+  [key: string]: unknown
+  settings?: unknown
+  tools?: unknown
 }
 
 interface DarkModePayload {
@@ -157,7 +148,7 @@ function isDarkModePayload(data: unknown): data is DarkModePayload {
  * This serves as a source of truth that survives individual tab closures
  */
 const globalState = {
-  settings: null as Settings | null
+  settings: null as BackgroundSettings | null
 }
 
 let darkModePrepaintSync = Promise.resolve()
@@ -213,22 +204,25 @@ if (typeof chrome !== 'undefined' && chrome.runtime?.onConnect) {
  * Extension Lifecycle Event Handler
  *
  * Handles onboarding and update flows:
- * - On first install: Clears any stale data and shows welcome page
+ * - On first install: Shows the optional welcome page and preserves existing preferences
  * - On update: Shows changelog/update notes to user
  *
- * Why clear storage on install: Ensures clean state if extension was
- * previously installed, avoiding conflicts from old data structures.
+ * Unpacked extensions may receive another install event when reloaded.
+ * Never erase preferences here; feature-specific normalizers handle absent/old data.
  */
 chrome.runtime.onInstalled.addListener(async (opt) => {
   console.log('[INFO] Extension installed/updated:', opt.reason)
   try {
     if (opt.reason === "install") {
-      await chrome.storage.local.clear()
-
-      chrome.tabs.create({
-        active: true,
-        url: chrome.runtime.getURL("src/ui/setup/index.html#/setup/install"),
-      })
+      const welcomeKey = 'toolglowsOnboarding.v1.welcomeShown'
+      const stored = await chrome.storage.local.get(welcomeKey)
+      if (stored[welcomeKey] !== true) {
+        await chrome.tabs.create({
+          active: true,
+          url: chrome.runtime.getURL("src/ui/setup/index.html#/setup/install"),
+        })
+        await chrome.storage.local.set({ [welcomeKey]: true })
+      }
     }
 
     if (opt.reason === "update") {
@@ -276,11 +270,10 @@ const broadcastToOtherTabs = async (type: string, data: MessageData, sourceTabId
     const promises = tabs
       .filter(tab => tab.id && tab.id !== sourceTabId)
       .map(async tab => {
-        if (!tab.id) return
+        if (!tab.id || tab.discarded || !await isContentScriptReady(tab.id)) return
 
         try {
-          console.log(`[BACKGROUND] 📤 Sending to tab ${tab.id}:`, data)
-          await sendMessage(type, data, { context: 'content-script', tabId: tab.id })
+          await sendMessage(type, data as never, { context: 'content-script', tabId: tab.id })
           console.log(`[BACKGROUND] ✅ Sent to tab ${tab.id}`)
         } catch (error) {
           console.warn(`[BACKGROUND] ⚠️ Could not send to tab ${tab.id}:`, error)
@@ -304,48 +297,24 @@ const broadcastToOtherTabs = async (type: string, data: MessageData, sourceTabId
  * 1. Validates and normalizes incoming settings data
  * 2. Updates background script's in-memory state
  * 3. Persists to chrome.storage.sync (auto-syncs across devices)
- * 4. Broadcasts to all other tabs twice for reliability
- *
- * Why double broadcast: Content scripts may not be fully initialized
- * when the first broadcast arrives. The delayed second broadcast catches
- * any tabs that were in the process of loading their content scripts.
+ * 4. Acknowledges persistence independently of optional cross-tab delivery.
+ * Newly loaded content scripts recover the saved state through initialization.
  */
 onMessage('SETTINGS_UPDATED', async ({ data, sender }) => {
+  assertInternalBridgeSender(sender)
   try {
     const messageData = data as MessageData
-    if (!messageData?.settings) return
+    if (!messageData?.settings) throw new Error('Missing settings payload')
 
     const sourceTabId = sender.tabId
 
-    // Normalize activeTools to array if received as object (compatibility fix)
-    const settings = messageData.settings
-    if (!Array.isArray(settings.activeTools)) {
-      settings.activeTools = Object.values(settings.activeTools || {})
-    }
+    const settings = normalizeSettingsPayload(messageData.settings)
+    if (!settings) throw new Error('Invalid settings payload')
 
-    // Update global state for immediate availability
-    globalState.settings = settings
-
-    // Persist to sync storage (survives browser restarts, syncs across devices)
-    await chrome.storage.sync.set({
-      toolglowsSettings: settings
-    })
-
-    console.log('[BACKGROUND] 💾 Settings saved:', settings)
-
-    // Immediate broadcast to responsive tabs
-    await broadcastToOtherTabs('SETTINGS_SYNC', {
-      settings: settings
-    }, sourceTabId)
-
-    // Delayed broadcast to catch tabs that were loading
-    setTimeout(async () => {
-      await broadcastToOtherTabs('SETTINGS_SYNC', {
-        settings: settings
-      }, sourceTabId)
-    }, 500)
-
-    return { success: true }
+    return await persistThenNotify(async () => {
+      await chrome.storage.sync.set({ toolglowsSettings: settings })
+      globalState.settings = settings
+    }, () => broadcastToOtherTabs('SETTINGS_SYNC', { settings }, sourceTabId))
   } catch (error) {
     console.error('[ERROR] Settings update error:', error)
     return { success: false }
@@ -353,9 +322,10 @@ onMessage('SETTINGS_UPDATED', async ({ data, sender }) => {
 })
 
 onMessage('TOOLS_UPDATED', async ({ data, sender }) => {
+  assertInternalBridgeSender(sender)
   try {
     const messageData = data as MessageData
-    if (!messageData?.tools) return
+    if (!messageData?.tools) throw new Error('Missing tools payload')
 
     const sourceTabId = sender.tabId
 
@@ -363,10 +333,8 @@ onMessage('TOOLS_UPDATED', async ({ data, sender }) => {
     const result = await chrome.storage.sync.get('toolglowsSettings')
     const currentSettings = result.toolglowsSettings || {}
 
-    // S'assurer que tools est un tableau
-    const tools = Array.isArray(messageData.tools) ?
-      messageData.tools :
-      Object.values(messageData.tools)
+    const tools = normalizeActiveToolIds(messageData.tools)
+    if (!tools) throw new Error('Invalid tools payload')
 
     // Mettre à jour uniquement activeTools
     const updatedSettings = {
@@ -374,24 +342,18 @@ onMessage('TOOLS_UPDATED', async ({ data, sender }) => {
       activeTools: tools
     }
 
-    // Sauvegarder les settings complets
-    await chrome.storage.sync.set({
-      toolglowsSettings: updatedSettings
-    })
-
-    // Broadcast aux autres onglets
-    await broadcastToOtherTabs('SETTINGS_SYNC', {
-      settings: updatedSettings
-    }, sourceTabId)
-
-    return { success: true }
+    return await persistThenNotify(
+      () => chrome.storage.sync.set({ toolglowsSettings: updatedSettings }),
+      () => broadcastToOtherTabs('SETTINGS_SYNC', { settings: updatedSettings }, sourceTabId)
+    )
   } catch (error) {
     console.error('[ERROR] Tools update error:', error)
     return { success: false }
   }
 })
 
-onMessage('GET_INITIAL_STATE', async () => {
+onMessage('GET_INITIAL_STATE', async ({ sender }) => {
+  assertInternalBridgeSender(sender)
   try {
     // Récupérer l'état depuis le storage
     const result = await chrome.storage.sync.get('toolglowsSettings')
@@ -402,7 +364,8 @@ onMessage('GET_INITIAL_STATE', async () => {
   }
 })
 
-onMessage('DRAG_OPEN_ACTION', async ({ data }) => {
+onMessage('DRAG_OPEN_ACTION', async ({ data, sender }) => {
+  assertInternalBridgeSender(sender)
   const payload = normalizeDragOpenPayload(data)
   if (!payload) {
     throw new Error('Invalid drag-open action payload')
@@ -438,7 +401,8 @@ onMessage('DRAG_OPEN_ACTION', async ({ data }) => {
   return { processed: payload.links.length }
 })
 
-onMessage('GET_TABS', async ({ data }) => {
+onMessage('GET_TABS', async ({ data, sender }) => {
+  assertInternalBridgeSender(sender)
   const scope =
     typeof data === 'object' && data !== null && 'scope' in data
       ? String(data.scope)
@@ -465,25 +429,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   void (async () => {
     try {
-      const tabs = await chrome.tabs.query({})
       const initiatingTabId = sender.tab?.id
-      const reloadableTabs = tabs.filter(
-        (tab): tab is chrome.tabs.Tab & { id: number } =>
-          tab.id !== undefined && tab.id !== initiatingTabId
-      )
-
-      // Reply before disconnecting any content-script ports. The initiating
-      // page reloads itself only after receiving this acknowledgement.
-      sendResponse({
-        successCount: reloadableTabs.length + (initiatingTabId === undefined ? 0 : 1),
-        errorCount: 0
-      })
-
-      for (const tab of reloadableTabs) {
-        void chrome.tabs.reload(tab.id).catch(error => {
-          console.warn(`[BACKGROUND] Could not reload tab ${tab.id}:`, error)
-        })
-      }
+      sendResponse(await reloadAllTabs(chrome.tabs, initiatingTabId))
     } catch (error) {
       console.error('[BACKGROUND] Could not dispatch tab reloads:', error)
       sendResponse({ successCount: 0, errorCount: 1 })
@@ -493,9 +440,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true
 })
 
-async function broadcastDarkModeUpdate(data: unknown) {
+async function broadcastDarkModeUpdate(data: unknown, sourceTabId?: number) {
   if (!isDarkModePayload(data)) {
-    console.warn('[BACKGROUND] Invalid dark mode payload:', data)
+    console.warn('[BACKGROUND] Ignored invalid dark mode payload')
     return
   }
 
@@ -514,7 +461,7 @@ async function broadcastDarkModeUpdate(data: unknown) {
     })
 
     await Promise.allSettled(tabs.map(async tab => {
-      if (tab.id) {
+      if (tab.id && tab.id !== sourceTabId && !tab.discarded && await isContentScriptReady(tab.id)) {
         try {
           await sendMessage('DARK_MODE_UPDATE', payload, { context: 'content-script', tabId: tab.id })
         } catch (error) {
@@ -528,13 +475,19 @@ async function broadcastDarkModeUpdate(data: unknown) {
 }
 
 // Gestionnaire historique conserve pour compatibilite avec les anciens appelants.
-onMessage('APPLY_DARK_MODE', async ({ data }) => {
-  await broadcastDarkModeUpdate(data)
+onMessage('APPLY_DARK_MODE', async ({ data, sender }) => {
+  assertInternalBridgeSender(sender)
+  if (!isDarkModePayload(data)) throw new Error('Invalid dark mode payload')
+  notifyAfterAcceptance(() => broadcastDarkModeUpdate(data, sender.tabId))
+  return { success: true }
 })
 
 // Gestionnaire pour l'injection du mode sombre via content scripts.
-onMessage('INJECT_DARK_MODE', async ({ data }) => {
-  await broadcastDarkModeUpdate(data)
+onMessage('INJECT_DARK_MODE', async ({ data, sender }) => {
+  assertInternalBridgeSender(sender)
+  if (!isDarkModePayload(data)) throw new Error('Invalid dark mode payload')
+  notifyAfterAcceptance(() => broadcastDarkModeUpdate(data, sender.tabId))
+  return { success: true }
 })
 
 // Gestion des erreurs globale

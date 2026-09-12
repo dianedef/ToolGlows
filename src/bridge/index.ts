@@ -17,12 +17,9 @@
  * - Validates all incoming data types to prevent injection attacks
  * - Never sends sensitive data like user credentials through bridge
  */
-import { sendMessage, onMessage, allowWindowMessaging } from 'webext-bridge/content-script'
+import { sendMessage, onMessage } from 'webext-bridge/content-script'
 import type { Tool } from '@/types/tools'
 import { TOOLBAR_SIZES, type ToolbarSize } from '@/utils/toolbarSize'
-
-// Unique namespace prevents conflicts with other extensions using webext-bridge
-const EXTENSION_NAMESPACE = 'com.toolglows.extension'
 
 /**
  * Settings structure shared across all extension contexts
@@ -114,22 +111,13 @@ function isSettings(value: unknown): value is Settings {
  * Secure Bridge Initialization
  *
  * Must be called before any message passing occurs. Registers the extension's
- * namespace with webext-bridge to enable secure cross-context communication.
- *
- * Why needed: webext-bridge requires explicit namespace registration to
- * prevent message conflicts and ensure only authorized contexts can communicate.
- *
- * Critical: Call this once at content script startup, before Vue initialization.
+ * Keeps bridge startup explicit without opening the host page's window context.
+ * Internal extension contexts work without window messaging; enabling it here
+ * would allow arbitrary visited pages to route messages to the background.
  */
 export const setupSecureBridge = () => {
-  console.log('[BRIDGE] 🔒 Setting up secure bridge with namespace:', EXTENSION_NAMESPACE)
-  try {
-    allowWindowMessaging(EXTENSION_NAMESPACE)
-    console.log('[BRIDGE] ✅ Secure bridge setup complete')
-  } catch (error) {
-    console.error('[BRIDGE] ❌ Failed to setup secure bridge:', error)
-    throw error
-  }
+  // Intentionally empty: never open page-world messaging from an all-sites
+  // content script unless a separately reviewed protocol requires it.
 }
 
 // Pour les tools, même approche
@@ -170,7 +158,10 @@ export const bridgeApi = {
       jsonSettings.toolbarColor = settings.toolbarColor
     }
 
-    await sendMessage('SETTINGS_UPDATED', { settings: jsonSettings }, 'background')
+    const response = await sendMessage('SETTINGS_UPDATED', { settings: jsonSettings }, 'background')
+    if (response && typeof response === 'object' && 'success' in response && response.success === false) {
+      throw new Error('Background could not persist settings')
+    }
   },
   getInitialState: async () => {
     const response = await sendMessage('GET_INITIAL_STATE', {}, 'background')
@@ -253,7 +244,6 @@ export const initBridgeListeners = (callbacks: {
   try {
     // Écoute des mises à jour de settings
     onMessage('SETTINGS_SYNC', ({ data, sender }) => {
-      console.log('[BRIDGE] 📥 Received settings sync:', data, 'from:', sender)
       const messageData = data as MessageData
       if (messageData?.settings) {
         console.log('[BRIDGE] ✨ Triggering settings update callback')
@@ -263,7 +253,6 @@ export const initBridgeListeners = (callbacks: {
 
     // Écoute des mises à jour d'outils
     onMessage('TOOLS_SYNC', ({ data, sender }) => {
-      console.log('[BRIDGE] 📥 Received tools sync:', data, 'from:', sender)
       const messageData = data as MessageData
       if (messageData?.tools) {
         console.log('[BRIDGE] ✨ Triggering tools update callback')

@@ -27,6 +27,8 @@ describe('settings interface redesign', () => {
     )
 
     expect(dialogConsumers).toHaveLength(20)
+    expect(dialogConsumers).toContain('CookieConsentControl.vue')
+    expect(dialogConsumers).not.toContain('InstantOCRControl.vue')
     expect(dialogTokenRule).toBeDefined()
     expect(tokens).toContain('.toolglows-dialog,')
     expect(tokens).toContain('.toolglows-settings-select-panel,')
@@ -104,10 +106,11 @@ describe('settings interface redesign', () => {
     )
   })
 
-  it('gives quick settings a clear three-section hierarchy', () => {
+  it('gives quick settings a clear settings hierarchy with discoverable tool help', () => {
     const toolbar = readFileSync('src/components/ToolGlowsBar.vue', 'utf8')
 
-    expect(toolbar.match(/<section class="toolglows-settings-section">/g)).toHaveLength(3)
+    expect(toolbar.match(/<section class="toolglows-settings-section">/g)).toHaveLength(4)
+    expect(toolbar).toContain('<h3>Découvrir les outils</h3>')
     expect(toolbar).toContain('<h3>Général</h3>')
     expect(toolbar).toContain('<h3>Page actuelle</h3>')
     expect(toolbar).toContain('<h3>Outils actifs</h3>')

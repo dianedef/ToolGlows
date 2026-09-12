@@ -1,4 +1,5 @@
-import { enable } from 'darkreader'
+import { enable, setFetchMethod } from 'darkreader'
+import { fetchDarkModeResource } from './darkModeResource'
 
 export interface DarkModeEngineOptions {
   backgroundColor: string
@@ -56,6 +57,7 @@ export function enableDarkModeEngine(
   options: Partial<DarkModeEngineOptions> | undefined
 ): ResolvedDarkModeEngineOptions {
   const resolved = resolveDarkModeEngineOptions(options)
+  setFetchMethod(fetchDarkModeResource)
   enable({
     mode: 1,
     brightness: 100,
@@ -77,7 +79,10 @@ export function enableDarkModeEngine(
       'img', 'picture', 'video', 'svg', 'canvas', '[role="img"]',
       '#toolglows-root', '#toolglows-root *', '[data-toolglows-ui]', '[data-toolglows-ui] *'
     ],
-    disableStyleSheetsProxy: false,
+    // MV3 blocks the API's inline page-world proxy. The pinned package patch
+    // skips its insertion when both proxies are disabled; DOM observers remain.
+    disableStyleSheetsProxy: true,
+    disableCustomElementRegistryProxy: true,
     ignoreCSSUrl: [],
     css: ''
   })

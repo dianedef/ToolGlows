@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('darkreader', () => ({ enable: vi.fn() }))
+vi.mock('../src/content-script/darkModeResource', () => ({ fetchDarkModeResource: vi.fn() }))
 import {
   getContrastRatio,
   LINK_CONTRAST_MINIMUM,

@@ -15,6 +15,7 @@ declare module 'vue' {
     BetterGmailControl: typeof import('./../components/BetterGmailControl.vue')['default']
     Changelog: typeof import('./../components/Changelog.vue')['default']
     ContextMenu: typeof import('./../components/ContextMenu.vue')['default']
+    CookieConsentControl: typeof import('./../components/CookieConsentControl.vue')['default']
     DarkModeControl: typeof import('./../components/DarkModeControl.vue')['default']
     DisplayError: typeof import('./../components/state/DisplayError.vue')['default']
     DragOpenControl: typeof import('./../components/DragOpenControl.vue')['default']
@@ -23,7 +24,6 @@ declare module 'vue' {
     InfiniteScrollControl: typeof import('./../components/InfiniteScrollControl.vue')['default']
     InstagramSavedLibrary: typeof import('./../components/InstagramSavedLibrary.vue')['default']
     Install: typeof import('./../components/install.vue')['default']
-    InstantOCRControl: typeof import('./../components/InstantOCRControl.vue')['default']
     IPhArrowLeft: typeof import('~icons/ph/arrow-left')['default']
     IPhDotsThreeVertical: typeof import('~icons/ph/dots-three-vertical')['default']
     IPhGear: typeof import('~icons/ph/gear')['default']
@@ -58,6 +58,7 @@ declare module 'vue' {
     ToolGlowsBar: typeof import('./../components/ToolGlowsBar.vue')['default']
     ToolGlowsColorPicker: typeof import('./../components/ToolGlowsColorPicker.vue')['default']
     ToolGlowsDialog: typeof import('./../components/ToolGlowsDialog.vue')['default']
+    ToolGlowsIcon: typeof import('./../components/ToolGlowsIcon.vue')['default']
     Update: typeof import('./../components/update.vue')['default']
     WordCounterPopup: typeof import('./../components/WordCounterPopup.vue')['default']
   }

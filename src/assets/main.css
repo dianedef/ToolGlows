@@ -113,6 +113,52 @@
   transform: scale(1.05);
 }
 
+/* Rich Copy is teleported through the dialog shell, so its content rhythm is
+   owned at the same global boundary rather than by component-scoped CSS. */
+.toolglows-dialog .p-dialog-header {
+  padding: var(--tg-space-4) !important;
+}
+
+.toolglows-dialog .rich-copy-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tg-space-5);
+  padding: var(--tg-space-4) !important;
+}
+
+.toolglows-dialog .rich-copy-options > .field {
+  margin: 0;
+}
+
+.toolglows-dialog .rich-copy-format-item {
+  min-height: var(--tg-size-control-comfortable);
+  padding: var(--tg-space-3);
+  background: var(--tg-surface-muted);
+  border: var(--tg-border-width-control) solid var(--tg-border-default);
+  border-radius: var(--tg-radius-section);
+}
+
+.toolglows-dialog .rich-copy-format-actions {
+  gap: var(--tg-space-2);
+}
+
+.toolglows-dialog .rich-copy-icon-button.p-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tg-size-control);
+  height: var(--tg-size-control);
+  padding: 0;
+}
+
+.toolglows-dialog .rich-copy-add-format .toolglows-icon,
+.toolglows-dialog .rich-copy-icon-button .toolglows-icon,
+.toolglows-dialog .rich-copy-options :is(.replacement-pattern, .replacement-inputs) .toolglows-icon {
+  width: var(--tg-size-icon-md);
+  height: var(--tg-size-icon-md);
+  flex: 0 0 var(--tg-size-icon-md);
+}
+
 /* Style pour le panneau de paramètres */
 .p-sidebar {
   box-shadow: var(--card-shadow);

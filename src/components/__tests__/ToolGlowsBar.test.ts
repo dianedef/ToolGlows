@@ -4,6 +4,17 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ToolGlowsBar from '../ToolGlowsBar.vue'
 import { type ToolbarSize } from '@/utils/toolbarSize'
+import {
+  AURORA_TOOLBAR_FOREGROUNDS,
+  AURORA_TOOLBAR_SURFACES
+} from '@/stores/darkModePalette'
+import { getContrastRatio, TEXT_CONTRAST_MINIMUM } from '@/utils/colorContrast'
+
+const normalizeCssColor = (color: string) => {
+  const probe = document.createElement('span')
+  probe.style.color = color
+  return probe.style.color
+}
 
 const outsideHandler = ref<(() => void) | null>(null)
 const outsideOptions = ref<Record<string, unknown> | null>(null)
@@ -29,6 +40,7 @@ vi.mock('@/stores/autoCopy', () => ({
 
 const darkModeState = reactive({
   isActive: true,
+  options: { palettePreset: 'graphite' as 'graphite' | 'latte' },
   loadOptions: vi.fn().mockResolvedValue(undefined),
   setActive: vi.fn((value: boolean) => {
     darkModeState.isActive = value
@@ -62,30 +74,37 @@ vi.mock('@/stores/readerMode', () => ({
 
 vi.mock('@/stores/settings', () => ({ useSettingsStore: vi.fn() }))
 vi.mock('@/stores/toolglows', () => ({ useToolGlowsStore: vi.fn() }))
-vi.mock('@/stores/instantOCR', () => ({ useInstantOCRStore: vi.fn() }))
 vi.mock('@/stores/wordCounter', () => ({ useWordCounterStore: vi.fn() }))
 
-const { toolComponentStub } = vi.hoisted(() => ({
-  toolComponentStub: { template: '<div />' }
-}))
-vi.mock('../WordCounterPopup.vue', () => ({ default: toolComponentStub }))
-vi.mock('../InstantOCRControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../DarkModeControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../SpeedBrowsingControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../InfiniteScrollControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../FeedEradicatorControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../ReaderModeControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../SearchJumperUI.vue', () => ({ default: toolComponentStub }))
-vi.mock('../DragOpenControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../InstagramSavedLibrary.vue', () => ({ default: toolComponentStub }))
-vi.mock('../RichCopyControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../BetterGmailControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../QuickActionsControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../AutoCopyControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../LinksExplorerControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../SocialAnalysisControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../ReloadAllTabsControl.vue', () => ({ default: toolComponentStub }))
-vi.mock('../HideElementControl.vue', () => ({ default: toolComponentStub }))
+const { toolComponentStub, asyncToolModule } = vi.hoisted(() => {
+  const stub = { template: '<div />' }
+  return {
+    toolComponentStub: stub,
+    asyncToolModule: () => ({
+      default: stub,
+      __isTeleport: false,
+      __isKeepAlive: false,
+      __isSuspense: false
+    })
+  }
+})
+vi.mock('../WordCounterPopup.vue', asyncToolModule)
+vi.mock('../DarkModeControl.vue', asyncToolModule)
+vi.mock('../SpeedBrowsingControl.vue', asyncToolModule)
+vi.mock('../InfiniteScrollControl.vue', asyncToolModule)
+vi.mock('../FeedEradicatorControl.vue', asyncToolModule)
+vi.mock('../ReaderModeControl.vue', asyncToolModule)
+vi.mock('../SearchJumperUI.vue', asyncToolModule)
+vi.mock('../DragOpenControl.vue', asyncToolModule)
+vi.mock('../InstagramSavedLibrary.vue', asyncToolModule)
+vi.mock('../RichCopyControl.vue', asyncToolModule)
+vi.mock('../BetterGmailControl.vue', asyncToolModule)
+vi.mock('../QuickActionsControl.vue', asyncToolModule)
+vi.mock('../AutoCopyControl.vue', asyncToolModule)
+vi.mock('../LinksExplorerControl.vue', asyncToolModule)
+vi.mock('../SocialAnalysisControl.vue', asyncToolModule)
+vi.mock('../ReloadAllTabsControl.vue', asyncToolModule)
+vi.mock('../HideElementControl.vue', asyncToolModule)
 
 vi.mock('@/composables/excludeToolGlowsBar', () => ({
   useExcludeToolGlowsBar: vi.fn()
@@ -98,7 +117,7 @@ function createSettings(pinned = false) {
       position: { x: 200, y: 20 },
       activeTools: [],
       isPinned: pinned,
-      interfaceTheme: 'light' as const,
+      interfaceTheme: 'light' as 'light' | 'dark',
       toolbarColor: 'var(--tg-toolbar-color-default)',
       toolbarSize: 'md' as ToolbarSize,
       components: {}
@@ -130,16 +149,16 @@ async function mountToolbar(pinned = false) {
       provide: {
         settingsStore,
         toolglowsStore,
-        ocrStore: {},
         wordCounterStore: {}
       },
       directives: { tooltip: {} },
       stubs: {
+        AsyncComponentWrapper: toolComponentStub,
         Button: { template: '<button v-bind="$attrs"><slot /></button>' },
         Checkbox: true,
         Dialog: {
           props: ['visible'],
-          template: '<section><slot /></section>'
+          template: '<section v-if="visible"><slot /></section>'
         },
         ThemeSwatch: true,
         Toast: true
@@ -182,6 +201,10 @@ async function dispatchWheel(element: Element, deltaY: number) {
 
 describe('ToolGlowsBar interaction invariants', () => {
   beforeEach(() => {
+    vi.stubGlobal('chrome', { storage: {
+      local: { get: vi.fn().mockResolvedValue({ 'toolglowsOnboarding.v1.skipAll': true }), set: vi.fn().mockResolvedValue(undefined) },
+      onChanged: { addListener: vi.fn(), removeListener: vi.fn() }
+    } })
     document.body.innerHTML = `
       <div
         id="toolglows-root"
@@ -204,6 +227,7 @@ describe('ToolGlowsBar interaction invariants', () => {
     outsideHandler.value = null
     outsideOptions.value = null
     darkModeState.isActive = true
+    darkModeState.options.palettePreset = 'graphite'
     darkModeState.setActive.mockClear()
     darkModeState.loadOptions.mockClear()
     actionStores.linksExplorer.exploreLinks.mockClear()
@@ -215,12 +239,142 @@ describe('ToolGlowsBar interaction invariants', () => {
     actionStores.hideElement.teardown.mockClear()
   })
 
+  it('explains the first cookie action, then toggles the real preference without reopening settings', async () => {
+    const stored: Record<string, unknown> = {}
+    vi.mocked(chrome.storage.local.get).mockImplementation(async () => ({ ...stored }))
+    vi.mocked(chrome.storage.local.set).mockImplementation(async values => { Object.assign(stored, values) })
+    const { wrapper, toolglowsStore } = await mountToolbar(true)
+    const cookie = wrapper.get('[data-tool-id="cookieConsent"]')
+    await cookie.trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[data-tool-introduction]').exists()).toBe(true)
+    expect(stored.toolglowsCookieConsent).toBeUndefined()
+    await wrapper.get('[data-intro-continue]').trigger('click')
+    await flushPromises()
+    expect(stored.toolglowsCookieConsent).toEqual({ enabled: true, excludedHosts: [] })
+    expect(cookie.attributes('aria-pressed')).toBe('true')
+    expect(wrapper.find('[data-tool-introduction]').exists()).toBe(false)
+    await cookie.trigger('click')
+    await flushPromises()
+    expect(cookie.attributes('aria-pressed')).toBe('false')
+    expect(wrapper.find('[data-tool-introduction]').exists()).toBe(false)
+    expect(toolglowsStore.toggleTool).not.toHaveBeenCalledWith('cookieConsent')
+    wrapper.unmount()
+  })
+
+  it('opens cookie settings from the keyboard without enabling acceptance', async () => {
+    const { wrapper } = await mountToolbar(true)
+    await wrapper.get('[data-tool-id="cookieConsent"]').trigger('keydown', { key: 'F10', shiftKey: true })
+    await flushPromises()
+    expect(wrapper.get('[data-tool-id="cookieConsent"]').attributes('aria-pressed')).toBe('false')
+    expect(chrome.storage.local.set).not.toHaveBeenCalled()
+    expect(wrapper.find('[data-tool-introduction]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   it('uses one round button for both drag and click interaction', async () => {
     const { wrapper } = await mountToolbar()
 
     expect(wrapper.find('.toolglows-drag-handle').exists()).toBe(false)
     expect(wrapper.findAll('.toolglows-main-button')).toHaveLength(1)
     expect(wrapper.get('.toolglows-main-button').attributes('aria-label')).toBe('ToolGlows')
+    expect(wrapper.get('[data-toolglows-main] svg.toolglows-icon').attributes('viewBox')).toBe('0 0 24 24')
+  })
+
+  it('uses the same local SVG system for every toolbar action', async () => {
+    const { toolglowsStore, wrapper } = await mountToolbar(true)
+    const toolbarButtons = wrapper.findAll('.toolglows-tools-container button')
+
+    expect(toolbarButtons).toHaveLength(toolglowsStore.tools.length + 1)
+    expect(wrapper.findAll('.toolglows-tools-container .toolglows-tool-emoji')).toHaveLength(0)
+    expect(wrapper.findAll('.toolglows-tools-container svg.toolglows-icon')).toHaveLength(toolbarButtons.length)
+    expect(
+      wrapper.findAll('.toolglows-tools-container svg.toolglows-icon')
+        .map(icon => icon.attributes('data-icon-name'))
+    ).toEqual(['settings', ...toolglowsStore.tools.map(tool => tool.id)])
+    expect(
+      wrapper.findAll('.toolglows-bar svg.toolglows-icon')
+        .every(icon => icon.attributes('data-icon-resolved') === 'true')
+    ).toBe(true)
+  })
+
+  it('activates every tool when the click lands on its icon', async () => {
+    const { toolglowsStore, wrapper } = await mountToolbar(true)
+    const panelTools = [
+      'wordCount',
+      'speedBrowsing',
+      'infiniteScroll',
+      'feedEradicator',
+      'readerMode',
+      'searchJumper',
+      'dragOpen',
+      'instagramSaved',
+      'richCopy',
+      'betterGmail',
+      'quickActions'
+    ]
+
+    for (const toolId of panelTools) {
+      await wrapper.get(`[data-tool-id="${toolId}"] svg`).trigger('click')
+      await nextTick()
+      expect(wrapper.get(`[data-tool-id="${toolId}"]`).classes()).toContain('toolglows-tool-button-active')
+    }
+
+    await wrapper.get('[data-tool-id="darkMode"] svg').trigger('click')
+    await wrapper.get('[data-tool-id="autoCopy"] svg').trigger('click')
+    await wrapper.get('[data-tool-id="hideElement"] svg').trigger('click')
+    await wrapper.get('[data-tool-id="linksExplorer"] svg').trigger('click')
+    await wrapper.get('[data-tool-id="socialAnalysis"] svg').trigger('click')
+    await wrapper.get('[data-tool-id="reloadAllTabs"] svg').trigger('click')
+    await nextTick()
+
+    expect(darkModeState.setActive).toHaveBeenCalledWith(false)
+    expect(toolglowsStore.toggleTool).toHaveBeenCalledWith('autoCopy')
+    expect(actionStores.hideElement.settings.isSelectingElement).toBe(true)
+    expect(actionStores.linksExplorer.exploreLinks).toHaveBeenCalledOnce()
+    expect(actionStores.socialAnalysis.analyzeComments).toHaveBeenCalledOnce()
+    expect(actionStores.reloadAllTabs.reloadAllTabs).toHaveBeenCalledOnce()
+  })
+
+  it('opens the toolbar and settings from their icons', async () => {
+    const { settingsStore, wrapper } = await mountToolbar()
+
+    await wrapper.get('[data-toolglows-main] svg').trigger('click')
+    await nextTick()
+    expect(settingsStore.settings.expanded).toBe(true)
+
+    await wrapper.get('[data-toolglows-settings] svg').trigger('click')
+    await nextTick()
+    expect(wrapper.find('.toolglows-settings-content').exists()).toBe(true)
+  })
+
+  it('keeps the launcher foreground readable independently from page dark mode', async () => {
+    const { settingsStore, wrapper } = await mountToolbar()
+    settingsStore.settings.toolbarColor = AURORA_TOOLBAR_SURFACES.light
+    await nextTick()
+    const toolbar = wrapper.get('.toolglows-bar').element as HTMLElement
+    const foreground = toolbar.style.getPropertyValue('--tg-toolbar-foreground')
+
+    expect(getContrastRatio(foreground, settingsStore.settings.toolbarColor)).toBeGreaterThanOrEqual(TEXT_CONTRAST_MINIMUM)
+  })
+
+  it('keeps the Aurora toolbar surface aligned with the interface theme', async () => {
+    darkModeState.options.palettePreset = 'latte'
+    const { settingsStore, wrapper } = await mountToolbar()
+    const toolbar = wrapper.get('.toolglows-bar')
+
+    expect(toolbar.classes()).toContain('toolglows-palette-aurora')
+    expect((toolbar.element as HTMLElement).style.backgroundColor).toBe(normalizeCssColor(AURORA_TOOLBAR_SURFACES.light))
+    expect((toolbar.element as HTMLElement).style.getPropertyValue('--tg-toolbar-foreground')).toBe(AURORA_TOOLBAR_FOREGROUNDS.light)
+
+    settingsStore.settings.interfaceTheme = 'dark'
+    await nextTick()
+    expect((toolbar.element as HTMLElement).style.backgroundColor).toBe(normalizeCssColor(AURORA_TOOLBAR_SURFACES.dark))
+    expect((toolbar.element as HTMLElement).style.getPropertyValue('--tg-toolbar-foreground')).toBe(AURORA_TOOLBAR_FOREGROUNDS.dark)
+
+    settingsStore.settings.interfaceTheme = 'light'
+    await nextTick()
+    expect((toolbar.element as HTMLElement).style.backgroundColor).toBe(normalizeCssColor(AURORA_TOOLBAR_SURFACES.light))
   })
 
   it.each([
@@ -401,6 +555,7 @@ describe('ToolGlowsBar interaction invariants', () => {
     const inactiveButton = wrapper.get('[data-tool-id="wordCount"]')
 
     await inactiveButton.trigger('contextmenu')
+    await flushPromises()
     await nextTick()
 
     expect(toolglowsStore.toggleTool).not.toHaveBeenCalled()

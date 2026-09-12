@@ -18,7 +18,8 @@
     :class="{
       'toolglows-expanded': isExpanded || settingsStore.settings.isPinned,
       'toolglows-dragging': isDragging,
-      'toolglows-toolbar-wheel-mode': isToolbarResizeMode
+      'toolglows-toolbar-wheel-mode': isToolbarResizeMode,
+      'toolglows-palette-aurora': darkModeStore.options?.palettePreset === 'latte'
     }"
     @pointerdown.capture="startToolbarPointer"
     @pointermove.capture="moveToolbarPointer"
@@ -32,14 +33,14 @@
       v-tooltip.bottom="'ToolGlows'"
       class="toolglows-main-button p-button-rounded"
       :class="{ dragging: isDragging }"
-      :icon="isExpanded ? 'pi pi-times' : 'pi pi-bars'"
       text
       raised
       aria-label="ToolGlows"
       data-toolglows-main
       @click.stop="handleMainButtonClick"
+      @contextmenu.stop.prevent="openSettings"
     >
-      <span class="toolglows-tool-emoji">🔧</span>
+      <ToolGlowsIcon name="toolglows" />
     </Button>
 
     <!-- Barre d'outils -->
@@ -54,9 +55,10 @@
         severity="secondary"
         aria-label="Paramètres"
         data-toolglows-settings
-        @click="showSettings = !showSettings"
+        @click.stop="toggleSettings"
+        @contextmenu.stop.prevent="openSettings"
       >
-        <span class="toolglows-tool-emoji">⚙️</span>
+        <ToolGlowsIcon name="settings" />
       </Button>
 
       <!-- Tous les outils restent visibles ; leur apparence reflète leur activation. -->
@@ -75,9 +77,12 @@
           :aria-pressed="tool.interaction === 'command' ? undefined : isToolEnabled(tool.id)"
           :title="toolButtonTitle(tool)"
           :data-tool-id="tool.id"
-          @click="toggleToolActivation(tool.id)"
+          @click="requestToolAction(tool.id)"
+          :disabled="onboardingBusy"
+          @keydown.shift.f10.stop.prevent="isVisible[tool.id] = true"
+          @keydown.context-menu.stop.prevent="isVisible[tool.id] = true"
         >
-          <span class="toolglows-tool-emoji">{{ tool.emoji }}</span>
+          <ToolGlowsIcon :name="tool.id" />
         </Button>
       </template>
     </div>
@@ -104,6 +109,24 @@
     ⌛ Chargement...
   </div>
 
+  <ToolGlowsDialog :visible="Boolean(introTool)" :header="introTool ? 'Découvrir : ' + introTool.name : ''"
+    dismissable-mask :style="{ width: 'min(var(--tg-size-600), calc(100vw - var(--tg-space-6)))' }"
+    @update:visible="value => { if (!value) introToolId = null }">
+    <div v-if="introTool" class="toolglows-settings-stack" :style="{ padding: 'var(--tg-space-4)', overflowWrap: 'anywhere' }" data-tool-introduction>
+      <p>{{ TOOL_EXPLANATIONS[introTool.id] }}</p>
+      <p>Clic gauche : {{ introTool.interaction === 'toggle' ? 'activer ou désactiver' : introTool.interaction === 'command' ? 'exécuter l’action' : 'ouvrir l’outil' }}. Clic droit : paramètres. Au clavier : Entrée pour agir, Maj + F10 pour les paramètres.</p>
+      <p v-if="onboardingError" role="alert">{{ onboardingError }}</p>
+      <Button :label="introTool.interaction === 'toggle' ? (isToolEnabled(introTool.id) ? 'Désactiver' : 'Activer') : introTool.interaction === 'command' ? 'Exécuter' : 'Ouvrir l’outil'"
+        :style="{ border: 'var(--tg-border-width-control) solid currentColor', fontWeight: '600', padding: 'var(--tg-space-3)', borderRadius: 'var(--tg-radius-control)' }" :disabled="onboardingBusy" data-intro-continue @click="acceptIntroduction" />
+      <Button label="Plus tard" text :disabled="onboardingBusy" @click="introToolId = null" />
+      <Button label="Passer toutes les explications" text :disabled="onboardingBusy" @click="skipIntroductions" />
+    </div>
+  </ToolGlowsDialog>
+  <ToolGlowsDialog v-model:visible="showOnboardingError" header="Action non effectuée" dismissable-mask>
+    <p role="alert">{{ onboardingError }}</p>
+    <Button label="Réessayer" :disabled="onboardingBusy" @click="retryToolAction" />
+  </ToolGlowsDialog>
+
   <!-- Panneau des paramètres -->
   <ToolGlowsDialog
     v-model:visible="showSettings"
@@ -116,6 +139,21 @@
     @hide="closeSettings"
   >
     <div class="toolglows-settings-content toolglows-settings-stack">
+      <section class="toolglows-settings-section">
+        <h3>Découvrir les outils</h3>
+        <p>Clic gauche pour utiliser un outil, clic droit pour ses paramètres. Retrouvez ici chaque explication.</p>
+        <label class="toolglows-settings-row toolglows-clickable-setting">
+          <span>Expliquer les outils à leur première utilisation</span>
+          <Checkbox input-id="toolglows-explanations" :model-value="!skipAll" binary :disabled="onboardingBusy || !onboardingReady"
+            @update:model-value="value => saveOnboarding({ [ONBOARDING_SKIP_KEY]: value !== true })" />
+        </label>
+        <p v-if="onboardingError" role="alert">{{ onboardingError }}</p>
+        <Button v-if="!onboardingReady" label="Réessayer" @click="loadOnboarding" />
+        <div class="toolglows-tools-grid">
+          <Button v-for="tool in toolglowsStore.tools" :key="tool.id" :label="tool.name" text
+            @click="introToolId = tool.id; showSettings = false" />
+        </div>
+      </section>
       <section class="toolglows-settings-section">
         <div class="toolglows-settings-section-header">
           <div>
@@ -204,10 +242,11 @@
               <span class="toolglows-tool-name">{{ tool.name }}</span>
             </span>
             <Checkbox
-              :model-value="toolglowsStore.activeTools.includes(tool.id)"
+              :model-value="tool.id === 'cookieConsent' ? cookiePreferences.enabled : toolglowsStore.activeTools.includes(tool.id)"
               :binary="true"
               :input-id="'tool-' + tool.id"
-              @update:model-value="() => toolglowsStore.toggleTool(tool.id)"
+              :disabled="tool.id === 'cookieConsent' && onboardingBusy"
+              @update:model-value="() => tool.id === 'cookieConsent' ? requestToolAction(tool.id) : toolglowsStore.toggleTool(tool.id)"
             />
           </label>
         </div>
@@ -217,11 +256,52 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, markRaw, onUnmounted, computed, watch, nextTick, onBeforeUnmount } from 'vue'
+import { ref, onMounted, inject, markRaw, onUnmounted, computed, watch, nextTick, onBeforeUnmount, defineAsyncComponent } from 'vue'
+import type { Component } from 'vue'
 import type { Tool } from '@/types/tools'
+import { useToolOnboarding, TOOL_EXPLANATIONS, ONBOARDING_SKIP_KEY, toolSeenKey } from '@/composables/useToolOnboarding'
+const { skipAll, seen: introductionsSeen, cookiePreferences, ready: onboardingReady, busy: onboardingBusy,
+  error: onboardingError, load: loadOnboarding, save: saveOnboarding, toggleCookies } = useToolOnboarding()
+const introToolId = ref<string | null>(null)
+const introTool = computed(() => toolglowsStore.tools.find(tool => tool.id === introToolId.value))
+const showOnboardingError = ref(false)
+let failedToolId: string | null = null
+async function requestToolAction(id: string) {
+  if (onboardingBusy.value) return
+  failedToolId = id
+  if (!onboardingReady.value && !await loadOnboarding()) { showOnboardingError.value = true; return }
+  const tool = toolglowsStore.tools.find(tool => tool.id === id)
+  if (!tool) return
+  if (!skipAll.value && !introductionsSeen.value[id] && !(tool.interaction === 'toggle' && isToolEnabled(id))) {
+    introToolId.value = id
+    return
+  }
+  await runToolAction(id)
+}
+async function runToolAction(id: string) {
+  onboardingError.value = ''
+  failedToolId = id
+  try { await toggleToolActivation(id) }
+  catch { onboardingError.value = 'L’action a échoué. Réessayez.' }
+  if (onboardingError.value) showOnboardingError.value = true
+}
+async function retryToolAction() {
+  showOnboardingError.value = false
+  onboardingError.value = ''
+  if (failedToolId) await requestToolAction(failedToolId)
+}
+async function acceptIntroduction() {
+  const id = introToolId.value
+  if (!id || !await saveOnboarding({ [toolSeenKey(id)]: true })) return
+  introToolId.value = null
+  await runToolAction(id)
+}
+async function skipIntroductions() {
+  if (await saveOnboarding({ [ONBOARDING_SKIP_KEY]: true })) introToolId.value = null
+}
+
 import { useSettingsStore } from '@/stores/settings'
 import { useToolGlowsStore } from '@/stores/toolglows'
-import { useInstantOCRStore } from '@/stores/instantOCR'
 import { useWordCounterStore } from '@/stores/wordCounter'
 import { useAutoCopyStore } from '@/stores/autoCopy'
 import { useDarkModeStore } from '@/stores/darkMode'
@@ -230,25 +310,28 @@ import { useSocialAnalysisStore } from '@/stores/socialAnalysis'
 import { useReloadAllTabsStore } from '@/stores/reloadAllTabs'
 import { useHideElementStore } from '@/stores/hideElement'
 import { useReaderModeStore } from '@/stores/readerMode'
-import WordCounterPopup from './WordCounterPopup.vue'
-import InstantOCRControl from './InstantOCRControl.vue'
-import DarkModeControl from './DarkModeControl.vue'
-import SpeedBrowsingControl from './SpeedBrowsingControl.vue'
-import InfiniteScrollControl from './InfiniteScrollControl.vue'
-import FeedEradicatorControl from './FeedEradicatorControl.vue'
-import ReaderModeControl from './ReaderModeControl.vue'
-import SearchJumperUI from './SearchJumperUI.vue'
-import DragOpenControl from './DragOpenControl.vue'
-import InstagramSavedLibrary from './InstagramSavedLibrary.vue'
-import RichCopyControl from './RichCopyControl.vue'
-import BetterGmailControl from './BetterGmailControl.vue'
-import QuickActionsControl from './QuickActionsControl.vue'
-import AutoCopyControl from './AutoCopyControl.vue'
-import LinksExplorerControl from './LinksExplorerControl.vue'
-import SocialAnalysisControl from './SocialAnalysisControl.vue'
-import ReloadAllTabsControl from './ReloadAllTabsControl.vue'
-import HideElementControl from './HideElementControl.vue'
+const lazyTool = (loader: () => Promise<{ default: Component }>) =>
+  defineAsyncComponent(() => loader().then(module => module.default))
+const WordCounterPopup = lazyTool(() => import('./WordCounterPopup.vue'))
+const DarkModeControl = lazyTool(() => import('./DarkModeControl.vue'))
+const SpeedBrowsingControl = lazyTool(() => import('./SpeedBrowsingControl.vue'))
+const InfiniteScrollControl = lazyTool(() => import('./InfiniteScrollControl.vue'))
+const FeedEradicatorControl = lazyTool(() => import('./FeedEradicatorControl.vue'))
+const ReaderModeControl = lazyTool(() => import('./ReaderModeControl.vue'))
+const SearchJumperUI = lazyTool(() => import('./SearchJumperUI.vue'))
+const DragOpenControl = lazyTool(() => import('./DragOpenControl.vue'))
+const InstagramSavedLibrary = lazyTool(() => import('./InstagramSavedLibrary.vue'))
+const RichCopyControl = lazyTool(() => import('./RichCopyControl.vue'))
+const BetterGmailControl = lazyTool(() => import('./BetterGmailControl.vue'))
+const QuickActionsControl = lazyTool(() => import('./QuickActionsControl.vue'))
+const AutoCopyControl = lazyTool(() => import('./AutoCopyControl.vue'))
+const CookieConsentControl = lazyTool(() => import('./CookieConsentControl.vue'))
+const LinksExplorerControl = lazyTool(() => import('./LinksExplorerControl.vue'))
+const SocialAnalysisControl = lazyTool(() => import('./SocialAnalysisControl.vue'))
+const ReloadAllTabsControl = lazyTool(() => import('./ReloadAllTabsControl.vue'))
+const HideElementControl = lazyTool(() => import('./HideElementControl.vue'))
 import ToolGlowsDialog from './ToolGlowsDialog.vue'
+import ToolGlowsIcon from './ToolGlowsIcon.vue'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import { onClickOutside } from '@vueuse/core'
@@ -257,6 +340,11 @@ import { useExcludeToolGlowsBar } from '@/composables/excludeToolGlowsBar'
 import ThemeSwatch from './ThemeSwatch.vue'
 import Tooltip from 'primevue/tooltip'
 import { TOOLBAR_SIZES, type ToolbarSize } from '@/utils/toolbarSize'
+import {
+  AURORA_TOOLBAR_FOREGROUNDS,
+  AURORA_TOOLBAR_SURFACES
+} from '@/stores/darkModePalette'
+import { suggestReadableColor, TEXT_CONTRAST_MINIMUM } from '@/utils/colorContrast'
 
 const vTooltip = Tooltip
 import { useDebounceFn } from '@vueuse/core'
@@ -299,7 +387,6 @@ const toolbarSizeLabels: Record<ToolbarSize, string> = {
 // Injection des stores avec typage
 const settingsStore = inject('settingsStore') as ReturnType<typeof useSettingsStore>
 const toolglowsStore = inject('toolglowsStore') as ReturnType<typeof useToolGlowsStore>
-const ocrStore = inject('ocrStore') as ReturnType<typeof useInstantOCRStore>
 const wordCounterStore = inject('wordCounterStore') as ReturnType<typeof useWordCounterStore>
 const autoCopyStore = useAutoCopyStore()
 const darkModeStore = useDarkModeStore()
@@ -320,7 +407,7 @@ const toggleInterfaceTheme = () => {
   })
 }
 
-if (!settingsStore || !toolglowsStore || !ocrStore || !wordCounterStore) {
+if (!settingsStore || !toolglowsStore || !wordCounterStore) {
   throw new Error('Les stores requis n\'ont pas été injectés')
 }
 
@@ -334,14 +421,6 @@ const initialTools: Tool[] = [
     emoji: '📝',
     category: 'reading',
     interaction: 'panel'
-  },
-  {
-    id: 'ocr',
-    name: 'OCR instantané',
-    component: markRaw(InstantOCRControl),
-    icon: 'pi pi-camera',
-    emoji: '📸',
-    category: 'reading', interaction: 'panel'
   },
   {
     id: 'darkMode',
@@ -438,6 +517,14 @@ const initialTools: Tool[] = [
     icon: 'pi pi-copy',
     emoji: '✂️',
     category: 'reading', interaction: 'toggle'
+  },
+  {
+    id: 'cookieConsent',
+    name: 'Acceptation des cookies',
+    component: markRaw(CookieConsentControl),
+    icon: 'pi pi-check-circle',
+    emoji: '🍪',
+    category: 'navigation', interaction: 'toggle'
   },
   {
     id: 'linksExplorer',
@@ -653,10 +740,19 @@ const openToolSettings = (event: MouseEvent) => {
     return
   }
 
+  openSettings()
+}
+
+const openSettings = () => {
   showSettings.value = true
 }
 
+const toggleSettings = () => {
+  showSettings.value = !showSettings.value
+}
+
 const isToolEnabled = (toolId: string) => {
+  if (toolId === 'cookieConsent') return cookiePreferences.value.enabled
   if (toolId === 'darkMode') return darkModeStore.isActive
   if (toolId === 'readerMode') return readerModeStore.isActive || Boolean(isVisible.value[toolId])
   if (toolId === 'autoCopy') return toolglowsStore.activeTools.includes(toolId)
@@ -668,6 +764,9 @@ const isToolEnabled = (toolId: string) => {
 }
 
 const toolButtonTitle = (tool: Tool) => {
+  if (tool.id === 'cookieConsent' && cookiePreferences.value.excludedHosts.includes(location.hostname)) {
+    return `${tool.name} — ${cookiePreferences.value.enabled ? 'actif' : 'inactif'} · ce site est exclu — clic droit : paramètres`
+  }
   if (tool.interaction === 'command') return `${tool.name} — exécuter`
   return `${tool.name} — ${isToolEnabled(tool.id) ? 'actif' : 'inactif'}`
 }
@@ -708,6 +807,8 @@ const toggleToolActivation = async (toolId: string) => {
     }
     return
   }
+
+  if (toolId === 'cookieConsent') { await toggleCookies(); return }
 
   const enabled = !isToolEnabled(toolId)
 
@@ -796,14 +897,25 @@ watch(
 
 // Computed style qui combine le style du drag et les autres styles
 const toolbarStyle = computed(() => {
+  const interfaceTheme = settingsStore.settings.interfaceTheme === 'dark' ? 'dark' : 'light'
+  const toolbarSurface = darkModeStore.options?.palettePreset === 'latte'
+    ? AURORA_TOOLBAR_SURFACES[interfaceTheme]
+    : settingsStore.settings.toolbarColor || 'var(--tg-toolbar-color-default)'
+  const preferredForeground = AURORA_TOOLBAR_FOREGROUNDS[interfaceTheme]
+
   return {
     position: 'fixed' as const,
     left: `${position.value.x}px`,
     top: `${position.value.y}px`,
-    backgroundColor: settingsStore.settings.toolbarColor || 'var(--tg-toolbar-color-default)',
+    backgroundColor: toolbarSurface,
+    '--tg-toolbar-foreground': suggestReadableColor(
+      preferredForeground,
+      toolbarSurface,
+      TEXT_CONTRAST_MINIMUM
+    ),
     '--button-size': 'var(--tg-size-toolbar-md)',
     '--font-size': 'var(--tg-size-tool-font-md)',
-    '--emoji-size': 'var(--tg-size-tool-emoji-md)',
+    '--tool-icon-size': 'var(--tg-size-tool-emoji-md)',
     zoom: 'var(--tg-interface-scale)',
     zIndex: 'var(--tg-z-extension)'
   }
@@ -852,7 +964,9 @@ watch(isExpanded, (expanded) => {
 })
 
 // Gestion du clic en dehors
-onClickOutside(toolbarRef, () => {
+onClickOutside(toolbarRef, (event) => {
+  // Automated page actions (including cookie acceptance) are not user dismissal.
+  if (event && !event.isTrusted) return
   if (!hideElementStore.settings.isSelectingElement && !settingsStore.settings.isPinned && isExpanded.value) {
     isExpanded.value = false
     settingsStore.settings.expanded = false
@@ -1093,6 +1207,14 @@ onBeforeUnmount(() => {
   transform: none !important;
 }
 
+.toolglows-icon {
+  color: var(--tg-toolbar-foreground);
+  width: var(--tool-icon-size);
+  height: var(--tool-icon-size);
+  flex: 0 0 var(--tool-icon-size);
+  pointer-events: none;
+}
+
 .toolglows-tool-button {
   transition:
     opacity var(--tg-motion-fast),
@@ -1192,6 +1314,10 @@ onBeforeUnmount(() => {
 .toolglows-settings-dialog {
   :deep(.p-dialog-content) {
     padding: var(--tg-space-4);
+  }
+
+  :deep(.p-button) {
+    color: var(--tg-toolbar-foreground) !important;
   }
 }
 

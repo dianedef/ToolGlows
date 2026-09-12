@@ -1,6 +1,17 @@
 const OSCARO_HOSTNAMES = new Set(['oscaro.com', 'www.oscaro.com'])
 
 export function buildSiteDarkModeOverrides(hostname: string): string {
+  const host = hostname.toLowerCase()
+  if (host === 'backerkit.com' || host.endsWith('.backerkit.com')) {
+    // Hosted preorders enlarge this decorative photo to a near-white canvas.
+    // Keep content images intact; only replace the layout's background layer.
+    return `
+      .hosted-preorders-layout .project-background {
+        background-image: none !important;
+        background-color: var(--tg-page-dark-surface) !important;
+      }
+    `
+  }
   if (!OSCARO_HOSTNAMES.has(hostname.toLowerCase())) return ''
 
   return `

@@ -3,7 +3,7 @@
     v-bind="$attrs"
     v-model:visible="visible"
     modal
-    append-to="body"
+    :append-to="dialogAppendTarget"
     :auto-z-index="true"
     :base-z-index="dialogBaseZIndex"
     :style="dialogShellStyle"
@@ -35,6 +35,9 @@ import { resolveDesignToken } from '@/utils/designTokens'
 defineOptions({ inheritAttrs: false })
 
 const visible = defineModel<boolean>('visible', { default: false })
+const dialogAppendTarget = document.getElementById('toolglows-root')
+  ? '#toolglows-root'
+  : 'body'
 const resolvedDialogBaseZIndex = Number.parseInt(resolveDesignToken('--tg-z-overlay'), 10)
 const dialogBaseZIndex = Number.isFinite(resolvedDialogBaseZIndex)
   ? resolvedDialogBaseZIndex

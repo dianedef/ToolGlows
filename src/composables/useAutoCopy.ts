@@ -5,6 +5,30 @@ import { useToast } from 'primevue/usetoast'
 import { elementOutline, resolveDesignColorToken, resolveDesignToken } from '@/utils/designTokens'
 import { copyTextToClipboard } from '@/utils/clipboard'
 
+function selectionToMarkdown(root: ParentNode): string {
+  const convertNode = (node: Node): string => {
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? ''
+    if (node.nodeType !== Node.ELEMENT_NODE) return ''
+
+    const element = node as Element
+    const content = Array.from(element.childNodes, convertNode).join('')
+    switch (element.tagName.toLowerCase()) {
+      case 'b':
+      case 'strong': return `**${content}**`
+      case 'i':
+      case 'em': return `_${content}_`
+      case 'a': {
+        const href = element.getAttribute('href')
+        return href ? `[${content}](${href})` : content
+      }
+      case 'br': return '\n'
+      default: return content
+    }
+  }
+
+  return Array.from(root.childNodes, convertNode).join('')
+}
+
 export function useAutoCopy() {
   const store = useAutoCopyStore()
   const toolglowsStore = useToolGlowsStore()
@@ -70,10 +94,9 @@ export function useAutoCopy() {
           .filter(line => !line.includes('{url}') && !/^\s*>?\s*Source:/i.test(line))
           .join('\n')
 
-    return template
-      .replace('{content}', text)
-      .replace('{url}', url)
-      .replace('{title}', title)
+    const values: Record<string, string> = { content: text, url, title }
+    // Replace only template fields, never placeholders or $ patterns inside their values.
+    return template.replace(/\{(content|url|title)\}/g, (_, field: string) => values[field])
   }
 
   const isEnabled = () => toolglowsStore.activeTools.includes('autoCopy')
@@ -94,34 +117,33 @@ export function useAutoCopy() {
 
   const getSelectionContent = (selection: Selection, eventTarget?: EventTarget | null) => {
     const editableText = selectedEditableText(eventTarget)
+    const container = document.createElement('div')
     if (editableText !== null) {
-      return editableText ? { text: editableText, html: editableText } : null
+      if (!editableText) return null
+      // Field values are text even when they contain HTML-looking syntax or entities.
+      container.textContent = editableText
+      return { text: editableText, html: container.innerHTML, root: container }
     }
 
-    const container = document.createElement('div')
     for (let index = 0; index < selection.rangeCount; index += 1) {
       container.appendChild(selection.getRangeAt(index).cloneContents())
     }
 
     return {
       text: selection.toString(),
-      html: container.innerHTML
+      html: container.innerHTML,
+      root: container
     }
   }
 
   // Function to format the selection according to the chosen format
-  const formatText = ({ text, html }: { text: string; html: string }): string => {
+  const formatText = ({ text, html, root }: { text: string; html: string; root: ParentNode }): string => {
     let formattedText = text
 
     if (store.settings.preserveFormatting) {
       switch (store.settings.activeFormat) {
         case 'markdown':
-          formattedText = html
-            .replace(/<(b|strong)>([\s\S]*?)<\/(b|strong)>/gi, '**$2**')
-            .replace(/<(i|em)>([\s\S]*?)<\/(i|em)>/gi, '_$2_')
-            .replace(/<a\s+[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)')
-            .replace(/<br\s*\/?>/gi, '\n')
-            .replace(/<[^>]+>/g, '')
+          formattedText = selectionToMarkdown(root)
           break
         case 'html':
           formattedText = html

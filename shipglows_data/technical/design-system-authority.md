@@ -37,7 +37,7 @@ Extension pages also load the same semantic entry point. The authority maps its 
 
 Third-party page adaptation uses the separate `--tg-page-dark-*` namespace in the same canonical source. These roles define graphite surface hierarchy, action and success states, borders, focus, elevation and media glare treatment without allowing visited pages to become a competing token authority.
 
-The dark-mode settings expose Graphite and Custom presets. Graphite consumes the canonical page roles; Custom preserves user-provided canvas, text and link colors while the semantic surface hierarchy remains centralized. Teleported ToolGlows dialogs carry an explicit UI boundary so page adaptation never remaps their controls.
+The dark-mode settings expose Graphite, Aurora and Custom presets. Graphite and Aurora preserve readable host colors and selectively repair computed text contrast below 4.5:1 against the visible composited background; Custom preserves user-provided canvas, text and link colors exactly. Teleported ToolGlows dialogs carry an explicit UI boundary so page adaptation never remaps their controls.
 
 All product dialogs consume the shared `ToolGlowsDialog` wrapper. PrimeVue remains responsible for dialog semantics, focus management and automatic opening-order stacking; the wrapper owns the ToolGlows modal boundary, body teleportation, canonical overlay base and shared floating-shell radius. The toolbar consumes the same floating-shell radius token and stays on the lower extension layer.
 
@@ -65,6 +65,7 @@ Legacy theme modules may remain as unreferenced migration evidence, but they mus
 - Use the canonical control, section and panel radius roles to preserve a deliberate rounded hierarchy rather than assigning local radii.
 - Use the shared spacing scale for page gutters, raised sections, form rhythm and compact toolbar rows.
 - Native selects and PrimeVue dropdowns consume `--tg-surface-field`; transparent control backgrounds are not an accepted theme state.
+- Rich Copy's teleported format menu uses `toolglows-settings-select-panel` so the scoped provider palette and opaque `--tg-surface-overlay` remain available outside the dialog.
 - Use `--tg-interaction-*` for hover, selected and focus states.
 - Use `--tg-element-*` for page-element selection overlays.
 - Add new reusable visual values only to the canonical token source.

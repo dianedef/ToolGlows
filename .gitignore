@@ -4,3 +4,5 @@ dist
 vv.zip   
 v
 .bmad-core
+.playwright-mcp
+.pnpm-patch-darkreader

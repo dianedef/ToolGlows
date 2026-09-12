@@ -18,7 +18,7 @@ describe('reloadAllTabs', () => {
     expect(reload).not.toHaveBeenCalledWith(2)
   })
 
-  it('dispatches every other reload without waiting for slow tabs', async () => {
+  it('bounds stalled reloads and reports them as failures', async () => {
     const neverSettles = new Promise<void>(() => {})
     const reload = vi.fn(() => neverSettles)
     const tabsApi = {
@@ -26,9 +26,9 @@ describe('reloadAllTabs', () => {
       reload
     }
 
-    await expect(reloadAllTabs(tabsApi, 1)).resolves.toEqual({
-      successCount: 3,
-      errorCount: 0
+    await expect(reloadAllTabs(tabsApi, 1, 10)).resolves.toEqual({
+      successCount: 1,
+      errorCount: 2
     })
     expect(reload).toHaveBeenCalledWith(2)
     expect(reload).toHaveBeenCalledWith(3)

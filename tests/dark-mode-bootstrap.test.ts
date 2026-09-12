@@ -1,7 +1,8 @@
 /* @vitest-environment jsdom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const darkModeEngine = vi.hoisted(() => ({ enable: vi.fn() }))
+const darkModeEngine = vi.hoisted(() => ({ enable: vi.fn(), setFetchMethod: vi.fn() }))
+vi.mock('../src/content-script/darkModeResource', () => ({ fetchDarkModeResource: vi.fn() }))
 vi.mock('darkreader', () => darkModeEngine)
 
 import {
@@ -67,7 +68,7 @@ describe('dark mode early startup', () => {
     })
     expect(css).toContain('background-color: #202124 !important')
     expect(css).toContain('color: #f1f3f4 !important')
-    expect(css).toContain('body a { color: #8ab4f8 !important; }')
+    expect(css).not.toContain('body a { color: #8ab4f8 !important; }')
     expect(css).toContain('color: #f1f3f4 !important;')
     expect(css).not.toContain(DARK_MODE_PREPAINT_OVERLAY_ID)
 
@@ -77,16 +78,27 @@ describe('dark mode early startup', () => {
     expect(document.getElementById(DARK_MODE_PREPAINT_OVERLAY_ID)).toBeNull()
   })
 
-  it('uses a light canvas and preserves media for the Latte palette', () => {
+  it('uses a dark canvas and media treatment for the Aurora palette', () => {
     const css = buildDarkModeBackdropCss({
       palettePreset: 'latte',
-      backgroundColor: '#eff1f5',
-      textColor: '#4c4f69',
-      linkColor: '#1e66f5'
+      backgroundColor: '#142a24',
+      textColor: '#f4fbf8',
+      linkColor: '#ff8bc2'
     })
-    expect(css).toContain('color-scheme: light')
-    expect(css).toContain('background-color: #eff1f5')
-    expect(css).toContain('filter: none !important')
+    expect(css).toContain('color-scheme: dark')
+    expect(css).toContain('background-color: #142a24')
+    expect(css).toContain('filter: brightness(0.68) contrast(0.92) saturate(0.92) !important')
+    expect(css).not.toContain('body a { color: #ff8bc2 !important; }')
+  })
+
+  it('keeps exact global link colors confined to Custom mode', () => {
+    const css = buildDarkModeBackdropCss({
+      palettePreset: 'custom',
+      backgroundColor: '#202124',
+      textColor: '#f1f3f4',
+      linkColor: '#8ab4f8'
+    })
+    expect(css).toContain('body a { color: #8ab4f8 !important; }')
   })
 
   it('installs media color preservation before the engine can mark inline SVGs', () => {

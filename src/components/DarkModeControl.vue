@@ -59,7 +59,7 @@
                     v-for="color in palette.colors"
                     :key="color"
                     data-darkreader-ignore
-                    :style="{ '--toolglows-theme-swatch-color': color }"
+                    :style="swatchStyle(color)"
                   />
                 </span>
                 <span>{{ palette.label }}</span>
@@ -83,15 +83,15 @@
                 >
                   <i
                     data-darkreader-ignore
-                    :style="{ '--toolglows-theme-swatch-color': theme.backgroundColor }"
+                    :style="swatchStyle(theme.backgroundColor)"
                   />
                   <i
                     data-darkreader-ignore
-                    :style="{ '--toolglows-theme-swatch-color': theme.textColor }"
+                    :style="swatchStyle(theme.textColor)"
                   />
                   <i
                     data-darkreader-ignore
-                    :style="{ '--toolglows-theme-swatch-color': theme.linkColor }"
+                    :style="swatchStyle(theme.linkColor)"
                   />
                 </span>
                 <span>{{ theme.name }}</span>
@@ -135,7 +135,7 @@
           v-else-if="!customEditorOpen && darkModeStore.options.palettePreset === 'latte'"
           class="toolglows-palette-description mb-3"
         >
-          Latte : fond crème, texte prune et liens bleus pour une lecture claire et colorée.
+          Aurora : forêt profonde, texte clair et liens framboise lumineux.
         </p>
         <template v-if="customEditorOpen">
           <div class="toolglows-color-field mb-2">
@@ -171,7 +171,6 @@
                 v-if="hasPendingColor('textColor')"
                 class="toolglows-keep-color-action"
                 size="small"
-                icon="pi pi-check"
                 label="Appliquer ma couleur"
                 @click="keepPendingColor('textColor')"
               />
@@ -203,7 +202,6 @@
                 v-if="hasPendingColor('linkColor')"
                 class="toolglows-keep-color-action"
                 size="small"
-                icon="pi pi-check"
                 label="Appliquer ma couleur"
                 @click="keepPendingColor('linkColor')"
               />
@@ -333,7 +331,8 @@
             >
               {{ domain }}
               <Button
-                icon="pi pi-times"
+                label="Réinclure"
+                :aria-label="`Réinclure ${domain}`"
                 severity="danger"
                 text
                 @click="darkModeStore.includeDomain(domain)"
@@ -346,7 +345,6 @@
           >
             <Button
               :label="'Exclure ' + darkModeStore.currentDomain"
-              icon="pi pi-plus"
               severity="secondary"
               :disabled="darkModeStore.isDomainExcluded"
               @click="darkModeStore.excludeDomain(darkModeStore.currentDomain)"
@@ -371,7 +369,7 @@ import InputText from 'primevue/inputtext'
 import TimeSelector from './TimeSelector.vue'
 import {
   GRAPHITE_PALETTE,
-  LATTE_PALETTE,
+  AURORA_PALETTE,
   type DarkModePalettePreset
 } from '@/stores/darkModePalette'
 import {
@@ -394,7 +392,7 @@ const builtInPalettes: Array<{
   colors: string[]
 }> = [
   { id: 'graphite', label: 'Graphite', description: 'Sombre et neutre', colors: Object.values(GRAPHITE_PALETTE) },
-  { id: 'latte', label: 'Latte', description: 'Clair et nuancé', colors: Object.values(LATTE_PALETTE) }
+  { id: 'latte', label: 'Aurora', description: 'Forêt, lumière et framboise', colors: Object.values(AURORA_PALETTE) }
 ]
 
 type ContrastColor = 'textColor' | 'linkColor'
@@ -404,6 +402,7 @@ const themeName = ref('')
 const editingThemeId = ref<string | null>(null)
 const pendingThemeDeletion = ref<string | null>(null)
 const themeFeedback = ref('')
+const swatchStyle = (color: string) => `background-color: ${color} !important;`
 
 const cancelThemeEdit = () => {
   editingThemeId.value = null
@@ -749,7 +748,6 @@ const onTimeChange = (value: unknown, isStart: boolean) => {
 .toolglows-theme-swatches i {
   width: var(--tg-space-4);
   height: var(--tg-space-4);
-  background-color: var(--toolglows-theme-swatch-color) !important;
   border: var(--tg-border-width-control) solid var(--tg-border-default);
   border-radius: var(--tg-radius-round);
 }

@@ -187,7 +187,7 @@ export function useSpeedBrowsing() {
       failedUrls.value.add(url)
       // Silence expected errors (CORS, timeouts) to avoid console spam
       if (!error.name.includes('AbortError') && !error.name.includes('CORS')) {
-        console.warn(`ERROR: Failed to preload ${url}`)
+        console.warn('ERROR: Failed to preload a link')
       }
     } finally {
       isPreloading.value = false
@@ -327,4 +327,4 @@ export function useSpeedBrowsing() {
     updateScrollSpeed,
     toggleSmoothScroll
   }
-} 
+}

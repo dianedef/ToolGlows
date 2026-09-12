@@ -314,4 +314,94 @@ describe('Auto Copy interaction contract', () => {
 
     expect(document.querySelector('textarea')).toBeNull()
   })
+
+  it('fills both source URL occurrences in the HTML shortcut template', async () => {
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    useAutoCopyStore().settings.includeSource = true
+    wrapper = mount(Harness)
+    selectNodeContents(document.querySelector('#selection')!)
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'h', altKey: true, bubbles: true }))
+    await flushCopy()
+
+    expect(clipboardWrite).toHaveBeenCalledWith(
+      `<h1>${document.title}</h1>\n<div><strong>Sensitive</strong> text</div>\n<p>Source: <a href="${window.location.href}">${window.location.href}</a></p>`
+    )
+  })
+
+  it('replaces every template field once without interpreting copied text as a template', async () => {
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    const store = useAutoCopyStore()
+    store.settings = {
+      ...store.settings,
+      includeSource: true,
+      formats: store.settings.formats.map(format => format.id === 'text'
+        ? { ...format, template: '{content}|{content}|{url}|{url}|{title}|{title}' }
+        : format)
+    }
+    const selected = document.querySelector('#selection')!
+    const literal = '{content} {url} {title} $& $` $\''
+    selected.textContent = literal
+    wrapper = mount(Harness)
+    selectNodeContents(selected)
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 't', altKey: true, bubbles: true }))
+    await flushCopy()
+
+    expect(clipboardWrite).toHaveBeenCalledWith(
+      `${literal}|${literal}|${window.location.href}|${window.location.href}|${document.title}|${document.title}`
+    )
+  })
+
+  it.each([
+    ['<strong class="highlight">A &amp; B</strong>', '**A & B**'],
+    ['<b data-label="bold">Bold <em class="italic">and italic</em></b>', '**Bold _and italic_**'],
+    ['<i title="emphasis">Italic</i><br data-break="true">&lt;tag&gt; &#39;quote&#39; &#x1F642;', '_Italic_\n<tag> \'quote\' 🙂'],
+    ['<a title="a > b" href="https://example.test/?a=1&amp;b=2"><strong class="label">A &amp; B</strong></a>', '[**A & B**](https://example.test/?a=1&b=2)'],
+    ['<span>plain &amp;amp; text</span><!-- ignored -->', 'plain &amp; text']
+  ])('preserves the existing Markdown subset and decodes entities: %s', async (html, expected) => {
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    const store = useAutoCopyStore()
+    store.settings = {
+      ...store.settings,
+      preserveFormatting: true,
+      includeSource: false,
+      formats: store.settings.formats.map(format => format.id === 'markdown'
+        ? { ...format, template: '{content}' }
+        : format)
+    }
+    const selected = document.querySelector('#selection')!
+    selected.innerHTML = html
+    wrapper = mount(Harness)
+    selectNodeContents(selected)
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'm', altKey: true, bubbles: true }))
+    await flushCopy()
+
+    expect(clipboardWrite).toHaveBeenCalledWith(expected)
+  })
+
+  it('keeps literal markup and entity text in editable selections when formatting as Markdown', async () => {
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    const store = useAutoCopyStore()
+    store.settings = {
+      ...store.settings,
+      preserveFormatting: true,
+      includeSource: false,
+      formats: store.settings.formats.map(format => format.id === 'markdown'
+        ? { ...format, template: '{content}' }
+        : format)
+    }
+    document.body.innerHTML = '<textarea id="editable"></textarea>'
+    const input = document.querySelector<HTMLTextAreaElement>('#editable')!
+    input.value = '<strong>literal</strong> &amp; {url}'
+    wrapper = mount(Harness)
+    input.focus()
+    input.setSelectionRange(0, input.value.length)
+
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'm', altKey: true, bubbles: true }))
+    await flushCopy()
+
+    expect(clipboardWrite).toHaveBeenCalledWith(input.value)
+  })
 })

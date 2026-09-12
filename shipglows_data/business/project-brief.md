@@ -59,6 +59,10 @@ One configurable toolbar brings essential actions to every page: read more comfo
 
 ToolGlows may be distributed independently and included in an ecosystem bundle with CommandGlows. Pricing, entitlements and bundle terms remain undecided and must not be presented as shipped behavior.
 
+## Competitive references
+
+- [Rich URL](https://richurl.madewithlove.in.ua/) focuses on copying the current tab or selected content through configurable formats and templates. It is a direct comparison point for ToolGlows' rich-copy and automatic-copy capabilities.
+
 ## Positioning guardrails
 
 - Lead with browser utility and contextual actions, not the underlying Vue extension framework.

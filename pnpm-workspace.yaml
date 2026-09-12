@@ -1,7 +1,11 @@
+
+allowBuilds:
+  "@parcel/watcher": false
+  esbuild: true
 overrides:
-  "@crxjs/vite-plugin": "$@crxjs/vite-plugin"
   "@babel/helpers@<7.26.10": "7.29.2"
   "@babel/runtime@<7.26.10": "7.29.2"
+  "@crxjs/vite-plugin": "$@crxjs/vite-plugin"
   "@eslint/plugin-kit@<0.3.4": "0.7.1"
   "@tootallnate/once@<3.0.1": "3.0.1"
   "ajv@<6.14.0": "6.14.0"
@@ -22,6 +26,8 @@ overrides:
   "tar@<7.5.21": "7.5.21"
   "tmp@<0.2.4": "0.2.5"
   "yaml@>=2 <2.8.3": "2.8.3"
+patchedDependencies:
+  darkreader@4.9.128: patches/darkreader@4.9.128.patch
 
 peerDependencyRules:
   allowedDeprecatedVersions:
@@ -29,8 +35,3 @@ peerDependencyRules:
   allowedVersions:
     node-fetch: "*"
     picomatch: "4.0.7"
-
-allowBuilds:
-  esbuild: true
-  "@parcel/watcher": false
-  tesseract.js: false

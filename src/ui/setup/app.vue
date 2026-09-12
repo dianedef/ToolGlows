@@ -1,18 +1,13 @@
 <script setup lang="ts">
 import { useUrlSearchParams } from '@vueuse/core'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, watchEffect } from 'vue'
 import { Notivue, Notification } from 'notivue'
+import { useRoute } from 'vue-router'
 
 const params = useUrlSearchParams('history')
-const setupType = ref<'install' | 'update'>('install')
-
-onMounted(() => {
-  const type = params.type as string
-  if (type === 'install' || type === 'update') {
-    setupType.value = type
-  }
-  updateTitle()
-})
+const route = useRoute()
+const setupType = computed(() => route.path === '/setup/update' || params.type === 'update' ? 'update' : 'install')
+watchEffect(() => updateTitle())
 
 function updateTitle() {
   if (setupType.value === 'install') {

@@ -42,10 +42,11 @@ ToolGlows is a configurable browser toolbar that makes useful actions available 
 
 ## Capability families
 
+Optional cookie auto-acceptance is experimental: off by default, local browser opt-in, exact-host exclusions, and recognized top-level CMP buttons only. It includes advertising cookies and does not revoke earlier consent when disabled. See `shipglows_data/technical/cookie-consent-automation.md` for supported rules and proof limits. No legal-compliance or store-approval claim is made.
+
 ### Reading and capture
 
 - word, character, sentence and reading-time statistics;
-- instant OCR with language and clipboard options;
 - configurable reader mode;
 - rich copy and automatic selection copy.
 
@@ -90,3 +91,9 @@ Internal storage keys, CSS selectors and code identifiers use the `toolglows` na
 - Needs proportional proof: real-browser behavior for every tool and store packaging.
 - Experimental: third-party social/Gmail/Instagram DOM integrations.
 - Undecided: pricing, accounts, entitlements and ecosystem bundle mechanics.
+
+## Découverte et première utilisation
+
+L’accueil après installation est facultatif. Chaque outil dispose d’une explication à sa première utilisation, d’une action explicite et d’un report sans exécution. Les utilisateurs expérimentés peuvent passer toutes les explications sans activer les outils ; l’aide reste disponible dans les paramètres. Les choix sont conservés localement dans le navigateur.
+
+L’acceptation des cookies suit le contrat de la barre : clic gauche pour activer/désactiver l’automatisme, clic droit pour ses paramètres. L’explication initiale précise les cookies publicitaires et de mesure d’audience ainsi que les limites. Les exclusions par site restent conservées lorsque l’automatisme est désactivé puis réactivé.

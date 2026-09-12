@@ -24,7 +24,7 @@ export default {
     default_popup: "src/ui/action-popup/index.html",
   },
   background: {
-    service_worker: "src/background/index.ts",
+    service_worker: "src/background/serviceWorkerEntry.ts",
     type: "module",
   },
   content_scripts: [
@@ -58,6 +58,7 @@ export default {
   web_accessible_resources: [
     {
       resources: [
+        "assets/*.css",
         "src/assets/logo.png",
         "src/ui/devtools-panel/index.html",
         "src/ui/setup/index.html",

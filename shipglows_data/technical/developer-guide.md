@@ -71,6 +71,15 @@ The ShipGlows local-server tooling may open the extension manager and generated 
 
 `pnpm lint` currently fixes files and caches results; do not use it as a read-only proof command in an audit.
 
+For Auto Copy format regressions, run `pnpm exec vitest run tests/auto-copy.test.ts`.
+After building, `node tests/auto-copy-formats-browser.mjs chromium` or the same
+command with `firefox` loads the extension in a disposable profile and verifies
+HTML, Markdown and plain-text shortcuts using real clipboard paste. Firefox
+temporary installation uses the existing `web-ext` debugger client. The runner
+accepts `PLAYWRIGHT_MODULE` (an absolute Playwright module path) and
+`FIREFOX_EXECUTABLE` when an already installed matching runtime is outside the
+repository defaults. It never uses a personal browser profile.
+
 ## Safe change sequence
 
 1. Identify the browser context and source entrypoint in the code map.

@@ -150,6 +150,9 @@ export default defineConfig({
   ],
 
   build: {
+    // Extension URLs cannot reuse these preloads across browser execution worlds.
+    // Keep native module imports; avoid redundant requests and Edge warnings.
+    modulePreload: false,
     manifest: false,
     outDir: "dist",
     sourcemap: false,

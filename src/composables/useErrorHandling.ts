@@ -1,6 +1,5 @@
 export enum ErrorSource {
   COPY = 'copy',
-  OCR = 'ocr',
   NAVIGATION = 'navigation'
 }
 
@@ -13,4 +12,4 @@ export const useErrorHandling = () => {
   return {
     handleError
   }
-} 
+}

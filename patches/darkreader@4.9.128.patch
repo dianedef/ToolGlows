@@ -1,0 +1,39 @@
+diff --git a/darkreader.js b/darkreader.js
+index 50866bde5ea99b0d01c9661a9f948899fac32e9c..a16443c1f995b70fec4899cf0d8d3e91c354dfa1 100644
+--- a/darkreader.js
++++ b/darkreader.js
+@@ -8120,7 +8120,7 @@
+             fixes && fixes.disableCustomElementRegistryProxy
+         );
+         document.dispatchEvent(new CustomEvent("__darkreader__cleanUp"));
+-        {
++        if (enableStyleSheetsProxy || enableCustomElementRegistryProxy) {
+             const proxyScript = createOrUpdateScript("darkreader--proxy");
+             proxyScript.append(
+                 `(${injectProxy})(${enableStyleSheetsProxy}, ${enableCustomElementRegistryProxy})`
+diff --git a/darkreader.mjs b/darkreader.mjs
+index ddd49bf9e613fc9b49025eb66f6e7da42db2bf87..1057423afd28c593ca6b1864e1b99000dbe6d814 100644
+--- a/darkreader.mjs
++++ b/darkreader.mjs
+@@ -7860,7 +7860,7 @@ function createStaticStyleOverrides() {
+         fixes && fixes.disableCustomElementRegistryProxy
+     );
+     document.dispatchEvent(new CustomEvent("__darkreader__cleanUp"));
+-    {
++    if (enableStyleSheetsProxy || enableCustomElementRegistryProxy) {
+         const proxyScript = createOrUpdateScript("darkreader--proxy");
+         proxyScript.append(
+             `(${injectProxy})(${enableStyleSheetsProxy}, ${enableCustomElementRegistryProxy})`
+diff --git a/index.d.ts b/index.d.ts
+index 093103e730f86ea33d0549f34d0e1510b9de73e8..1cf0e9bd801b00a980a48985dfbe5614b9bccca7 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -157,6 +157,8 @@ declare namespace DarkReader {
+          * who are using the Dark Reader API.
+          */
+         disableStyleSheetsProxy: boolean;
++        /** Disable the existing custom-element registry proxy as well. */
++        disableCustomElementRegistryProxy?: boolean;
+         /**
+          * List of stylesheet URL patterns to ignore.
+          * Stylesheets matching these patterns will not be processed by Dark Reader.

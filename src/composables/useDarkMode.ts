@@ -239,20 +239,22 @@ export function useDarkMode(options: DarkModeOptions = {}) {
    */
   const init = async () => {
     checkCurrentDomain()
+    let locationTimer: ReturnType<typeof setInterval> | null = null
+    const handleSystemThemeChange = (event: MediaQueryListEvent) => {
+      isDarkMode.value = event.matches
+    }
 
     // System preference sync
     if (options.syncWithSystem) {
       isDarkMode.value = prefersDark.matches
-      prefersDark.addEventListener('change', (e) => {
-        isDarkMode.value = e.matches
-      })
+      prefersDark.addEventListener('change', handleSystemThemeChange)
     }
 
     // Location-based auto-enable
     if (options.syncWithLocation) {
       await checkLocationAndTime()
       // Recheck every hour for accuracy
-      setInterval(checkLocationAndTime, 3600000)
+      locationTimer = setInterval(checkLocationAndTime, 3600000)
     }
 
     // Watch for dynamic content changes (SPAs, infinite scroll, etc.)
@@ -270,6 +272,8 @@ export function useDarkMode(options: DarkModeOptions = {}) {
     // Cleanup on unmount
     onUnmounted(() => {
       observer.disconnect()
+      prefersDark.removeEventListener('change', handleSystemThemeChange)
+      if (locationTimer) clearInterval(locationTimer)
     })
   }
 
@@ -292,4 +296,4 @@ export function useDarkMode(options: DarkModeOptions = {}) {
     includeDomain,
     init
   }
-} 
+}

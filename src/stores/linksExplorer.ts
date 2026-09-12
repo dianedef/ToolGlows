@@ -46,7 +46,7 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
             ...result.linksExplorerSettings
           }
         }
-        console.log('[DEBUG] Links Explorer settings loaded:', this.settings)
+        console.log('[INFO] Links Explorer settings loaded')
       } catch (error) {
         console.error('[ERROR] Failed to load Links Explorer settings:', error)
         this.settings = { ...defaultSettings }
@@ -62,7 +62,7 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
         }
 
         await chrome.storage.sync.set({ linksExplorerSettings: this.settings })
-        console.log('[SUCCESS] Links Explorer settings saved:', this.settings)
+        console.log('[SUCCESS] Links Explorer settings saved')
       } catch (error) {
         // Ignore the error if it's related to the invalidated context
         if (error instanceof Error && error.message.includes('Extension context invalidated')) {
@@ -161,7 +161,7 @@ export const useLinksExplorerStore = defineStore('linksExplorer', {
               // Clean up
               document.body.removeChild(iframe)
             } catch (error) {
-              console.warn(`[WARN] Unable to explore ${link.url}:`, error)
+              console.warn('[WARN] Unable to explore a link:', error)
             }
           }
         }

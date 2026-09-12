@@ -4,6 +4,7 @@ import {
   type DarkModeEngineOptions
 } from './darkModeEngine'
 import { startExactTextColors, stopExactTextColors } from './exactTextColors'
+import { startContrastRepair, stopContrastRepair } from './contrastRepair'
 
 export interface DarkModeBootstrapOptions extends Partial<DarkModeEngineOptions> {
   autoEnable?: unknown
@@ -75,14 +76,16 @@ export function retireDarkModeBootstrap(): void {
 
 export function buildDarkModeBackdropCss(options: DarkModeBootstrapOptions = {}): string {
   const resolved = resolveDarkModeEngineOptions(options)
-  const isLatte = options.palettePreset === 'latte'
+  const exactLinkOverride = options.palettePreset === 'custom'
+    ? `body a { color: ${resolved.linkColor} !important; }`
+    : ''
   return `
-    :root { color-scheme: ${isLatte ? 'light' : 'dark'} !important; background-color: ${resolved.backgroundColor} !important; }
+    :root { color-scheme: dark !important; background-color: ${resolved.backgroundColor} !important; }
     html, body { background-color: ${resolved.backgroundColor} !important; color: ${resolved.textColor} !important; }
-    body a { color: ${resolved.linkColor} !important; }
+    ${exactLinkOverride}
     body :is(img, picture, video, svg, canvas, [role="img"]),
     body [data-darkreader-inline-invert] {
-      filter: ${isLatte ? 'none' : 'brightness(0.68) contrast(0.92) saturate(0.92)'} !important;
+      filter: brightness(0.68) contrast(0.92) saturate(0.92) !important;
       transition: var(--tg-page-dark-media-transition);
     }
     #toolglows-root img,
@@ -126,6 +129,7 @@ export async function installDarkModeBootstrap(): Promise<void> {
 
     if (!shouldBootstrapDarkMode(state, window.location.hostname, systemPrefersDark)) {
       stopExactTextColors()
+      stopContrastRepair()
       retireDarkModeBootstrap()
       return
     }
@@ -134,11 +138,14 @@ export async function installDarkModeBootstrap(): Promise<void> {
     // but no opaque element or readiness delay hides the page while it loads.
     maintainDarkModeBackdrop(state.options)
     enableDarkModeEngine(state.options)
-    if (state.options?.palettePreset === 'custom' || state.options?.palettePreset === 'latte') {
+    if (state.options?.palettePreset === 'custom') {
       const resolved = resolveDarkModeEngineOptions(state.options)
+      stopContrastRepair()
       startExactTextColors(resolved.textColor, resolved.linkColor)
     } else {
+      const resolved = resolveDarkModeEngineOptions(state.options)
       stopExactTextColors()
+      startContrastRepair(resolved.textColor, resolved.linkColor, resolved.backgroundColor)
     }
     retireDarkModePrepaint()
   } catch (error) {

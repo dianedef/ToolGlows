@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const darkModeEngine = vi.hoisted(() => ({
   disable: vi.fn(),
   enable: vi.fn(),
+  setFetchMethod: vi.fn(),
   isEnabled: vi.fn(() => true)
 }))
 
@@ -15,11 +16,31 @@ import { maintainDarkModeBackdrop } from '../src/content-script/darkModeBootstra
 
 describe('dark mode DOM lifecycle', () => {
   beforeEach(() => {
+    removeDarkMode()
     document.head.innerHTML = ''
     document.body.innerHTML = ''
     darkModeEngine.disable.mockClear()
     darkModeEngine.enable.mockClear()
     darkModeEngine.isEnabled.mockReturnValue(true)
+  })
+
+  it('does not retransform the page for an identical background echo, but applies changed themes', () => {
+    const message = {
+      isActive: true,
+      options: {
+        backgroundColor: '#202124', textColor: '#f2f2f2', linkColor: '#8ab4f8',
+        contrastLevel: 1, transitionDuration: 150, excludedDomains: []
+      }
+    }
+    applyDarkMode(message)
+    applyDarkMode(JSON.parse(JSON.stringify(message)))
+    expect(darkModeEngine.enable).toHaveBeenCalledTimes(1)
+    applyDarkMode({ ...message, options: { ...message.options, backgroundColor: '#17202a' } })
+    expect(darkModeEngine.enable).toHaveBeenCalledTimes(2)
+    removeDarkMode()
+    applyDarkMode(message)
+    expect(darkModeEngine.enable).toHaveBeenCalledTimes(3)
+    removeDarkMode()
   })
 
   it('removes every page-level dark-mode artifact', () => {
@@ -43,7 +64,7 @@ describe('dark mode DOM lifecycle', () => {
   it('globally dims host-page images while leaving ToolGlows media unchanged', () => {
     darkModeEngine.enable.mockImplementationOnce(() => {
       const immediateCss = document.getElementById('toolglows-dark-mode-bootstrap')?.textContent
-      expect(immediateCss).toContain('body a { color: #8ab4f8 !important; }')
+      expect(immediateCss).not.toContain('body a { color: #8ab4f8 !important; }')
     })
 
     expect(applyDarkMode({
@@ -78,7 +99,7 @@ describe('dark mode DOM lifecycle', () => {
     expect(css).toContain('filter: none !important;')
 
     const lateCss = document.getElementById('toolglows-dark-mode-overrides')?.textContent
-    expect(lateCss).toContain('body a { color: #8ab4f8 !important; }')
+    expect(lateCss).not.toContain('body a { color: #8ab4f8 !important; }')
     expect(lateCss).not.toContain('data-darkreader-inline-invert')
   })
 })

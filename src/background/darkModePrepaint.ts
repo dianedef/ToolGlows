@@ -74,7 +74,6 @@ export function resolveDarkModePrepaintMode(
   now = new Date()
 ): DarkModePrepaintMode {
   const options = state.options ?? {}
-  if (options.palettePreset === 'latte') return 'off'
   if (options.syncWithSystem === true) return 'system'
   if (options.autoEnable === true) {
     return isWithinDarkModeSchedule(now, options.scheduleStart, options.scheduleEnd) ? 'always' : 'off'

@@ -6,19 +6,26 @@
 // biome-ignore lint: disable
 export {}
 declare global {
+  const AURORA_PALETTE: typeof import('../stores/darkModePalette')['AURORA_PALETTE']
+  const AURORA_TOOLBAR_FOREGROUNDS: typeof import('../stores/darkModePalette')['AURORA_TOOLBAR_FOREGROUNDS']
+  const AURORA_TOOLBAR_SURFACES: typeof import('../stores/darkModePalette')['AURORA_TOOLBAR_SURFACES']
   const CONTENT_SCRIPT_STATUS_MESSAGE: typeof import('../utils/contentScriptStatus')['CONTENT_SCRIPT_STATUS_MESSAGE']
+  const DARK_MODE_RESOURCE_MESSAGE: typeof import('../utils/darkModeResourcePolicy')['DARK_MODE_RESOURCE_MESSAGE']
+  const DARK_MODE_RESOURCE_TIMEOUT_MS: typeof import('../utils/darkModeResourcePolicy')['DARK_MODE_RESOURCE_TIMEOUT_MS']
   const DEFAULT_CUSTOM_PALETTE: typeof import('../stores/darkModePalette')['DEFAULT_CUSTOM_PALETTE']
   const EffectScope: typeof import('vue')['EffectScope']
   const ErrorSource: typeof import('../composables/useErrorHandling')['ErrorSource']
   const GRAPHITE_PALETTE: typeof import('../stores/darkModePalette')['GRAPHITE_PALETTE']
-  const LATTE_PALETTE: typeof import('../stores/darkModePalette')['LATTE_PALETTE']
   const LINK_CONTRAST_MINIMUM: typeof import('../utils/colorContrast')['LINK_CONTRAST_MINIMUM']
   const MAX_CUSTOM_DARK_THEMES: typeof import('../stores/darkModeThemes')['MAX_CUSTOM_DARK_THEMES']
   const MAX_CUSTOM_DARK_THEME_NAME_LENGTH: typeof import('../stores/darkModeThemes')['MAX_CUSTOM_DARK_THEME_NAME_LENGTH']
+  const MAX_DARK_MODE_RESOURCE_BYTES: typeof import('../utils/darkModeResourcePolicy')['MAX_DARK_MODE_RESOURCE_BYTES']
   const Notification: typeof import('notivue')['Notification']
   const Notivue: typeof import('notivue')['Notivue']
+  const ONBOARDING_SKIP_KEY: typeof import('../composables/useToolOnboarding')['ONBOARDING_SKIP_KEY']
   const TEXT_CONTRAST_MINIMUM: typeof import('../utils/colorContrast')['TEXT_CONTRAST_MINIMUM']
   const TOOLBAR_SIZES: typeof import('../utils/toolbarSize')['TOOLBAR_SIZES']
+  const TOOL_EXPLANATIONS: typeof import('../composables/useToolOnboarding')['TOOL_EXPLANATIONS']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const appRouter: typeof import('../utils/router/index')['appRouter']
   const applyInterfaceTheme: typeof import('../composables/useInterfaceTheme')['applyInterfaceTheme']
@@ -32,6 +39,7 @@ declare global {
   const computedWithControl: typeof import('@vueuse/core')['computedWithControl']
   const controlledComputed: typeof import('@vueuse/core')['controlledComputed']
   const controlledRef: typeof import('@vueuse/core')['controlledRef']
+  const copyTextToClipboard: typeof import('../utils/clipboard')['copyTextToClipboard']
   const createApp: typeof import('vue')['createApp']
   const createEventHook: typeof import('@vueuse/core')['createEventHook']
   const createGlobalState: typeof import('@vueuse/core')['createGlobalState']
@@ -70,6 +78,7 @@ declare global {
   const injectLocal: typeof import('@vueuse/core')['injectLocal']
   const injectStyles: typeof import('../utils/styleInjection')['injectStyles']
   const injectStylesheet: typeof import('../utils/styleInjection')['injectStylesheet']
+  const isDarkModeResourceMime: typeof import('../utils/darkModeResourcePolicy')['isDarkModeResourceMime']
   const isDefined: typeof import('@vueuse/core')['isDefined']
   const isProxy: typeof import('vue')['isProxy']
   const isReactive: typeof import('vue')['isReactive']
@@ -84,6 +93,7 @@ declare global {
   const mapWritableState: typeof import('pinia')['mapWritableState']
   const markRaw: typeof import('vue')['markRaw']
   const nextTick: typeof import('vue')['nextTick']
+  const normalizeDarkModeResourceUrl: typeof import('../utils/darkModeResourcePolicy')['normalizeDarkModeResourceUrl']
   const normalizeInterfaceTheme: typeof import('../composables/useInterfaceTheme')['normalizeInterfaceTheme']
   const normalizeReaderModeOptions: typeof import('../composables/useReaderMode')['normalizeReaderModeOptions']
   const normalizeSavedDarkThemes: typeof import('../stores/darkModeThemes')['normalizeSavedDarkThemes']
@@ -132,6 +142,7 @@ declare global {
   const renameDarkTheme: typeof import('../stores/darkModeThemes')['renameDarkTheme']
   const resolveComponent: typeof import('vue')['resolveComponent']
   const resolveDarkModePalettePreferences: typeof import('../stores/darkModePalette')['resolveDarkModePalettePreferences']
+  const resolveDesignColorToken: typeof import('../utils/designTokens')['resolveDesignColorToken']
   const resolveDesignToken: typeof import('../utils/designTokens')['resolveDesignToken']
   const resolveRef: typeof import('@vueuse/core')['resolveRef']
   const resolveUnref: typeof import('@vueuse/core')['resolveUnref']
@@ -160,6 +171,7 @@ declare global {
   const toRef: typeof import('vue')['toRef']
   const toRefs: typeof import('vue')['toRefs']
   const toValue: typeof import('vue')['toValue']
+  const toolSeenKey: typeof import('../composables/useToolOnboarding')['toolSeenKey']
   const triggerRef: typeof import('vue')['triggerRef']
   const tryOnBeforeMount: typeof import('@vueuse/core')['tryOnBeforeMount']
   const tryOnBeforeUnmount: typeof import('@vueuse/core')['tryOnBeforeUnmount']
@@ -172,7 +184,6 @@ declare global {
   const useActiveElement: typeof import('@vueuse/core')['useActiveElement']
   const useAdvancedSearch: typeof import('../composables/useAdvancedSearch')['useAdvancedSearch']
   const useAnimate: typeof import('@vueuse/core')['useAnimate']
-  const useAppStore: typeof import('../stores/app.store')['useAppStore']
   const useArrayDifference: typeof import('@vueuse/core')['useArrayDifference']
   const useArrayEvery: typeof import('@vueuse/core')['useArrayEvery']
   const useArrayFilter: typeof import('@vueuse/core')['useArrayFilter']
@@ -264,8 +275,6 @@ declare global {
   const useInfiniteScrollStore: typeof import('../stores/infiniteScroll')['useInfiniteScrollStore']
   const useInstagramSavedLibrary: typeof import('../composables/useInstagramSavedLibrary')['useInstagramSavedLibrary']
   const useInstagramSavedStore: typeof import('../stores/instagramSaved')['useInstagramSavedStore']
-  const useInstantOCR: typeof import('../composables/useInstantOCR')['useInstantOCR']
-  const useInstantOCRStore: typeof import('../stores/instantOCR')['useInstantOCRStore']
   const useInterfaceTheme: typeof import('../composables/useInterfaceTheme')['useInterfaceTheme']
   const useIntersectionObserver: typeof import('@vueuse/core')['useIntersectionObserver']
   const useInterval: typeof import('@vueuse/core')['useInterval']
@@ -371,6 +380,7 @@ declare global {
   const useToolGlowsInfiniteScroll: typeof import('../composables/useInfiniteScroll')['useToolGlowsInfiniteScroll']
   const useToolGlowsInfiniteScrollStore: typeof import('../stores/infiniteScroll')['useToolGlowsInfiniteScrollStore']
   const useToolGlowsStore: typeof import('../stores/toolglows')['useToolGlowsStore']
+  const useToolOnboarding: typeof import('../composables/useToolOnboarding')['useToolOnboarding']
   const useTransition: typeof import('@vueuse/core')['useTransition']
   const useUrlSearchParams: typeof import('@vueuse/core')['useUrlSearchParams']
   const useUserMedia: typeof import('@vueuse/core')['useUserMedia']
@@ -435,6 +445,9 @@ declare global {
   export type { ContentScriptStatus } from '../utils/contentScriptStatus'
   import('../utils/contentScriptStatus')
   // @ts-ignore
+  export type { DarkModeResourceResponse } from '../utils/darkModeResourcePolicy'
+  import('../utils/darkModeResourcePolicy')
+  // @ts-ignore
   export type { ToolbarSize } from '../utils/toolbarSize'
   import('../utils/toolbarSize')
 }
@@ -444,19 +457,26 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
+    readonly AURORA_PALETTE: UnwrapRef<typeof import('../stores/darkModePalette')['AURORA_PALETTE']>
+    readonly AURORA_TOOLBAR_FOREGROUNDS: UnwrapRef<typeof import('../stores/darkModePalette')['AURORA_TOOLBAR_FOREGROUNDS']>
+    readonly AURORA_TOOLBAR_SURFACES: UnwrapRef<typeof import('../stores/darkModePalette')['AURORA_TOOLBAR_SURFACES']>
     readonly CONTENT_SCRIPT_STATUS_MESSAGE: UnwrapRef<typeof import('../utils/contentScriptStatus')['CONTENT_SCRIPT_STATUS_MESSAGE']>
+    readonly DARK_MODE_RESOURCE_MESSAGE: UnwrapRef<typeof import('../utils/darkModeResourcePolicy')['DARK_MODE_RESOURCE_MESSAGE']>
+    readonly DARK_MODE_RESOURCE_TIMEOUT_MS: UnwrapRef<typeof import('../utils/darkModeResourcePolicy')['DARK_MODE_RESOURCE_TIMEOUT_MS']>
     readonly DEFAULT_CUSTOM_PALETTE: UnwrapRef<typeof import('../stores/darkModePalette')['DEFAULT_CUSTOM_PALETTE']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly ErrorSource: UnwrapRef<typeof import('../composables/useErrorHandling')['ErrorSource']>
     readonly GRAPHITE_PALETTE: UnwrapRef<typeof import('../stores/darkModePalette')['GRAPHITE_PALETTE']>
-    readonly LATTE_PALETTE: UnwrapRef<typeof import('../stores/darkModePalette')['LATTE_PALETTE']>
     readonly LINK_CONTRAST_MINIMUM: UnwrapRef<typeof import('../utils/colorContrast')['LINK_CONTRAST_MINIMUM']>
     readonly MAX_CUSTOM_DARK_THEMES: UnwrapRef<typeof import('../stores/darkModeThemes')['MAX_CUSTOM_DARK_THEMES']>
     readonly MAX_CUSTOM_DARK_THEME_NAME_LENGTH: UnwrapRef<typeof import('../stores/darkModeThemes')['MAX_CUSTOM_DARK_THEME_NAME_LENGTH']>
+    readonly MAX_DARK_MODE_RESOURCE_BYTES: UnwrapRef<typeof import('../utils/darkModeResourcePolicy')['MAX_DARK_MODE_RESOURCE_BYTES']>
     readonly Notification: UnwrapRef<typeof import('notivue')['Notification']>
     readonly Notivue: UnwrapRef<typeof import('notivue')['Notivue']>
+    readonly ONBOARDING_SKIP_KEY: UnwrapRef<typeof import('../composables/useToolOnboarding')['ONBOARDING_SKIP_KEY']>
     readonly TEXT_CONTRAST_MINIMUM: UnwrapRef<typeof import('../utils/colorContrast')['TEXT_CONTRAST_MINIMUM']>
     readonly TOOLBAR_SIZES: UnwrapRef<typeof import('../utils/toolbarSize')['TOOLBAR_SIZES']>
+    readonly TOOL_EXPLANATIONS: UnwrapRef<typeof import('../composables/useToolOnboarding')['TOOL_EXPLANATIONS']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly appRouter: UnwrapRef<typeof import('../utils/router/index')['appRouter']>
     readonly applyInterfaceTheme: UnwrapRef<typeof import('../composables/useInterfaceTheme')['applyInterfaceTheme']>
@@ -470,6 +490,7 @@ declare module 'vue' {
     readonly computedWithControl: UnwrapRef<typeof import('@vueuse/core')['computedWithControl']>
     readonly controlledComputed: UnwrapRef<typeof import('@vueuse/core')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('@vueuse/core')['controlledRef']>
+    readonly copyTextToClipboard: UnwrapRef<typeof import('../utils/clipboard')['copyTextToClipboard']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createEventHook: UnwrapRef<typeof import('@vueuse/core')['createEventHook']>
     readonly createGlobalState: UnwrapRef<typeof import('@vueuse/core')['createGlobalState']>
@@ -508,6 +529,7 @@ declare module 'vue' {
     readonly injectLocal: UnwrapRef<typeof import('@vueuse/core')['injectLocal']>
     readonly injectStyles: UnwrapRef<typeof import('../utils/styleInjection')['injectStyles']>
     readonly injectStylesheet: UnwrapRef<typeof import('../utils/styleInjection')['injectStylesheet']>
+    readonly isDarkModeResourceMime: UnwrapRef<typeof import('../utils/darkModeResourcePolicy')['isDarkModeResourceMime']>
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -522,6 +544,7 @@ declare module 'vue' {
     readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
+    readonly normalizeDarkModeResourceUrl: UnwrapRef<typeof import('../utils/darkModeResourcePolicy')['normalizeDarkModeResourceUrl']>
     readonly normalizeInterfaceTheme: UnwrapRef<typeof import('../composables/useInterfaceTheme')['normalizeInterfaceTheme']>
     readonly normalizeReaderModeOptions: UnwrapRef<typeof import('../composables/useReaderMode')['normalizeReaderModeOptions']>
     readonly normalizeSavedDarkThemes: UnwrapRef<typeof import('../stores/darkModeThemes')['normalizeSavedDarkThemes']>
@@ -570,6 +593,7 @@ declare module 'vue' {
     readonly renameDarkTheme: UnwrapRef<typeof import('../stores/darkModeThemes')['renameDarkTheme']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
     readonly resolveDarkModePalettePreferences: UnwrapRef<typeof import('../stores/darkModePalette')['resolveDarkModePalettePreferences']>
+    readonly resolveDesignColorToken: UnwrapRef<typeof import('../utils/designTokens')['resolveDesignColorToken']>
     readonly resolveDesignToken: UnwrapRef<typeof import('../utils/designTokens')['resolveDesignToken']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('@vueuse/core')['resolveUnref']>
@@ -598,6 +622,7 @@ declare module 'vue' {
     readonly toRef: UnwrapRef<typeof import('vue')['toRef']>
     readonly toRefs: UnwrapRef<typeof import('vue')['toRefs']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
+    readonly toolSeenKey: UnwrapRef<typeof import('../composables/useToolOnboarding')['toolSeenKey']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly tryOnBeforeMount: UnwrapRef<typeof import('@vueuse/core')['tryOnBeforeMount']>
     readonly tryOnBeforeUnmount: UnwrapRef<typeof import('@vueuse/core')['tryOnBeforeUnmount']>
@@ -610,7 +635,6 @@ declare module 'vue' {
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
     readonly useAdvancedSearch: UnwrapRef<typeof import('../composables/useAdvancedSearch')['useAdvancedSearch']>
     readonly useAnimate: UnwrapRef<typeof import('@vueuse/core')['useAnimate']>
-    readonly useAppStore: UnwrapRef<typeof import('../stores/app.store')['useAppStore']>
     readonly useArrayDifference: UnwrapRef<typeof import('@vueuse/core')['useArrayDifference']>
     readonly useArrayEvery: UnwrapRef<typeof import('@vueuse/core')['useArrayEvery']>
     readonly useArrayFilter: UnwrapRef<typeof import('@vueuse/core')['useArrayFilter']>
@@ -702,8 +726,6 @@ declare module 'vue' {
     readonly useInfiniteScrollStore: UnwrapRef<typeof import('../stores/infiniteScroll')['useInfiniteScrollStore']>
     readonly useInstagramSavedLibrary: UnwrapRef<typeof import('../composables/useInstagramSavedLibrary')['useInstagramSavedLibrary']>
     readonly useInstagramSavedStore: UnwrapRef<typeof import('../stores/instagramSaved')['useInstagramSavedStore']>
-    readonly useInstantOCR: UnwrapRef<typeof import('../composables/useInstantOCR')['useInstantOCR']>
-    readonly useInstantOCRStore: UnwrapRef<typeof import('../stores/instantOCR')['useInstantOCRStore']>
     readonly useInterfaceTheme: UnwrapRef<typeof import('../composables/useInterfaceTheme')['useInterfaceTheme']>
     readonly useIntersectionObserver: UnwrapRef<typeof import('@vueuse/core')['useIntersectionObserver']>
     readonly useInterval: UnwrapRef<typeof import('@vueuse/core')['useInterval']>
@@ -809,6 +831,7 @@ declare module 'vue' {
     readonly useToolGlowsInfiniteScroll: UnwrapRef<typeof import('../composables/useInfiniteScroll')['useToolGlowsInfiniteScroll']>
     readonly useToolGlowsInfiniteScrollStore: UnwrapRef<typeof import('../stores/infiniteScroll')['useToolGlowsInfiniteScrollStore']>
     readonly useToolGlowsStore: UnwrapRef<typeof import('../stores/toolglows')['useToolGlowsStore']>
+    readonly useToolOnboarding: UnwrapRef<typeof import('../composables/useToolOnboarding')['useToolOnboarding']>
     readonly useTransition: UnwrapRef<typeof import('@vueuse/core')['useTransition']>
     readonly useUrlSearchParams: UnwrapRef<typeof import('@vueuse/core')['useUrlSearchParams']>
     readonly useUserMedia: UnwrapRef<typeof import('@vueuse/core')['useUserMedia']>

@@ -15,6 +15,18 @@ import { bridgeApi } from '@/bridge'
 describe('settings bridge persistence', () => {
   beforeEach(() => sendMessage.mockClear())
 
+  it('does not report success when the background rejects persistence', async () => {
+    sendMessage.mockResolvedValueOnce({ success: false })
+    await expect(bridgeApi.updateSettings({
+      expanded: true,
+      position: { x: 10, y: 20 },
+      activeTools: [],
+      isPinned: false,
+      interfaceTheme: 'dark',
+      toolbarSize: 'md'
+    })).rejects.toThrow('Background could not persist settings')
+  })
+
   it('keeps hidden element records in the synchronized payload', async () => {
     await bridgeApi.updateSettings({
       expanded: true,

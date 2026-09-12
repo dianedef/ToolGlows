@@ -22,12 +22,12 @@ import "./index.scss"
 import { createApp, h, defineComponent, provide, watch } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
 import PrimeVue from 'primevue/config'
+import ToastService from 'primevue/toastservice'
 import primeVueThemeStyles from 'primevue/resources/themes/lara-light-blue/theme.css?inline'
 import primeVueDarkThemeStyles from 'primevue/resources/themes/lara-dark-blue/theme.css?inline'
 import primeVueCoreStyles from 'primevue/resources/primevue.min.css?inline'
 import primeIconsStyles from 'primeicons/primeicons.css?inline'
 import ToolGlowsBar from '../components/ToolGlowsBar.vue'
-import { setupPrimeVue } from '../utils/setupPrimeVue'
 import { injectStyles } from '../utils/styleInjection'
 import { scopeToolGlowsCss } from '../utils/scopeCss'
 import { CONTENT_SCRIPT_STATUS_MESSAGE } from '../utils/contentScriptStatus'
@@ -35,12 +35,18 @@ import mainStyles from '@/assets/main.css?inline'
 import contentStyles from '@/content-script/index.scss?inline'
 import { setupSecureBridge } from '@/bridge'
 import { removeDarkMode } from './darkMode'
+import { installCookieConsentRuntime } from '@/features/cookieConsent/runtime'
+
+let stopCookieConsent = installCookieConsentRuntime(document)
+window.addEventListener('pagehide', () => stopCookieConsent())
+window.addEventListener('pageshow', event => {
+  if (event.persisted) stopCookieConsent = installCookieConsentRuntime(document)
+})
 
 // Import des stores
 import { useSettingsStore } from '../stores/settings'
 import { useDarkModeStore } from '../stores/darkMode'
 import { useToolGlowsStore } from '../stores/toolglows'
-import { useInstantOCRStore } from '../stores/instantOCR'
 import { useWordCounterStore } from '../stores/wordCounter'
 import { useQuickActionsStore } from '../stores/quickActions'
 
@@ -130,7 +136,7 @@ function createRootElement() {
  * Vue Application Initialization in Content Script Context
  *
  * Sets up a complete Vue 3 application with:
- * - Pinia stores for state management (settings, tools, OCR, etc.)
+ * - Pinia stores for state management (settings, tools, etc.)
  * - PrimeVue component library with custom configuration
  * - External CDN stylesheets (with fallback error handling)
  * - Inline styles for extension UI
@@ -158,7 +164,6 @@ async function initVueApp() {
       settings: useSettingsStore(),
       darkMode: useDarkModeStore(),
       toolglows: useToolGlowsStore(),
-      ocr: useInstantOCRStore(),
       wordCounter: useWordCounterStore(),
       quickActions: useQuickActionsStore()
     }
@@ -199,9 +204,7 @@ async function initVueApp() {
         }
       }
     })
-
-    // Configuration des composants PrimeVue
-    setupPrimeVue(app)
+    app.use(ToastService)
 
     // Injection des styles locaux et dépendances packagées.
     injectStyles(scopeToolGlowsCss(primeVueThemeStyles), 'toolglows-primevue-theme')
@@ -229,6 +232,7 @@ async function initVueApp() {
 }
 
 function cleanup() {
+  stopCookieConsent()
   document.removeEventListener('click', handleCheckboxRowClick, true)
   removeDarkMode()
   if (app) {
@@ -304,12 +308,6 @@ if (document.readyState === "loading") {
   console.log('[CONTENT] 🎯 DOM already loaded, initializing now')
   init()
 }
-
-// Nettoyage lors du déchargement de la page
-window.addEventListener("unload", () => {
-  console.log('[CONTENT] 🧹 Page unloading, cleaning up')
-  cleanup()
-})
 
 console.log("[CONTENT] ✨ Content script loaded successfully")
 

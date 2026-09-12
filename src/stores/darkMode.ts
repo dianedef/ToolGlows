@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { watch, ref, computed } from 'vue'
 import { sendMessage } from 'webext-bridge/content-script'
-import { onMessage } from 'webext-bridge/background'
 import { applyDarkMode as applyDarkModeEngine, type DarkModeMessage } from '@/content-script/darkMode'
 import {
   resolveDarkModePalettePreferences,
@@ -9,6 +8,7 @@ import {
   type DarkModePaletteColors,
   type DarkModePalettePreset
 } from './darkModePalette'
+import { isSupportedPageUrl } from '@/utils/contentScriptStatus'
 import { toPlainStorageValue } from '@/utils/storageSerialization'
 import {
   normalizeSavedDarkThemes,
@@ -35,13 +35,6 @@ interface DarkModeOptions {
   excludedDomains: string[]
   transitionDuration: number
   syncWithSystem: boolean
-}
-
-// Messages pour la synchronisation
-interface SyncMessage {
-  [key: string]: boolean | DarkModeOptions
-  isActive: boolean
-  options: DarkModeOptions
 }
 
 const defaultOptions: DarkModeOptions = {
@@ -269,7 +262,7 @@ export const useDarkModeStore = defineStore('darkMode', () => {
     await saveOptions()
     // Do not rely solely on Vue's async watcher: removal from activeTools must
     // synchronously retire Dark Mode, the bootstrap canvas and DOM markers.
-    if (!value) applyDarkModeEngine({
+    if (!value && isSupportedPageUrl(window.location.href)) applyDarkModeEngine({
       isActive: false,
       options: {
         palettePreset: options.value.palettePreset,
@@ -279,7 +272,7 @@ export const useDarkModeStore = defineStore('darkMode', () => {
         contrastLevel: options.value.contrastLevel,
         transitionDuration: options.value.transitionDuration,
         excludedDomains: [...options.value.excludedDomains],
-        preserveExactColors: options.value.palettePreset !== 'graphite'
+        preserveExactColors: options.value.palettePreset === 'custom'
       }
     })
   }
@@ -385,7 +378,7 @@ export const useDarkModeStore = defineStore('darkMode', () => {
   }
 
   async function applyDarkMode() {
-    console.log('[DARK MODE STORE] 🎨 Applying dark mode with options:', options.value)
+    console.log('[DARK MODE STORE] Applying dark mode')
 
     const shouldApply = shouldActivateDarkMode.value && !isDomainExcluded.value
     const message: DarkModeMessage = {
@@ -398,10 +391,11 @@ export const useDarkModeStore = defineStore('darkMode', () => {
         contrastLevel: options.value.contrastLevel,
         transitionDuration: options.value.transitionDuration,
         excludedDomains: [...options.value.excludedDomains],
-        preserveExactColors: options.value.palettePreset !== 'graphite'
+        preserveExactColors: options.value.palettePreset === 'custom'
       }
     }
-    const applied = applyDarkModeEngine(message)
+    // Extension UI has its own theme and MV3 CSP; only host pages use DarkReader.
+    const applied = !isSupportedPageUrl(window.location.href) || applyDarkModeEngine(message)
 
     if (!applied) return
 
@@ -415,20 +409,6 @@ export const useDarkModeStore = defineStore('darkMode', () => {
       .then(() => console.log('[DARK MODE STORE] ✅ Dark mode update sent to background'))
       .catch(error => console.warn('[DARK MODE STORE] ⚠️ Background sync unavailable:', error))
   }
-
-  // Écouter les mises à jour depuis d'autres onglets
-  onMessage('DARK_MODE_SYNC', ({ data }) => {
-    console.log('[DEBUG] Received dark mode sync:', data)
-    if (typeof data === 'object' && data !== null) {
-      const message = data as SyncMessage
-      if (message.options) {
-        options.value = message.options
-      }
-      if (typeof message.isActive === 'boolean') {
-        isActive.value = message.isActive
-      }
-    }
-  })
 
   return {
     options,

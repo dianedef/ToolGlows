@@ -278,17 +278,20 @@ export function useDragOpen() {
 
   // Initialisation
   const init = () => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') endSelection()
+    }
+
     document.addEventListener('mousedown', startSelection)
     document.addEventListener('mousemove', updateSelection)
     document.addEventListener('mouseup', endSelection)
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') endSelection()
-    })
+    document.addEventListener('keydown', handleEscape)
 
     return () => {
       document.removeEventListener('mousedown', startSelection)
       document.removeEventListener('mousemove', updateSelection)
       document.removeEventListener('mouseup', endSelection)
+      document.removeEventListener('keydown', handleEscape)
       stopAutoScroll()
     }
   }

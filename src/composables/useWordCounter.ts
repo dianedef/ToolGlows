@@ -169,13 +169,16 @@ Statistiques du texte :
 
   // Initialisation
   const init = () => {
-    document.addEventListener('contextmenu', handleContextMenu)
-    document.addEventListener('click', () => {
+    const hidePopup = () => {
       isVisible.value = false
-    })
+    }
+
+    document.addEventListener('contextmenu', handleContextMenu)
+    document.addEventListener('click', hidePopup)
 
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu)
+      document.removeEventListener('click', hidePopup)
     }
   }
 

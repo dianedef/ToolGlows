@@ -9,6 +9,7 @@ import { enableDarkModeEngine } from './darkModeEngine'
 import { buildSiteDarkModeOverrides } from './darkModeSiteOverrides'
 import { startSofteningBrightSurfaces, stopSofteningBrightSurfaces } from './softenBrightSurfaces'
 import { startExactTextColors, stopExactTextColors } from './exactTextColors'
+import { startContrastRepair, stopContrastRepair } from './contrastRepair'
 
 export interface DarkModeThemeOptions {
   palettePreset?: 'graphite' | 'latte' | 'custom'
@@ -27,6 +28,7 @@ export interface DarkModeMessage {
 }
 
 let isDarkModeActive = false
+let appliedTheme: string | null = null
 const OVERRIDE_STYLE_ID = 'toolglows-dark-mode-overrides'
 
 function isHexColor(value: unknown): value is string {
@@ -61,6 +63,12 @@ export function applyDarkMode(message: DarkModeMessage): boolean {
     if (!message.isActive || isCurrentDomainExcluded(message.options.excludedDomains)) {
       return removeDarkMode()
     }
+    const theme = JSON.stringify(message.options)
+    // The local store applies first, then receives the background broadcast.
+    // Re-enabling an unchanged engine would repeat the expensive page transform.
+    if (isDarkModeActive && appliedTheme === theme && isEnabled() && document.getElementById(OVERRIDE_STYLE_ID)) {
+      return true
+    }
 
     // Keep a stable dark canvas underneath the dark-mode engine. Some sites replace their
     // body styles after hydration and would otherwise reintroduce a white page. Install it
@@ -68,10 +76,7 @@ export function applyDarkMode(message: DarkModeMessage): boolean {
     maintainDarkModeBackdrop(message.options)
     retireDarkModePrepaint()
     const { linkColor, transitionDuration } = enableDarkModeEngine(message.options)
-    const siteOverrides =
-      message.options.palettePreset === 'latte'
-        ? ''
-        : buildSiteDarkModeOverrides(window.location.hostname)
+    const siteOverrides = buildSiteDarkModeOverrides(window.location.hostname)
 
     let overrideStyle = document.getElementById(OVERRIDE_STYLE_ID) as HTMLStyleElement | null
     if (!overrideStyle) {
@@ -80,7 +85,7 @@ export function applyDarkMode(message: DarkModeMessage): boolean {
       document.head.appendChild(overrideStyle)
     }
     overrideStyle.textContent = `
-      body a { color: ${linkColor} !important; }
+      ${message.options.preserveExactColors ? `body a { color: ${linkColor} !important; }` : ''}
       html, body {
         transition: background-color ${transitionDuration}ms ease, color ${transitionDuration}ms ease;
       }
@@ -126,17 +131,16 @@ export function applyDarkMode(message: DarkModeMessage): boolean {
       }
       ${siteOverrides}
     `
-    if (message.options.palettePreset === 'latte') {
-      stopSofteningBrightSurfaces()
-    } else {
-      startSofteningBrightSurfaces()
-    }
+    startSofteningBrightSurfaces()
     if (message.options.preserveExactColors) {
+      stopContrastRepair()
       startExactTextColors(message.options.textColor, message.options.linkColor)
     } else {
       stopExactTextColors()
+      startContrastRepair(message.options.textColor, message.options.linkColor, message.options.backgroundColor)
     }
     isDarkModeActive = true
+    appliedTheme = theme
     return true
   } catch (error) {
     console.error('[DARK MODE] Failed to enable the dynamic theme:', error)
@@ -145,11 +149,13 @@ export function applyDarkMode(message: DarkModeMessage): boolean {
 }
 
 export function removeDarkMode(): boolean {
+  appliedTheme = null
   try {
     retireDarkModeBootstrap()
     if (isEnabled()) disable()
     document.getElementById(OVERRIDE_STYLE_ID)?.remove()
     stopExactTextColors()
+    stopContrastRepair()
     stopSofteningBrightSurfaces()
     isDarkModeActive = false
     return true

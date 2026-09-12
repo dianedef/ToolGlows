@@ -11,6 +11,8 @@ describe('settings control rhythm', () => {
     const sharedStyles = readFileSync('src/assets/main.css', 'utf8')
 
     expect(componentFiles).toHaveLength(19)
+    expect(componentFiles).toContain('CookieConsentControl.vue')
+    expect(componentFiles).not.toContain('InstantOCRControl.vue')
     expect(sharedStyles).toContain('.field-checkbox')
     expect(sharedStyles).toContain('.toolglows-reader-choice')
     expect(sharedStyles).toContain('.field-slider')

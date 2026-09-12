@@ -17,12 +17,22 @@ export const GRAPHITE_PALETTE: DarkModePaletteColors = {
   linkColor: '#7da9d1'
 }
 
-// Catppuccin Latte-inspired reading palette: light base, plum text and vivid blue links.
-export const LATTE_PALETTE: DarkModePaletteColors = {
-  backgroundColor: '#eff1f5',
-  textColor: '#4c4f69',
-  linkColor: '#1e66f5'
+// Aurora keeps the legacy `latte` preset id so existing selections migrate in place.
+export const AURORA_PALETTE: DarkModePaletteColors = {
+  backgroundColor: '#142a24',
+  textColor: '#f4fbf8',
+  linkColor: '#ff8bc2'
 }
+
+export const AURORA_TOOLBAR_SURFACES = {
+  light: '#dff7ec',
+  dark: '#203a33'
+} as const
+
+export const AURORA_TOOLBAR_FOREGROUNDS = {
+  light: '#243447',
+  dark: '#f4fbf8'
+} as const
 
 export const DEFAULT_CUSTOM_PALETTE: DarkModePaletteColors = {
   backgroundColor: '#1a1a1a',
@@ -53,7 +63,7 @@ export function resolveDarkModePalettePreferences(saved: Partial<DarkModePalette
   const activeColors = palettePreset === 'graphite'
     ? GRAPHITE_PALETTE
     : palettePreset === 'latte'
-      ? LATTE_PALETTE
+      ? AURORA_PALETTE
       : customColors
 
   return { palettePreset, customColors, ...activeColors }
@@ -69,7 +79,7 @@ export function switchDarkModePalette(
   const activeColors = nextPreset === 'graphite'
     ? GRAPHITE_PALETTE
     : nextPreset === 'latte'
-      ? LATTE_PALETTE
+      ? AURORA_PALETTE
       : customColors
   return { palettePreset: nextPreset, customColors, ...activeColors }
 }

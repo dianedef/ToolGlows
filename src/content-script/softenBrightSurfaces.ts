@@ -1,3 +1,5 @@
+import { createScheduledDomScan } from './scheduledDomScan'
+
 const SOFTENED_ATTRIBUTE = 'data-toolglows-soft-light'
 const TARGET_SELECTOR = [
   'button', '[role="button"]', 'input', 'select', 'textarea', 'span', 'fieldset', 'dialog',
@@ -57,8 +59,11 @@ function findCompactSuccessTarget(element: HTMLElement): HTMLElement {
   return target
 }
 
-function softenElement(element: Element): void {
+function planSoftening(element: Element): (() => void) | undefined {
   if (!(element instanceof HTMLElement) || isExcluded(element)) return
+  // A rescan sees our dark override, not the original bright surface. Keep the
+  // chosen role stable until stop removes it instead of toggling dark/white.
+  if (element.hasAttribute(SOFTENED_ATTRIBUTE)) return
   const ownText = Array.from(element.childNodes)
     .filter(node => node.nodeType === Node.TEXT_NODE)
     .map(node => node.textContent ?? '')
@@ -70,22 +75,24 @@ function softenElement(element: Element): void {
     element.matches('button, [role="button"], input, select, textarea')
   )
   if (!role) {
-    element.removeAttribute(SOFTENED_ATTRIBUTE)
-    return
+    return () => element.removeAttribute(SOFTENED_ATTRIBUTE)
   }
 
   const target = role === 'success' ? findCompactSuccessTarget(element) : element
-  if (target !== element) element.removeAttribute(SOFTENED_ATTRIBUTE)
-  target.setAttribute(SOFTENED_ATTRIBUTE, role)
+  return () => {
+    if (target !== element) element.removeAttribute(SOFTENED_ATTRIBUTE)
+    target.setAttribute(SOFTENED_ATTRIBUTE, role)
+  }
 }
 
+const surfaceScan = createScheduledDomScan(TARGET_SELECTOR, () => planSoftening)
+
 function scan(root: ParentNode = document): void {
-  if (root instanceof Element && root.matches(TARGET_SELECTOR)) softenElement(root)
-  root.querySelectorAll(TARGET_SELECTOR).forEach(softenElement)
+  surfaceScan.enqueue(root)
 }
 
 export function startSofteningBrightSurfaces(): void {
-  stopSofteningBrightSurfaces()
+  if (observer) return
   scan()
   observer = new MutationObserver(records => {
     records.forEach(record => record.addedNodes.forEach(node => {
@@ -97,6 +104,7 @@ export function startSofteningBrightSurfaces(): void {
 }
 
 export function stopSofteningBrightSurfaces(): void {
+  surfaceScan.cancel()
   observer?.disconnect()
   observer = null
   rescanTimers.forEach(timer => window.clearTimeout(timer))

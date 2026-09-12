@@ -26,7 +26,8 @@ describe('shared ToolGlows dialog system', () => {
     )
 
     expect(directPrimeVueConsumers).toEqual(['ToolGlowsDialog.vue'])
-    expect(sharedDialogUsages).toBe(28)
+    expect(sharedDialogUsages).toBe(30)
+    expect(componentFiles.map(({ file }) => file)).not.toContain('InstantOCRControl.vue')
   })
 
   it('keeps automatic modal stacking above the toolbar', () => {

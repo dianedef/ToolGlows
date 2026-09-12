@@ -8,14 +8,14 @@
     :dismissable-mask="true"
     @hide="closeDialog"
   >
-    <div class="copy-options">
+    <div class="copy-options rich-copy-options">
       <div class="field mb-3">
         <h4>Formats de copie</h4>
         <div class="formats-list">
           <div
             v-for="format in copyStore.options.formats"
             :key="format.id"
-            class="format-item"
+            class="format-item rich-copy-format-item"
           >
             <div class="format-info">
               <span class="format-icon">{{ format.icon }}</span>
@@ -29,26 +29,28 @@
                 </small>
               </div>
             </div>
-            <div class="format-actions">
+            <div class="format-actions rich-copy-format-actions">
               <Button
-                class="p-button-text p-button-rounded"
+                aria-label="Modifier le format"
+                class="p-button-text p-button-rounded rich-copy-icon-button"
                 @click="editFormat(format)"
               >
-                <i class="pi pi-pencil"></i>
+                <ToolGlowsIcon name="edit" />
               </Button>
               <Button
-                class="p-button-text p-button-rounded p-button-danger"
+                aria-label="Supprimer le format"
+                class="p-button-text p-button-rounded p-button-danger rich-copy-icon-button"
                 @click="copyStore.removeFormat(format.id)"
               >
-                <i class="pi pi-trash"></i>
+                <ToolGlowsIcon name="trash" />
               </Button>
             </div>
           </div>
           <Button
-            class="p-button-text p-button-rounded"
+            class="p-button-text p-button-rounded rich-copy-add-format"
             @click="showAddFormatDialog = true"
           >
-            <i class="pi pi-plus"></i>
+            <ToolGlowsIcon name="plus" />
             <span>Ajouter un format</span>
           </Button>
         </div>
@@ -61,6 +63,7 @@
           :options="copyStore.options.formats"
           option-label="name"
           option-value="id"
+          panel-class="toolglows-settings-select-panel"
           class="w-full"
           @change="copyStore.saveOptions()"
         />
@@ -139,14 +142,15 @@
           >
             <div class="replacement-pattern">
               <span class="search-text">{{ replacement.search }}</span>
-              <i class="pi pi-arrow-right"></i>
+              <ToolGlowsIcon name="arrowRight" />
               <span class="replace-text">{{ replacement.replace }}</span>
             </div>
             <Button
-              class="p-button-text p-button-rounded p-button-danger"
+              aria-label="Supprimer le remplacement"
+              class="p-button-text p-button-rounded p-button-danger rich-copy-icon-button"
               @click="copyStore.removeCustomReplacement(index)"
             >
-              <i class="pi pi-trash"></i>
+              <ToolGlowsIcon name="trash" />
             </Button>
           </div>
           <div class="add-replacement">
@@ -156,7 +160,7 @@
                 placeholder="Rechercher..."
                 class="w-full"
               />
-              <i class="pi pi-arrow-right"></i>
+              <ToolGlowsIcon name="arrowRight" />
               <InputText
                 v-model="newReplacement.replace"
                 placeholder="Remplacer par..."
@@ -164,11 +168,12 @@
               />
             </div>
             <Button
-              class="p-button-text p-button-rounded"
+              aria-label="Ajouter le remplacement"
+              class="p-button-text p-button-rounded rich-copy-icon-button"
               :disabled="!newReplacement.search || !newReplacement.replace"
               @click="addReplacement"
             >
-              <i class="pi pi-plus"></i>
+              <ToolGlowsIcon name="plus" />
             </Button>
           </div>
         </div>
@@ -215,13 +220,13 @@
           class="p-button-text"
           @click="showAddFormatDialog = false"
         >
-          <i class="pi pi-times"></i>
+            <ToolGlowsIcon name="close" />
           <span>Annuler</span>
         </Button>
         <Button
           @click="saveFormat"
         >
-          <i class="pi pi-check"></i>
+            <ToolGlowsIcon name="check" />
           <span>{{ editingFormat ? 'Modifier' : 'Ajouter' }}</span>
         </Button>
       </template>
@@ -239,6 +244,7 @@ import Checkbox from 'primevue/checkbox'
 import Slider from 'primevue/slider'
 import Dropdown from 'primevue/dropdown'
 import Textarea from 'primevue/textarea'
+import ToolGlowsIcon from './ToolGlowsIcon.vue'
 
 const copyStore = useRichCopyStore()
 const showAddFormatDialog = ref(false)

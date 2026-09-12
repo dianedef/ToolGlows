@@ -9,7 +9,6 @@ ToolGlows reste un produit autonome de l'écosystème Glows. Il complète Comman
 ### Lecture et contenu
 
 - compteur de mots, caractères, phrases et temps de lecture ;
-- OCR instantané avec options de langue et de copie ;
 - mode lecture personnalisable ;
 - copie enrichie et copie automatique de la sélection.
 
@@ -36,7 +35,19 @@ ToolGlows reste un produit autonome de l'écosystème Glows. Il complète Comman
 
 Ces modules dépendent des interfaces des plateformes tierces et doivent être considérés comme expérimentaux tant qu'ils ne disposent pas d'une preuve navigateur dédiée.
 
-### Personnalisation
+### Acceptation automatique des cookies (expérimental)
+
+Le clic gauche sur « Acceptation des cookies » active ou désactive les clics sur « Tout accepter », y compris les cookies publicitaires, pour les bannières reconnues (OneTrust, Cookiebot, Didomi, Quantcast). L’option est désactivée par défaut et conservée uniquement dans ce navigateur. Des exceptions par site sont disponibles. Le clic droit ouvre les paramètres et les exceptions ; l’icône indique l’activation réelle, même lorsque les paramètres sont fermés.
+
+Les bannières intégrées dans des cadres et les systèmes non reconnus restent manuels. Désactiver l’option ne retire pas les accords déjà donnés. Cette fonction ne bloque pas les traceurs et ne constitue pas une garantie de consentement juridiquement valide. Voir [fonctionnement et limites](shipglows_data/technical/cookie-consent-automation.md).
+
+### Première utilisation
+
+L’accueil facultatif après installation présente les commandes : clic gauche pour utiliser un outil, clic droit pour ses paramètres (Maj + F10 au clavier). La première utilisation de chaque outil affiche une courte explication avec une action explicite et « Plus tard ». Une fois confirmée, elle ne revient plus automatiquement.
+
+« Passer toutes les explications » mémorise ce choix sans activer aucun outil. Retrouvez les explications et leur préférence d’affichage dans Paramètres → Découvrir les outils. Fermer ou reporter une explication ne lance aucune action. Les choix restent dans ce navigateur.
+
+### Réglages de la barre
 
 - activation individuelle des outils ;
 - barre déplaçable, redimensionnable et épinglable ;

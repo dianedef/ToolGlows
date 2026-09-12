@@ -18,11 +18,17 @@ As a ToolGlows user, I can understand and control every configured tool from the
 
 | Class | Left click | State source | Tools |
 |---|---|---|---|
-| Toggle | Enable or disable the real page mode | Owning feature store/runtime | Dark Mode, Auto Copy, Hide Element |
+| Toggle | Enable or disable the real page mode | Owning feature store/runtime | Dark Mode, Auto Copy, Hide Element, Cookie Acceptance |
 | Command | Execute once; no `aria-pressed` | Command execution lifecycle | Links Explorer, Social Analysis, Reload All Tabs |
-| Panel | Open or close the tool's working surface | Panel visibility | Word Count, OCR, Speed Browsing, Infinite Scroll, Feed Eradicator, Reader Mode, Search Jumper, Drag Open, Instagram Saved, Rich Copy, Better Gmail, Quick Actions |
+| Panel | Open or close the tool's working surface | Panel visibility | Word Count, Speed Browsing, Infinite Scroll, Feed Eradicator, Reader Mode, Search Jumper, Drag Open, Instagram Saved, Rich Copy, Better Gmail, Quick Actions |
 
 `activeTools` controls whether a tool implementation is loaded in the page. It is not the canonical runtime state for toggles and is not presented as such by toolbar buttons.
+
+## First-use introduction
+
+A first left click may show the tool-specific introduction before running its action. Explicit continue acknowledges that tool and executes its primary action. Defer/Escape/outside dismissal does not execute or acknowledge it. Skip-all suppresses introductions across tools without executing the pending action. Introductions remain accessible from settings. Already enabled toggles can always be disabled directly. Cookie activation uses the persisted cookie preference, preserves host exclusions, and never derives its state from panel visibility. Right click and Shift+F10 open settings directly. Automated page clicks do not dismiss the toolbar.
+
+See [onboarding contract](tool-onboarding-and-cookie-toggle.md).
 
 ## Source of truth
 

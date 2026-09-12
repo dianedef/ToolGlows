@@ -53,3 +53,10 @@ describe('browser support floors', () => {
     expect(firefoxManifest.browser_specific_settings?.gecko?.strict_min_version).toBe('142.0')
   })
 })
+
+describe('dynamic tool assets', () => {
+  it('exposes built component styles to the host page', () => {
+    const resources = manifest.web_accessible_resources?.flatMap(entry => entry.resources ?? [])
+    expect(resources).toContain('assets/*.css')
+  })
+})

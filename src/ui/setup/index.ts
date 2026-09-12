@@ -5,6 +5,7 @@ import { appRouter } from "@/utils/router"
 import { createApp } from "vue"
 import App from "./app.vue"
 import "./index.scss"
+import "@/assets/main.css"
 
 appRouter.addRoute({
   path: "/",

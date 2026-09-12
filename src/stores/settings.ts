@@ -142,17 +142,11 @@ export const useSettingsStore = defineStore('settings', () => {
    * - Uses JSON comparison to avoid unnecessary updates
    */
   const applySettings = (newSettings: ToolGlowsSettings) => {
-    console.log('[INFO] Applying settings:', newSettings)
+    console.log('[INFO] Applying settings')
 
     // Legacy format handling: convert object to array
     if (!Array.isArray(newSettings.activeTools)) {
       newSettings.activeTools = Object.values(newSettings.activeTools || {})
-    }
-
-    // Direct style manipulation for instant feedback
-    const toolbar = document.querySelector('.toolglows-bar') as HTMLElement
-    if (toolbar) {
-      toolbar.style.backgroundColor = newSettings.toolbarColor || 'var(--tg-color-light-surface)'
     }
 
     // Update active tools if changed (avoid redundant updates)
@@ -160,7 +154,7 @@ export const useSettingsStore = defineStore('settings', () => {
     if (newSettings.activeTools &&
         JSON.stringify(toolglowsStore.activeTools) !== JSON.stringify(newSettings.activeTools)) {
       toolglowsStore.setActiveTools(newSettings.activeTools)
-      console.log('[INFO] Active tools updated:', newSettings.activeTools)
+      console.log('[INFO] Active tools updated')
     }
   }
 
@@ -172,7 +166,7 @@ export const useSettingsStore = defineStore('settings', () => {
       const result = await chrome.storage.sync.get('toolglowsSettings')
       if (result.toolglowsSettings) {
         settings.value = normalizeSettings(result.toolglowsSettings)
-        console.log('[SUCCESS] Settings loaded from storage:', settings.value)
+        console.log('[SUCCESS] Settings loaded from storage')
         applySettings(settings.value)
       } else {
         console.log('[INFO] No settings found in storage, using defaults')
@@ -193,7 +187,7 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   const updateSettings = async (newSettings: Partial<ToolGlowsSettings>) => {
-    console.log('[INFO] Updating settings:', newSettings)
+    console.log('[INFO] Updating settings')
     // Met à jour localement en préservant les valeurs existantes
     settings.value = normalizeSettings({
       ...settings.value,
@@ -273,7 +267,7 @@ export const useSettingsStore = defineStore('settings', () => {
   initBridgeListeners({
     onSettingsUpdate: (newSettings) => {
       if (newSettings) {
-        console.log('[INFO] Received settings update from another instance:', newSettings)
+        console.log('[INFO] Received settings update from another instance')
         const normalizedSettings = normalizeSettings(newSettings)
         settings.value = normalizedSettings
         applySettings(normalizedSettings)

@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
 project: "toolglows"
 created: "2026-08-29"
-updated: "2026-09-01"
+updated: "2026-09-03"
 status: active
 source_skill: sg-design
 source_model: "Codex"
@@ -47,7 +47,9 @@ As a ToolGlows user, I want adapted web pages to remain harmonious and structura
 - Custom text and link colors are never silently replaced. A low-contrast choice displays its measured ratio, offers a nearby readable suggestion, and requires an explicit “keep my color” action before the new value is persisted.
 - While that confirmation is pending, the warning says the color is not yet applied and the “Appliquer ma couleur” action receives one short attention pulse; reduced-motion preferences disable the animation.
 - People can save up to 20 uniquely named custom color triplets, apply them immediately, rename them and delete them after an explicit confirmation. Saved themes use the existing synchronized preference storage and Graphite remains immutable.
-- The palette gallery presents immutable Graphite and light Latte presets beside saved personal themes; selecting Latte applies and persists its cream, plum and blue palette without dark-only surface or site overrides.
+- The palette gallery presents immutable Graphite and Aurora presets beside saved personal themes; Aurora applies and persists its deep-evergreen, near-white and raspberry dark palette.
+- Graphite and Aurora preserve host text colors that remain at or above 4.5:1 against their effective composited background and selectively repair only failing HTML/CSS text owners; this rule is domain-independent.
+- Selecting Aurora also applies its semantic surface, text, border and action roles to the ToolGlows toolbar and dialogs while keeping those tokens isolated from the host page.
 - Dark-mode startup uses a persistent packaged root prepaint before host DOM display, then starts the actual engine from cached state at `document_start`; it never adds an opaque interstitial or waits for page-load heuristics. It remains generic across sites and preserves exclusions, schedules and system-preference behavior.
 - Disabling or removing Dark Mode from the loaded-tool list persists `darkModeActive=false`, retires the bootstrap canvas and removes all page markers.
 - PrimeVue CSS is scoped to ToolGlows-owned containers, so host fields with classes such as `.p-inputtext` or `.p-dropdown` remain untouched while page dark mode is off.
@@ -55,7 +57,8 @@ As a ToolGlows user, I want adapted web pages to remain harmonious and structura
 ## Scope In
 
 - Canonical semantic tokens for third-party dark-page adaptation.
-- Graphite/Custom preset selection and non-destructive legacy preference migration.
+- Graphite/Aurora/Custom preset selection and non-destructive legacy preference migration.
+- Domain-independent contrast repair for accessible HTML/CSS text, links and controls, including dynamically inserted content.
 - Role-based RGB range mapping for neutral, cool, warm and success surfaces.
 - Button and control borders, elevation, hover and focus states.
 - One global glare-reduction treatment for host-page images, plus Oscaro deterministic selectors for filters, conditions and compatibility.
@@ -67,6 +70,7 @@ As a ToolGlows user, I want adapted web pages to remain harmonious and structura
 - Modifying third-party page content, layout, navigation or business semantics.
 - Editing vendor PrimeVue or generated distribution sources by hand.
 - Claiming universal compatibility across all websites.
+- Recoloring text drawn inside images, videos, canvas or inaccessible closed shadow roots.
 
 ## Design Authority And Tokens
 
@@ -85,7 +89,9 @@ As a ToolGlows user, I want adapted web pages to remain harmonious and structura
 - [x] Switching Graphite → Custom restores the saved custom triplet.
 - [x] Low-contrast custom text and link colors expose a warning and accessible suggestion while preserving the exact chosen color after explicit confirmation.
 - [x] Named custom themes survive reload and support create, apply, rename and confirmed deletion.
-- [x] Graphite, Latte and saved personal themes share one palette gallery, and Latte survives reload as a light nuanced page palette.
+- [x] Graphite, Aurora and saved personal themes share one palette gallery, and legacy Latte selections migrate in place to Aurora.
+- [x] Graphite and Aurora repair sub-4.5:1 HTML/CSS text contrast without flattening already-readable host colors.
+- [x] Aurora visibly themes ToolGlows itself, including the toolbar, dialogs, fields and selected actions.
 - [x] Tests, typecheck, Chrome/Firefox builds, manifest lint and token drift checks pass or have explained warnings.
 - [x] ToolGlows interface dark theme cannot recolor host-page PrimeVue fields.
 - [x] Removing Dark Mode from loaded tools disables persisted and current page state.
@@ -131,8 +137,18 @@ Update the design-system authority and dark-mode architecture. No public claims 
 | 2026-09-02 | sg-development | Codex | Completed the named custom-theme library and exercised create, apply, reload persistence, rename and confirmed deletion in an isolated Edge profile. | automated and rendered interaction proof passed | Ask the operator to assess the compact theme-management layout after reloading the unpacked extension. |
 | 2026-09-02 | sg-bug | Codex | Reworked the broken 350 px theme manager into stacked cards with text actions and added a reliable ToolGlows UI boundary to prevent page-color contamination. | isolated Edge layout proof passed — operator acceptance pending | Reload the extension and confirm the repaired light and dark rendering. |
 | 2026-09-02 | sg-design | Codex | Unified built-in and saved themes in one responsive gallery and added the light, colorful Latte preset with dedicated runtime behavior. | automated and isolated MV3 load proof passed — operator visual acceptance pending | Reload the unpacked extension and inspect Graphite, Latte and a saved theme in the gallery. |
+| 2026-09-02 | sg-design | Codex | Replaced the visually neutral Latte presentation with the approved Aurora identity while retaining its stored identifier for seamless migration. | automated and isolated MV3 load proof passed — operator visual acceptance pending | Reload the rebuilt extension and assess Aurora on a representative page. |
+| 2026-09-02 | sg-design | Codex | Extended Aurora through the centralized ToolGlows interface-token boundary for the toolbar, dialogs and masks. | automated and isolated MV3 load proof passed — operator visual acceptance pending | Reload ToolGlows and confirm Aurora now colors both the toolbar and its dialogs. |
 
 ## Current Chantier Flow
+
+2026-09-03 universal contrast repair: `spoken.systems` exposed a generic failure in the built-in presets rather than a site-specific exception. Graphite and Aurora now remove unconditional link recoloring and use a reversible computed-contrast repair for text owners below 4.5:1 against composited ancestor backgrounds, including dynamically inserted content and late CSSOM updates. Aurora becomes a true dark palette with deep evergreen `#142a24`, near-white `#f4fbf8` and raspberry `#ff8bc2`; Custom retains its exact accepted-color path. All 185 tests, typecheck, Chrome/Firefox builds and manifest lint pass; isolated Edge confirms the three transparent gradient-text failures are replaced by stable readable foregrounds after a live Graphite-to-Aurora switch. Operator-profile acceptance remains pending.
+
+2026-09-02 Aurora toolbar tint: the Aurora toolbar now overrides the persisted generic toolbar color with the dedicated semantic mint surface `#dff7ec`, while Graphite continues to honor the user's toolbar color. The settings watcher respects the same rule, preventing later preference hydration from restoring white. Focused component tests, typecheck, design drift and Chrome/Firefox builds pass; operator rendered acceptance remains pending.
+
+2026-09-02 Aurora interface inheritance: the selected Aurora preset now adds one semantic theme variant to the ToolGlows toolbar, every maintained dialog wrapper and its teleported mask. Central design tokens map mint surfaces, midnight text, mint borders and raspberry actions into both ToolGlows-native and PrimeVue roles; page CSS remains outside those bounded selectors. All 159 tests, typecheck, Chrome/Firefox builds, manifest lint and the changed-file design drift scan pass; isolated MV3 loading observes the service worker, while operator rendered acceptance remains pending.
+
+2026-09-02 Aurora identity: the approved direction replaces Latte's neutral cream/plum/blue presentation with frosted mint `#eefcf6`, midnight ink `#243447` and electric raspberry `#c0267e`. The stored `latte` identifier remains intentionally stable, so existing selections migrate to Aurora without preference loss or a one-off storage rewrite. Text reaches 12.00:1 contrast and links 5.21:1; 158 tests, typecheck, targeted lint, Chrome/Firefox builds, manifest lint and isolated MV3 loading pass. Operator visual acceptance remains pending.
 
 2026-09-02 unified palette gallery: Graphite, the new light Latte preset and saved personal themes now share the same responsive card gallery. Selecting a saved card restores its exact triplet; selecting Latte persists a cream `#eff1f5` canvas, plum `#4c4f69` text and blue `#1e66f5` links, skips dark surface softening and site-specific dark overrides, and suppresses graphite prepaint on reload. Automated proof passes with 157 tests, typecheck, Chrome/Firefox builds and isolated MV3 loading; operator-profile visual acceptance remains pending.
 
