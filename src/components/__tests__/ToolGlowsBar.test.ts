@@ -310,7 +310,6 @@ describe('ToolGlowsBar interaction invariants', () => {
       'searchJumper',
       'dragOpen',
       'instagramSaved',
-      'richCopy',
       'betterGmail',
       'quickActions'
     ]
@@ -323,6 +322,7 @@ describe('ToolGlowsBar interaction invariants', () => {
 
     await wrapper.get('[data-tool-id="darkMode"] svg').trigger('click')
     await wrapper.get('[data-tool-id="autoCopy"] svg').trigger('click')
+    await wrapper.get('[data-tool-id="richCopy"] svg').trigger('click')
     await wrapper.get('[data-tool-id="hideElement"] svg').trigger('click')
     await wrapper.get('[data-tool-id="linksExplorer"] svg').trigger('click')
     await wrapper.get('[data-tool-id="socialAnalysis"] svg').trigger('click')
@@ -331,6 +331,7 @@ describe('ToolGlowsBar interaction invariants', () => {
 
     expect(darkModeState.setActive).toHaveBeenCalledWith(false)
     expect(toolglowsStore.toggleTool).toHaveBeenCalledWith('autoCopy')
+    expect(toolglowsStore.toggleTool).toHaveBeenCalledWith('richCopy')
     expect(actionStores.hideElement.settings.isSelectingElement).toBe(true)
     expect(actionStores.linksExplorer.exploreLinks).toHaveBeenCalledOnce()
     expect(actionStores.socialAnalysis.analyzeComments).toHaveBeenCalledOnce()
@@ -549,7 +550,7 @@ describe('ToolGlowsBar interaction invariants', () => {
   it('keeps inactive tools visible and toggles activation on left click', async () => {
     const { toolglowsStore, wrapper } = await mountToolbar(true)
     const activeButton = wrapper.get('[data-tool-id="darkMode"]')
-    const inactiveButton = wrapper.get('[data-tool-id="wordCount"]')
+    const inactiveButton = wrapper.get('[data-tool-id="richCopy"]')
 
     expect(activeButton.attributes('aria-pressed')).toBe('true')
     expect(activeButton.classes()).toContain('toolglows-tool-button-active')
@@ -559,14 +560,14 @@ describe('ToolGlowsBar interaction invariants', () => {
     await inactiveButton.trigger('click')
     await nextTick()
 
-    expect(toolglowsStore.toggleTool).not.toHaveBeenCalled()
+    expect(toolglowsStore.toggleTool).toHaveBeenCalledWith('richCopy')
     expect(inactiveButton.attributes('aria-pressed')).toBe('true')
     expect(inactiveButton.classes()).toContain('toolglows-tool-button-active')
   })
 
   it('opens tool settings on right click without changing activation', async () => {
     const { toolglowsStore, wrapper } = await mountToolbar(true)
-    const inactiveButton = wrapper.get('[data-tool-id="wordCount"]')
+    const inactiveButton = wrapper.get('[data-tool-id="richCopy"]')
 
     await inactiveButton.trigger('contextmenu')
     await flushPromises()

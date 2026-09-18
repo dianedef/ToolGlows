@@ -494,7 +494,7 @@ const initialTools: Tool[] = [
     component: markRaw(RichCopyControl),
     icon: 'pi pi-copy',
     emoji: '📋',
-    category: 'reading', interaction: 'panel'
+    category: 'reading', interaction: 'toggle'
   },
   {
     id: 'betterGmail',
