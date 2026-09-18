@@ -37,6 +37,7 @@ next_step: "Update when a source root, context or validation responsibility move
 | Shared manifest | `manifest.config.ts` | MV3 common entrypoints, content-script matching, permissions, icons and web-accessible resources | Architecture and claim register | Both builds; Firefox manifest lint when relevant |
 | Chrome and Firefox variants | `manifest.chrome.config.ts`, `manifest.firefox.config.ts` | Browser-specific manifest deltas | Architecture | Targeted browser build; Firefox lint for Firefox |
 | Build system | `vite*.config.ts`, `define.config.mjs`, `package.json` | Vite/CRXJS configuration and scripts | Developer guide and README | Typecheck, tests and both builds |
+| Dependency patches | `patches/`, `pnpm-workspace.yaml`, `pnpm-lock.yaml` | Reproducible upstream fixes and removal criteria | Developer guide and patches/README.md | Focused dependency tests, both builds, browser proof for runtime changes |
 | Background worker | `src/background/` | Lifecycle, privileged browser APIs and synchronization | Architecture | Focused tests where possible; manual browser proof of privileged effects |
 | Bridge | `src/bridge/` | Serializable cross-context messages and payload validation | Architecture | Sender/receiver boundary review plus focused proof |
 | Injected toolbar | `src/content-script/`, `src/components/ToolGlowsBar.vue` | Page injection, toolbar mount, registered tools and host-page coexistence | Architecture and product context | Manual page proof and relevant automated test |

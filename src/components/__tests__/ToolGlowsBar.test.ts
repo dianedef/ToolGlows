@@ -117,6 +117,7 @@ function createSettings(pinned = false) {
       position: { x: 200, y: 20 },
       activeTools: [],
       isPinned: pinned,
+      toolbarVisible: true,
       interfaceTheme: 'light' as 'light' | 'dark',
       toolbarColor: 'var(--tg-toolbar-color-default)',
       toolbarSize: 'md' as ToolbarSize,
@@ -525,6 +526,19 @@ describe('ToolGlowsBar interaction invariants', () => {
     await dispatchPointer(button.element, 'pointerdown', { pointerId: 7, clientX: 100, clientY: 100 })
 
     expect(capturePointer).toHaveBeenCalledWith(7)
+  })
+
+  it('hides the toolbar overlay without unmounting when the popup setting is off', async () => {
+    const { settingsStore, wrapper } = await mountToolbar()
+    expect(wrapper.find('.toolglows-bar').isVisible()).toBe(true)
+
+    settingsStore.settings.toolbarVisible = false
+    await nextTick()
+
+    const overlay = wrapper.find('.toolglows-bar')
+    expect(overlay.exists()).toBe(true)
+    expect(overlay.classes()).toContain('toolglows-overlay-hidden')
+    expect(overlay.attributes('aria-hidden')).toBe('true')
   })
 
   it('excludes dialog overlays from outside-click dismissal', async () => {

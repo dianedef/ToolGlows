@@ -83,12 +83,12 @@ export const useToolGlowsStore = defineStore('toolglows', () => {
     console.log('[INFO] Initializing tools:', initialTools)
     tools.value = initialTools
 
-    // First-time setup: enable all tools for discoverability
+    // First-time setup: enable all tools for discoverability except autoCopy (which interferes with normal text selection)
     if (settingsStore.settings.activeTools.length === 0) {
       await settingsStore.updateSettings({
-        activeTools: tools.value.map(t => t.id)
+        activeTools: tools.value.map(t => t.id).filter(id => id !== 'autoCopy')
       })
-      console.log('[INFO] No active tools found, activating all by default')
+      console.log('[INFO] No active tools found, activating defaults (autoCopy excluded)')
     }
 
     isInitialized.value = true

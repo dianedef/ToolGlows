@@ -1,3 +1,4 @@
+import { getRichCopyTabs, getRichCopyTabGroups } from './richCopyTabs'
 /**
  * Background Script - Extension Service Worker
  *
@@ -403,27 +404,13 @@ onMessage('DRAG_OPEN_ACTION', async ({ data, sender }) => {
 
 onMessage('GET_TABS', async ({ data, sender }) => {
   assertInternalBridgeSender(sender)
-  const scope =
-    typeof data === 'object' && data !== null && 'scope' in data
-      ? String(data.scope)
-      : ''
-
-  type TabQueryInfo = Parameters<typeof chrome.tabs.query>[0]
-  const queryByScope: Record<string, TabQueryInfo> = {
-    current: { active: true, currentWindow: true },
-    window: { currentWindow: true },
-    all: {},
-    selected: { highlighted: true, currentWindow: true }
-  }
-  const query = queryByScope[scope]
-  if (!query) throw new Error('Invalid tab query scope')
-
-  const tabs = await chrome.tabs.query(query)
-  return tabs.flatMap(tab =>
-    tab.url && tab.title ? [{ title: tab.title, url: tab.url }] : []
-  )
+  return getRichCopyTabs(chrome, data, sender)
 })
 
+onMessage('GET_TAB_GROUPS', async ({ sender }) => {
+  assertInternalBridgeSender(sender)
+  return getRichCopyTabGroups(chrome, sender)
+})
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type !== 'TOOLGLOWS_RELOAD_ALL_TABS') return false
 

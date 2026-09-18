@@ -30,23 +30,30 @@ export const useRichCopyStore = defineStore('richCopy', {
         {
           id: 'markdown',
           name: 'Markdown',
-          template: '# {title}\n\n{content}\n\n> Source: {url}',
+          template: '[{title}]({url})',
           shortcut: 'Alt+M',
           icon: '📝'
         },
         {
           id: 'html',
-          name: 'HTML',
-          template: '<h1>{title}</h1>\n<div>{content}</div>\n<p>Source: <a href="{url}">{url}</a></p>',
+          name: 'HTML Link',
+          template: '<a href="{url}">{title}</a>',
           shortcut: 'Alt+H',
           icon: '🌐'
         },
         {
           id: 'plain',
-          name: 'Texte brut',
-          template: '{title}\n\n{content}\n\nSource: {url}',
+          name: 'Titre - URL',
+          template: '{title} - {url}',
           shortcut: 'Alt+T',
           icon: '📄'
+        },
+        {
+          id: 'url',
+          name: 'URL uniquement',
+          template: '{url}',
+          shortcut: 'Alt+U',
+          icon: '🔗'
         }
       ],
       defaultFormat: 'markdown',

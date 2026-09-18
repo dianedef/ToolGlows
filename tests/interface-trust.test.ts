@@ -9,6 +9,8 @@ describe('interface trust contract', () => {
 
     expect(popup).toContain('to="/common/features"')
     expect(popup).toContain('to="/action-popup/playground"')
+    expect(popup).toContain('role="switch"')
+    expect(popup).toContain('toolbarVisible')
     expect(popup).not.toContain('/common/pricing')
     expect(popup).not.toContain('/common/account/login')
   })

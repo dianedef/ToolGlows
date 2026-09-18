@@ -236,6 +236,10 @@ export function useAutoCopy() {
 
   const updateAltHighlight = (event: PointerEvent) => {
     if (!isAltMode.value) return
+    if (!event.altKey) {
+      disableAltMode()
+      return
+    }
     const highlight = document.getElementById(altHighlightId)
     const target = findSelectableTarget(event)
     if (!highlight || !target) {
@@ -385,6 +389,10 @@ export function useAutoCopy() {
 
     // Définir un nouveau timer
     altKeyTimer.value = window.setTimeout(() => {
+      if (document.hidden) {
+        disableAltMode()
+        return
+      }
       isAltMode.value = true
       const style = document.createElement('style')
       const highlight = document.createElement('div')
@@ -428,9 +436,16 @@ export function useAutoCopy() {
     document.getElementById(altHighlightId)?.remove()
   }
 
-  // ALT mode click handler
+  const handleFocusLoss = () => {
+    disableAltMode()
+  }
+
   const handleAltClick = (event: MouseEvent) => {
     if (!isEnabled() || !isAltMode.value || !store.settings.enableAltSelection) return
+    if (!event.altKey) {
+      disableAltMode()
+      return
+    }
 
     const target = findSelectableTarget(event)
     if (!target) return
@@ -505,6 +520,8 @@ export function useAutoCopy() {
     document.addEventListener('keydown', handleKeyDown)
     document.addEventListener('keydown', handleEscapeKey)
     document.addEventListener('click', handleAltClick, true)
+    window.addEventListener('blur', handleFocusLoss)
+    document.addEventListener('visibilitychange', handleFocusLoss)
   })
 
   onUnmounted(() => {
@@ -522,8 +539,13 @@ export function useAutoCopy() {
     document.removeEventListener('keydown', handleKeyDown)
     document.removeEventListener('keydown', handleEscapeKey)
     document.removeEventListener('click', handleAltClick, true)
-    // Ensure styles are cleaned up
+    window.removeEventListener('blur', handleFocusLoss)
+    document.removeEventListener('visibilitychange', handleFocusLoss)
     disableAltMode()
+  })
+
+  watch(() => store.settings.enableAltSelection, enabled => {
+    if (!enabled) disableAltMode()
   })
 
   watch(() => toolglowsStore.activeTools.includes('autoCopy'), enabled => {

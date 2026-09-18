@@ -19,8 +19,10 @@
       'toolglows-expanded': isExpanded || settingsStore.settings.isPinned,
       'toolglows-dragging': isDragging,
       'toolglows-toolbar-wheel-mode': isToolbarResizeMode,
-      'toolglows-palette-aurora': darkModeStore.options?.palettePreset === 'latte'
+      'toolglows-palette-aurora': darkModeStore.options?.palettePreset === 'latte',
+      'toolglows-overlay-hidden': settingsStore.settings.toolbarVisible === false
     }"
+    :aria-hidden="settingsStore.settings.toolbarVisible === false"
     @pointerdown.capture="startToolbarPointer"
     @pointermove.capture="moveToolbarPointer"
     @pointerup.capture="finishToolbarPointer"
@@ -1163,6 +1165,10 @@ onBeforeUnmount(() => {
   &.toolglows-toolbar-wheel-mode {
     outline: var(--tg-element-outline-width) solid var(--tg-action);
     outline-offset: calc(-1 * var(--tg-space-1));
+  }
+
+  &.toolglows-overlay-hidden {
+    display: none !important;
   }
 
   :deep(.p-button) {

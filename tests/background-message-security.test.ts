@@ -27,6 +27,7 @@ describe('background message security boundary', () => {
         position: { x: 10, y: 20 },
         activeTools: ['readerMode', 'readerMode'],
         isPinned: false,
+        toolbarVisible: false,
         interfaceTheme: 'dark',
         toolbarColor: '#ff69b4',
         toolbarSize: 'md',
@@ -37,10 +38,24 @@ describe('background message security boundary', () => {
       position: { x: 10, y: 20 },
       activeTools: ['readerMode'],
       isPinned: false,
+      toolbarVisible: false,
       interfaceTheme: 'dark',
       toolbarColor: '#ff69b4',
       toolbarSize: 'md',
     })
+  })
+
+  it('defaults a missing toolbar overlay flag to visible', () => {
+    expect(
+      normalizeSettingsPayload({
+        expanded: true,
+        position: { x: 10, y: 20 },
+        activeTools: [],
+        isPinned: false,
+        interfaceTheme: 'dark',
+        toolbarSize: 'md',
+      }),
+    ).toEqual(expect.objectContaining({ toolbarVisible: true }))
   })
 
   it('rejects oversized and malformed settings', () => {

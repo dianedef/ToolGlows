@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useSettingsStore } from '@/stores/settings'
 import {
   CONTENT_SCRIPT_STATUS_MESSAGE,
   extensionDetailsUrl,
@@ -7,7 +8,15 @@ import {
   type ContentScriptStatus,
 } from '@/utils/contentScriptStatus'
 
+const settingsStore = useSettingsStore()
 const contentStatus = ref<ContentScriptStatus>('checking')
+const toolbarOverlayVisible = computed(() => settingsStore.settings.toolbarVisible !== false)
+
+async function toggleToolbarOverlay(event: Event) {
+  const input = event.target
+  if (!(input instanceof HTMLInputElement)) return
+  await settingsStore.updateSettings({ toolbarVisible: input.checked })
+}
 
 async function checkContentScript() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
@@ -45,6 +54,21 @@ onMounted(checkContentScript)
           <h1>ToolGlows</h1>
           <p>
             Vos outils essentiels, directement dans chaque page web.
+          </p>
+
+          <label class="toolbar-overlay-toggle">
+            <span>Barre d’outils</span>
+            <input
+              type="checkbox"
+              role="switch"
+              :checked="toolbarOverlayVisible"
+              :aria-checked="toolbarOverlayVisible"
+              aria-label="Afficher la barre d’outils sur les pages"
+              @change="toggleToolbarOverlay"
+            >
+          </label>
+          <p class="toolbar-overlay-hint">
+            Masquez l’overlay si elle gêne la page. Les outils déjà actifs restent en place.
           </p>
 
           <section
@@ -107,6 +131,33 @@ onMounted(checkContentScript)
 }
 .popup-panel h1 { margin: 0 0 var(--tg-space-2); }
 .popup-panel > p { margin: 0 0 var(--tg-space-5-half); color: var(--tg-text-secondary); }
+.toolbar-overlay-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tg-space-3);
+  margin: 0 0 var(--tg-space-2);
+  padding: var(--tg-space-3) var(--tg-space-4);
+  border: 1px solid var(--tg-border-default);
+  border-radius: var(--tg-radius-section);
+  background: var(--tg-surface-muted);
+  cursor: pointer;
+  text-align: left;
+  font-weight: 600;
+}
+.toolbar-overlay-toggle input {
+  appearance: auto;
+  width: var(--tg-size-checkbox);
+  height: var(--tg-size-checkbox);
+  margin: 0;
+  accent-color: var(--tg-action);
+}
+.toolbar-overlay-hint {
+  margin: 0 0 var(--tg-space-5-half);
+  color: var(--tg-text-secondary);
+  font-size: var(--tg-text-sm);
+  text-align: left;
+}
 .site-access-alert,
 .site-access-note {
   margin: 0 0 var(--tg-space-4);

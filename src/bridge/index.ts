@@ -30,6 +30,7 @@ export interface Settings {
   position: { x: number; y: number }
   activeTools: string[]
   isPinned: boolean
+  toolbarVisible: boolean
   interfaceTheme: 'light' | 'dark'
   toolbarColor?: string
   toolbarSize: ToolbarSize
@@ -76,11 +77,20 @@ export interface DragOpenLink {
 }
 
 export type DragOpenAction = 'tabs' | 'window' | 'bookmark'
-export type TabQueryScope = 'current' | 'window' | 'all' | 'selected'
+
+export type TabQueryScope = 'current' | 'window' | 'all' | 'selected' | 'group'
 
 export interface TabSummary {
   title: string
   url: string
+}
+
+export interface TabGroupSummary {
+  id: number
+  title: string
+  color: string
+  collapsed: boolean
+  tabCount: number
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -102,6 +112,7 @@ function isSettings(value: unknown): value is Settings {
     Array.isArray(value.activeTools) &&
     value.activeTools.every(toolId => typeof toolId === 'string') &&
     typeof value.isPinned === 'boolean' &&
+    (value.toolbarVisible === undefined || typeof value.toolbarVisible === 'boolean') &&
     (value.interfaceTheme === 'light' || value.interfaceTheme === 'dark') &&
     (value.toolbarColor === undefined || typeof value.toolbarColor === 'string') &&
     (value.toolbarSize === undefined || isToolbarSize(value.toolbarSize))
@@ -135,6 +146,7 @@ export const bridgeApi = {
       },
       activeTools: [...settings.activeTools],
       isPinned: settings.isPinned,
+      toolbarVisible: settings.toolbarVisible !== false,
       toolbarSize: settings.toolbarSize
     }
 
@@ -178,6 +190,7 @@ export const bridgeApi = {
             },
             activeTools: settings.activeTools,
             isPinned: settings.isPinned,
+            toolbarVisible: settings.toolbarVisible !== false,
             interfaceTheme: settings.interfaceTheme,
             toolbarColor: settings.toolbarColor,
             toolbarSize: settings.toolbarSize || 'md',
@@ -205,13 +218,29 @@ export const bridgeApi = {
       'background'
     )
   },
-  getTabs: async (scope: TabQueryScope): Promise<TabSummary[]> => {
-    const response = await sendMessage('GET_TABS', { scope }, 'background')
+  getTabs: async (scope: TabQueryScope, groupId?: number): Promise<TabSummary[]> => {
+    const response = await sendMessage('GET_TABS', { scope, ...(groupId === undefined ? {} : { groupId }) }, 'background')
     if (!Array.isArray(response)) throw new Error('Invalid tabs response')
 
     return response.flatMap(tab =>
       isRecord(tab) && typeof tab.title === 'string' && typeof tab.url === 'string'
         ? [{ title: tab.title, url: tab.url }]
+        : []
+    )
+  },
+  getTabGroups: async (): Promise<TabGroupSummary[]> => {
+    const response = await sendMessage('GET_TAB_GROUPS', {}, 'background')
+    if (!Array.isArray(response)) return []
+
+    return response.flatMap(group =>
+      isRecord(group) && typeof group.id === 'number' && typeof group.title === 'string'
+        ? [{
+            id: group.id,
+            title: group.title,
+            color: typeof group.color === 'string' ? group.color : 'grey',
+            collapsed: Boolean(group.collapsed),
+            tabCount: typeof group.tabCount === 'number' ? group.tabCount : 0
+          }]
         : []
     )
   },

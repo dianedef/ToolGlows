@@ -1,0 +1,125 @@
+diff --git a/dist/background.cjs b/dist/background.cjs
+index ae719b622029351777d87a1b0c7d9b8be6f8abac..84303d7f5e12ffe80aef84f31a1a91bebc9bd4ce 100644
+--- a/dist/background.cjs
++++ b/dist/background.cjs
+@@ -506,6 +506,10 @@ import_webextension_polyfill.default.runtime.onConnect.addListener((incomingPort
+     });
+   });
+   incomingPort.onDisconnect.addListener(() => {
++    // Chrome exposes this error only during onDisconnect; consume expected BFCache closure.
++    const disconnectError = import_webextension_polyfill.default.runtime.lastError;
++    if (disconnectError && disconnectError.message !== "The page keeping the extension port is moved into back/forward cache, so the message channel is closed.")
++      console.warn("[webext-bridge] Port disconnected:", disconnectError.message);
+     var _a2, _b;
+     if (((_a2 = connMap.get(connArgs.endpointName)) == null ? void 0 : _a2.fingerprint) === connArgs.fingerprint)
+       connMap.delete(connArgs.endpointName);
+diff --git a/dist/background.js b/dist/background.js
+index f77e83421223fb5c2f5d43b56d5c1bd8f632d441..4c93e301b8ed87ce4bd5d3633054ffea5637fcd5 100644
+--- a/dist/background.js
++++ b/dist/background.js
+@@ -180,6 +180,10 @@ browser.runtime.onConnect.addListener((incomingPort) => {
+     });
+   });
+   incomingPort.onDisconnect.addListener(() => {
++    // Chrome exposes this error only during onDisconnect; consume expected BFCache closure.
++    const disconnectError = browser.runtime.lastError;
++    if (disconnectError && disconnectError.message !== "The page keeping the extension port is moved into back/forward cache, so the message channel is closed.")
++      console.warn("[webext-bridge] Port disconnected:", disconnectError.message);
+     var _a2, _b;
+     if (((_a2 = connMap.get(connArgs.endpointName)) == null ? void 0 : _a2.fingerprint) === connArgs.fingerprint)
+       connMap.delete(connArgs.endpointName);
+diff --git a/dist/chunk-E2HJRHOS.js b/dist/chunk-E2HJRHOS.js
+index 64e4fcda25d0664c036ec2176403f231d5047ff7..98b9f65a7861a34beb5914bc4f9e149485ccfd73 100644
+--- a/dist/chunk-E2HJRHOS.js
++++ b/dist/chunk-E2HJRHOS.js
+@@ -63,7 +63,13 @@ var createPersistentPort = (name = "") => {
+       })
+     });
+     port.onMessage.addListener(handleMessage);
+-    port.onDisconnect.addListener(connect);
++    port.onDisconnect.addListener(() => {
++      // Chrome exposes this error only during onDisconnect; consume expected BFCache closure.
++      const disconnectError = browser.runtime.lastError;
++      if (disconnectError && disconnectError.message !== "The page keeping the extension port is moved into back/forward cache, so the message channel is closed.")
++        console.warn("[webext-bridge] Port disconnected:", disconnectError.message);
++      connect();
++    });
+     PortMessage.toBackground(port, {
+       type: "sync",
+       pendingResponses: pendingResponses.entries(),
+diff --git a/dist/content-script.cjs b/dist/content-script.cjs
+index 33879ce877e91e258d6bd744dec85ccafe09ee02..a10c19e7f8a5f084426110a21807062f0a945d1d 100644
+--- a/dist/content-script.cjs
++++ b/dist/content-script.cjs
+@@ -459,7 +459,13 @@ var createPersistentPort = (name = "") => {
+       })
+     });
+     port2.onMessage.addListener(handleMessage);
+-    port2.onDisconnect.addListener(connect);
++    port2.onDisconnect.addListener(() => {
++      // Chrome exposes this error only during onDisconnect; consume expected BFCache closure.
++      const disconnectError = import_webextension_polyfill.default.runtime.lastError;
++      if (disconnectError && disconnectError.message !== "The page keeping the extension port is moved into back/forward cache, so the message channel is closed.")
++        console.warn("[webext-bridge] Port disconnected:", disconnectError.message);
++      connect();
++    });
+     PortMessage.toBackground(port2, {
+       type: "sync",
+       pendingResponses: pendingResponses.entries(),
+diff --git a/dist/devtools.cjs b/dist/devtools.cjs
+index 102c7a07f9a71e5f18274c1e7e883d1eeeaabba3..20c02e25089fdf24356032dbef9de9c6d0c6d8e8 100644
+--- a/dist/devtools.cjs
++++ b/dist/devtools.cjs
+@@ -394,7 +394,13 @@ var createPersistentPort = (name = "") => {
+       })
+     });
+     port2.onMessage.addListener(handleMessage);
+-    port2.onDisconnect.addListener(connect);
++    port2.onDisconnect.addListener(() => {
++      // Chrome exposes this error only during onDisconnect; consume expected BFCache closure.
++      const disconnectError = import_webextension_polyfill.default.runtime.lastError;
++      if (disconnectError && disconnectError.message !== "The page keeping the extension port is moved into back/forward cache, so the message channel is closed.")
++        console.warn("[webext-bridge] Port disconnected:", disconnectError.message);
++      connect();
++    });
+     PortMessage.toBackground(port2, {
+       type: "sync",
+       pendingResponses: pendingResponses.entries(),
+diff --git a/dist/options.cjs b/dist/options.cjs
+index 55ef2d10dc4272ab3630ed465fa2af21ecbbdb45..cf1134aa38eaaa680b141aa462cf803f936dc2bb 100644
+--- a/dist/options.cjs
++++ b/dist/options.cjs
+@@ -393,7 +393,13 @@ var createPersistentPort = (name = "") => {
+       })
+     });
+     port2.onMessage.addListener(handleMessage);
+-    port2.onDisconnect.addListener(connect);
++    port2.onDisconnect.addListener(() => {
++      // Chrome exposes this error only during onDisconnect; consume expected BFCache closure.
++      const disconnectError = import_webextension_polyfill.default.runtime.lastError;
++      if (disconnectError && disconnectError.message !== "The page keeping the extension port is moved into back/forward cache, so the message channel is closed.")
++        console.warn("[webext-bridge] Port disconnected:", disconnectError.message);
++      connect();
++    });
+     PortMessage.toBackground(port2, {
+       type: "sync",
+       pendingResponses: pendingResponses.entries(),
+diff --git a/dist/popup.cjs b/dist/popup.cjs
+index 443e2578db96dfa10ed4c100080e32705cfdfe98..aad23abb07b161d96af7b82c86ff4732962eddb9 100644
+--- a/dist/popup.cjs
++++ b/dist/popup.cjs
+@@ -393,7 +393,13 @@ var createPersistentPort = (name = "") => {
+       })
+     });
+     port2.onMessage.addListener(handleMessage);
+-    port2.onDisconnect.addListener(connect);
++    port2.onDisconnect.addListener(() => {
++      // Chrome exposes this error only during onDisconnect; consume expected BFCache closure.
++      const disconnectError = import_webextension_polyfill.default.runtime.lastError;
++      if (disconnectError && disconnectError.message !== "The page keeping the extension port is moved into back/forward cache, so the message channel is closed.")
++        console.warn("[webext-bridge] Port disconnected:", disconnectError.message);
++      connect();
++    });
+     PortMessage.toBackground(port2, {
+       type: "sync",
+       pendingResponses: pendingResponses.entries(),

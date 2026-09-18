@@ -48,7 +48,8 @@ Optional cookie auto-acceptance is experimental: off by default, local browser o
 
 - word, character, sentence and reading-time statistics;
 - configurable reader mode;
-- rich copy and automatic selection copy.
+- Rich Copy: formatted browser-tab URLs (current tab, selected tabs, or a supported tab group);
+- Auto Copy: automatic copying of text selected on the page.
 
 ### Search and navigation
 

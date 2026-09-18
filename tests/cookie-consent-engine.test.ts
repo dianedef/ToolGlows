@@ -127,4 +127,32 @@ describe("cookie consent engine", () => {
     for (let i = 0; i < 8; i++) await flush()
     expect(click).toHaveBeenCalledTimes(4)
   })
+  it.each([
+    ['Google', '<button id="L2AGLb">Tout accepter</button>'],
+    ['Meta/Instagram', '<button data-cookiebanner="accept_button">Autoriser</button>'],
+    ['Axeptio', '<button id="axeptio_btn_acceptAll">Accepter</button>'],
+    ['SourcePoint', '<button class="sp_choice_type_11">J’accepte</button>']
+  ])('accepts %s consent buttons with robust pointer events', (name, html) => {
+    document.body.innerHTML = `<div>${html}</div>`
+    const click = vi.fn()
+    const pointerdown = vi.fn()
+    const btn = document.querySelector('button')!
+    btn.addEventListener('click', click)
+    btn.addEventListener('pointerdown', pointerdown)
+    stop = startCookieConsent(document)
+    expect(click).toHaveBeenCalledTimes(1)
+    expect(pointerdown).toHaveBeenCalledTimes(1)
+  })
+  it('accepts TikTok cookie banner inside shadow DOM', () => {
+    const host = document.createElement('tiktok-cookie-banner')
+    const shadow = host.attachShadow({ mode: 'open' })
+    shadow.innerHTML = '<button>Allow all</button>'
+    document.body.appendChild(host)
+    const btn = shadow.querySelector('button')!
+    const click = vi.fn()
+    btn.addEventListener('click', click)
+    stop = startCookieConsent(document)
+    expect(click).toHaveBeenCalledTimes(1)
+  })
 })
+

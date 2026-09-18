@@ -82,6 +82,12 @@ repository defaults. It never uses a personal browser profile.
 
 ## Safe change sequence
 
+The pinned `webext-bridge@6.0.1` dependency has a pnpm patch for callback-scoped
+port disconnect errors. See `patches/README.md` for the exact BFCache error
+contract and removal criteria. `tests/bridge-port-disconnect.test.ts` exercises
+installed bridge callbacks with mocked browser ports; this does not replace
+Chrome/Firefox navigation and restored-page communication proof.
+
 1. Identify the browser context and source entrypoint in the code map.
 2. For a user-facing tool, change its component/store/composable together with its registry and relevant settings contract.
 3. For a privileged action, define a bounded bridge payload, validate it in the receiver, and keep the browser API call in the background worker.

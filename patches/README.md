@@ -15,3 +15,19 @@ The patch is pinned and installed by pnpm. When upgrading DarkReader, inspect
 upstream proxy insertion, remove the patch if upstream supports these opt-outs,
 and rerun `tests/dark-mode-proxy-csp.test.ts` plus actual extension dark-mode
 activation under MV3 CSP, including BackerKit and dynamic-page rendering.
+
+# webext-bridge 6.0.1
+
+`webext-bridge@6.0.1.patch` reads `runtime.lastError` synchronously inside
+background and persistent-port disconnect listeners in the ESM and CommonJS
+entries. Chrome closes extension ports when a page enters the back/forward
+cache; that exact expected error is consumed without an unchecked-error entry.
+Other disconnect errors remain visible as warnings. The existing session
+cleanup and reconnect algorithm are preserved; the patch does not claim to
+repair or prove communication after a real BFCache restoration.
+
+Run `tests/bridge-port-disconnect.test.ts`, both browser builds, and real browser
+navigation/back/forward checks when changing or removing this patch. Remove it
+when upstream handles the callback-scoped error itself. Contracts:
+[Chrome BFCache messaging](https://developer.chrome.com/blog/bfcache-extension-messaging-changes)
+and [runtime.lastError](https://developer.chrome.com/docs/extensions/reference/api/runtime#property-lastError).

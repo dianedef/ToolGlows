@@ -47,7 +47,7 @@ ToolGlows is one Vue 3 and TypeScript codebase built by Vite/CRXJS for Chrome an
 | Background worker | `src/background/index.ts` | Extension lifecycle, settings synchronization and privileged tab, window, reload and bookmark operations. |
 | Content script | `src/content-script/index.ts` | Injects the Vue toolbar into matching pages, mounts styles and owns page-level interactions. |
 | Cross-context bridge | `src/bridge/index.ts` | Defines serializable message shapes and relays bounded requests to the background worker. |
-| Popup | `src/ui/action-popup/` | Quick entry surface from the browser toolbar. |
+| Popup | `src/ui/action-popup/` | Quick entry surface from the browser toolbar, including a persisted switch that shows or hides the injected toolbar overlay without unloading active tools. |
 | Options | `src/ui/options-page/` | Persistent configuration surface. |
 | Side panel / sidebar | `src/ui/side-panel/` | Chrome side panel and Firefox sidebar UI. |
 | Setup pages | `src/ui/setup/` | Install and update guidance opened by the background worker. |
@@ -74,6 +74,8 @@ Auto Copy keeps its toolbar and settings in the top-frame content script and use
 
 Explicit Auto Copy format templates substitute every `{content}`, `{title}` and `{url}` field in one pass without interpreting placeholder-like text inside the inserted values. Markdown conversion traverses the detached selection nodes, preserving the supported bold, italic, link and line-break markup regardless of attributes, and using decoded DOM text. Editable field values remain literal text. HTML shortcuts still put serialized HTML in the plain-text clipboard; they do not provide a rich `text/html` clipboard payload.
 
+Rich Copy has a separate input contract: browser-tab URLs and titles, never selected page text. Its current-tab and selected-tab actions request tab metadata through the maintained bridge and background browser APIs. “Selected” means highlighted tabs in the browser tab strip. Group copying uses native tab groups when available. Formats produce plain-text clipboard content, with one formatted tab per line. Browser validation of the current-tab and selected-tab flows remains pending after the source repair; no extension build was requested.
+
 The round ToolGlows button owns both primary gestures: a pointer movement drags the toolbar, while a press and release without movement opens or closes it. Document-level dialogs and tooltips do not count as outside clicks for collapse.
 
 Custom text and link contrast thresholds are advisory. The settings surface measures requested colors against the custom background, stages a new low-contrast choice, and offers a minimally shifted readable suggestion. In the Custom preset only, a bounded text-owner observer starts from cached preferences in the independent `document_start` path and applies accepted text and link values directly so DarkReader cannot remap their hue. Graphite and Aurora instead run a selective contrast repair after page transformation: readable computed colors remain untouched, while a text owner below 4.5:1 receives the nearest viable theme foreground or a black/white fallback against its composited visible ancestor background. The repair covers initial and dynamically inserted HTML controls and text, excludes ToolGlows UI and media, uses bounded hydration rescans, and restores previous inline colors when dark mode stops. Contrast and bright-surface refinements run in cancellable scheduled batches (at most 50 elements or 5 ms of planning per task, then a 16 ms yield), after initial theme activation. Each batch reads computed styles before applying DOM writes; contrast batches cache shared ancestor backgrounds for that snapshot. Stop cancels pending work before restoring colors. Repeated identical theme broadcasts reuse the active engine instead of transforming the page again.
@@ -88,13 +90,14 @@ The Hide Elements store persists bounded CSS selectors per hostname in synchroni
 
 ## Browser variants and permissions
 
-The shared manifest declares `alarms`, `bookmarks`, `scripting`, `storage` and `tabs`, plus `host_permissions: ["<all_urls>"]` for the extension's all-page utility boundary.
+The shared manifest declares `alarms`, `bookmarks`, `scripting`, `storage`, `tabGroups` and `tabs`, plus `host_permissions: ["<all_urls>"]` for the extension's all-page utility boundary.
 
 - `alarms` refreshes persistent dark-prepaint registration at configured schedule boundaries.
 - `bookmarks` supports bookmark export from drag-and-drop actions.
 - `scripting` persistently registers the packaged prepaint CSS before page DOM display.
 - `storage` persists settings and active tools.
-- `tabs` supports tab queries and the reload-all-tabs feature.
+- `tabs` supports Rich Copy URL queries and the reload-all-tabs feature.
+- `tabGroups` supports listing native browser groups for Rich Copy; unavailable group APIs must not prevent current-tab or selected-tab copying.
 - The host permission authorizes dynamic stylesheet registration on the same broad page surface already served by the toolbar's static content scripts; it is not used for transmitting page data.
 - Chrome adds `sidePanel` and uses `side_panel`.
 - Firefox removes the Chrome-only side-panel declaration, uses `sidebar_action`, and declares no required data collection.

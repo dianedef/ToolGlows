@@ -14,7 +14,7 @@ export const TOOL_EXPLANATIONS: Record<string, string> = {
   searchJumper: 'Ouvrez les réglages de recherche rapide pour choisir comment rechercher votre sélection.',
   dragOpen: 'Configurez l’ouverture des liens par glisser-déposer. Consultez les gestes dans les paramètres avant de les utiliser.',
   instagramSaved: 'Ouvrez votre bibliothèque Instagram. Cet outil expérimental dépend de la structure du site et de votre session Instagram.',
-  richCopy: 'Ouvrez la copie enrichie pour choisir le format du contenu à copier. Le résultat est placé dans votre presse-papiers.',
+  richCopy: 'Copiez les URL de l’onglet courant ou des onglets sélectionnés dans la barre du navigateur, au format de votre choix. Vous pouvez aussi copier un groupe d’onglets lorsque le navigateur le permet.',
   betterGmail: 'Configurez les améliorations de Gmail. Cet outil expérimental fonctionne dans Gmail et dépend de sa structure actuelle.',
   quickActions: 'Ouvrez les actions rapides pour choisir l’opération à effectuer sur la page.',
   autoCopy: 'Copiez automatiquement le texte sélectionné dans le presse-papiers. Un nouveau clic désactive ce comportement ; les paramètres permettent de choisir le format.',

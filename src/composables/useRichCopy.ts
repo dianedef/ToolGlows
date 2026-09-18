@@ -1,250 +1,171 @@
-import { ref, computed } from 'vue'
-import { useSettingsStore } from '@/stores/settings'
-import { bridgeApi, type TabQueryScope } from '@/bridge'
-
-type CopyFormat = 'text' | 'html' | 'markdown'
-
-interface CopyOptions {
-  format: CopyFormat
-  scope: TabQueryScope
-}
-
-interface RichCopyOptions {
-  format: CopyFormat
-  keepFormatting: boolean
-  includeLinks: boolean
-  smartQuotes: boolean
-  citationTemplate: 'minimal' | 'academic' | 'custom'
-  customTemplate: string
-}
-
-interface LinkInfo {
-  url: string
-  text: string
-  type: 'internal' | 'external'
-  isImage?: boolean
-  domain?: string
-}
+﻿import { ref, onMounted, onUnmounted } from "vue"
+import { useRichCopyStore } from "@/stores/richCopy"
+import {
+  bridgeApi,
+  type TabQueryScope,
+  type TabSummary,
+  type TabGroupSummary,
+} from "@/bridge"
+import { copyTextToClipboard } from "@/utils/clipboard"
+import { useToast } from "primevue/usetoast"
 
 export function useRichCopy() {
-  const settingsStore = useSettingsStore()
-  const isEnabled = ref(settingsStore.settings.components?.richCopy?.enabled ?? false)
+  const store = useRichCopyStore()
+  const toast = useToast()
   const isCopying = ref(false)
+  const tabGroups = ref<TabGroupSummary[]>([])
+  const isLoadingGroups = ref(false)
 
-  // État pour les liens extraits
-  const extractedLinks = ref<LinkInfo[]>([])
-  const linkFilters = ref({
-    onlyExternal: false,
-    onlyImages: false,
-    domain: '',
-  })
-
-  // Options par défaut
-  const options = ref<RichCopyOptions>({
-    format: 'markdown',
-    keepFormatting: true,
-    includeLinks: true,
-    smartQuotes: false,
-    citationTemplate: 'minimal',
-    customTemplate: 'Texte: {text}\nSource: {source}\nDate: {date}'
-  })
-
-  // Exemple de texte pour l'aperçu
-  const previewText = "Ceci est un exemple de texte avec un <b>formatage</b> et un <a href='#'>lien</a>."
-
-  // Mettre à jour les options
-  const updateOptions = (newOptions: Partial<RichCopyOptions>) => {
-    options.value = {
-      ...options.value,
-      ...newOptions
-    }
-
-    settingsStore.updateSettings({
-      components: {
-        ...settingsStore.settings.components,
-        richCopy: {
-          enabled: isEnabled.value,
-          options: options.value
-        }
-      }
-    })
-  }
-
-  // Formater un lien selon le format demandé
-  const formatLink = (url: string, title: string, format: CopyFormat): string => {
-    switch (format) {
-      case 'html':
-        return `<a href="${url}">${title}</a>`
-      case 'markdown':
-        return `[${title}](${url})`
-      default:
-        return `${title} - ${url}`
-    }
-  }
-
-  // Copier les liens filtrés
-  const copyFilteredLinks = async (format: CopyFormat = 'text') => {
-    const links = filteredLinks.value
-    let formattedText: string
-
-    switch (format) {
-      case 'html':
-        formattedText = links
-          .map(link => `<a href="${link.url}">${link.text}</a>`)
-          .join('<br>\n')
-        break
-      case 'markdown':
-        formattedText = links
-          .map(link => `[${link.text}](${link.url})`)
-          .join('\n')
-        break
-      default:
-        formattedText = links
-          .map(link => `${link.text} - ${link.url}`)
-          .join('\n')
-    }
-
+  const loadTabGroups = async () => {
+    isLoadingGroups.value = true
     try {
-      await navigator.clipboard.writeText(formattedText)
-      return true
-    } catch (error) {
-      console.error('Erreur lors de la copie des liens:', error)
-      return false
+      tabGroups.value = await bridgeApi.getTabGroups()
+    } catch (err) {
+      console.error("[Rich Copy] Failed to load tab groups:", err)
+      tabGroups.value = []
+    } finally {
+      isLoadingGroups.value = false
     }
   }
 
-  // Copier les onglets
-  const copyTabs = async (options: CopyOptions) => {
+  const formatTab = (tab: TabSummary, templateStr: string): string => {
+    const now = new Date()
+    const values: Record<string, string> = {
+      title: tab.title,
+      url: tab.url,
+      date: now.toLocaleDateString(),
+      datetime: now.toLocaleString(),
+    }
+    return templateStr.replace(
+      /{(title|url|date|datetime)}/g,
+      (_match, key: string) => values[key],
+    )
+  }
+
+  const getTemplateForFormat = (formatId?: string): string => {
+    const id = formatId || store.options.defaultFormat
+    const format = store.options.formats.find((f) => f.id === id)
+    return format?.template || "[{title}]({url})"
+  }
+
+  const copyTabs = async (
+    scope: TabQueryScope,
+    options?: { groupId?: number; formatId?: string; groupTitle?: string },
+  ): Promise<boolean> => {
     isCopying.value = true
     try {
-      const tabs = await bridgeApi.getTabs(options.scope)
+      const tabs = await bridgeApi.getTabs(scope, options?.groupId)
 
-      const formattedLinks = tabs
-        .map(tab => formatLink(tab.url, tab.title, options.format))
-        .join('\n')
+      if (tabs.length === 0) {
+        toast.add({
+          severity: "warn",
+          summary: "Aucun onglet",
+          detail: "Aucun onglet trouvé pour cette sélection",
+          life: 3000,
+        })
+        return false
+      }
 
-      await navigator.clipboard.writeText(formattedLinks)
-      return true
-    } catch (error) {
-      console.error('Erreur lors de la copie:', error)
+      const template = getTemplateForFormat(options?.formatId)
+      let formattedText = tabs.map((tab) => formatTab(tab, template)).join("\n")
+
+      if (store.options.customReplacements?.length) {
+        for (const replacement of store.options.customReplacements) {
+          if (replacement.search) {
+            formattedText = formattedText.split(replacement.search).join(replacement.replace)
+          }
+        }
+      }
+
+      const success = await copyTextToClipboard(formattedText)
+      if (success) {
+        const count = tabs.length
+        let label = ""
+        if (scope === "current") label = "Onglet courant"
+        else if (scope === "selected")
+          label = `${count} onglet(s) sélectionné(s)`
+        else if (scope === "group")
+          label = `Groupe "${options?.groupTitle || "Sans nom"}" (${count})`
+        else label = `Tous les onglets (${count})`
+
+        toast.add({
+          severity: "success",
+          summary: "Lien copié !",
+          detail: `${label} copié dans le presse-papiers`,
+          life: 3000,
+        })
+        return true
+      }
+      throw new Error("Clipboard write failed")
+    } catch (err) {
+      console.error("[Rich Copy] Erreur lors de la copie:", err)
+      toast.add({
+        severity: "error",
+        summary: "Erreur",
+        detail: "Impossible de copier les onglets",
+        life: 3000,
+      })
       return false
     } finally {
       isCopying.value = false
     }
   }
 
-  // Copier le texte sélectionné avec formatage
-  const copySelection = async () => {
-    const selection = window.getSelection()
-    if (!selection) return false
+  const copyCurrentTab = (formatId?: string) =>
+    copyTabs("current", { formatId })
+  const copySelectedTabs = (formatId?: string) =>
+    copyTabs("selected", { formatId })
+  const copyGroupTabs = (
+    groupId: number,
+    groupTitle: string,
+    formatId?: string,
+  ) => copyTabs("group", { groupId, groupTitle, formatId })
+  const copyAllTabs = (formatId?: string) => copyTabs("window", { formatId })
 
-    const text = selection.toString()
-    await copyToClipboard(text)
-    return true
-  }
+  const handleGlobalShortcut = (event: KeyboardEvent) => {
+    if (["INPUT", "TEXTAREA"].includes((event.target as HTMLElement)?.tagName))
+      return
 
-  // Copier du texte avec le formatage choisi
-  const copyToClipboard = async (text: string) => {
-    let formattedText = text
-
-    if (options.value.smartQuotes) {
-      formattedText = formattedText
-        .replace(/"/g, '"')
-        .replace(/'/g, "'")
-    }
-
-    switch (options.value.format) {
-      case 'markdown':
-        formattedText = options.value.keepFormatting
-          ? formattedText
-              .replace(/<b>(.*?)<\/b>/g, '**$1**')
-              .replace(/<i>(.*?)<\/i>/g, '_$1_')
-          : formattedText.replace(/<[^>]+>/g, '')
-        break
-
-      case 'html':
-        if (!options.value.keepFormatting) {
-          formattedText = formattedText.replace(/<[^>]+>/g, '')
+    const matchedFormat = store.options.formats.find((f) => {
+      if (!f.shortcut) return false
+      const keys = f.shortcut.toLowerCase().split("+")
+      return keys.every((key) => {
+        switch (key) {
+          case "alt":
+            return event.altKey
+          case "ctrl":
+            return event.ctrlKey
+          case "shift":
+            return event.shiftKey
+          default:
+            return event.key.toLowerCase() === key
         }
-        break
+      })
+    })
 
-      case 'text':
-      default:
-        formattedText = formattedText.replace(/<[^>]+>/g, '')
-        break
-    }
-
-    if (options.value.includeLinks) {
-      const url = window.location.href
-      const title = document.title
-      formattedText += `\n\nSource: ${formatLink(url, title, options.value.format)}`
-    }
-
-    try {
-      await navigator.clipboard.writeText(formattedText)
-    } catch (error) {
-      console.error('Erreur lors de la copie:', error)
+    if (matchedFormat) {
+      event.preventDefault()
+      void copyTabs("selected", { formatId: matchedFormat.id })
     }
   }
 
-  // Extraire tous les liens de la page
-  const extractPageLinks = () => {
-    const links = Array.from(document.querySelectorAll('a'))
-    const currentDomain = window.location.hostname
-
-    extractedLinks.value = links.map(link => {
-      const url = link.href
-      const linkDomain = new URL(url).hostname
-
-      return {
-        url,
-        text: link.textContent?.trim() || url,
-        type: linkDomain === currentDomain ? 'internal' : 'external',
-        isImage: link.querySelector('img') !== null,
-        domain: linkDomain
-      }
-    })
-  }
-
-  // Filtrer les liens extraits
-  const filteredLinks = computed(() => {
-    return extractedLinks.value.filter(link => {
-      if (linkFilters.value.onlyExternal && link.type !== 'external') return false
-      if (linkFilters.value.onlyImages && !link.isImage) return false
-      if (linkFilters.value.domain && !link.domain?.includes(linkFilters.value.domain)) return false
-      return true
-    })
+  onMounted(() => {
+    window.addEventListener("keydown", handleGlobalShortcut)
   })
 
-  // Grouper les liens par domaine
-  const linksByDomain = computed(() => {
-    const grouped = new Map<string, LinkInfo[]>()
-
-    filteredLinks.value.forEach(link => {
-      const domain = link.domain || 'unknown'
-      if (!grouped.has(domain)) {
-        grouped.set(domain, [])
-      }
-      grouped.get(domain)?.push(link)
-    })
-
-    return grouped
+  onUnmounted(() => {
+    window.removeEventListener("keydown", handleGlobalShortcut)
   })
 
   return {
-    isEnabled,
     isCopying,
-    options,
-    linkFilters,
-    extractedLinks,
-    filteredLinks,
-    linksByDomain,
-    previewText,
-    updateOptions,
-    copyToClipboard,
-    copySelection,
-    copyFilteredLinks,
+    tabGroups,
+    isLoadingGroups,
+    loadTabGroups,
     copyTabs,
-    extractPageLinks
+    copyCurrentTab,
+    copySelectedTabs,
+    copyGroupTabs,
+    copyAllTabs,
   }
 }

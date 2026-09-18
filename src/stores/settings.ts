@@ -45,6 +45,7 @@ export interface ToolGlowsSettings {
   }
   activeTools: string[]
   isPinned: boolean
+  toolbarVisible: boolean
   interfaceTheme: 'light' | 'dark'
   toolbarColor?: string
   toolbarSize: ToolbarSize
@@ -70,6 +71,7 @@ export const useSettingsStore = defineStore('settings', () => {
     position: { x: window.innerWidth - 100, y: 20 },
     activeTools: [],
     isPinned: false,
+    toolbarVisible: true,
     interfaceTheme: 'light',
     toolbarColor: '#ff69b4',
     toolbarSize: 'md',
@@ -92,6 +94,7 @@ export const useSettingsStore = defineStore('settings', () => {
     ...value,
     position: { ...defaultSettings.position, ...value?.position },
     activeTools: Array.isArray(value?.activeTools) ? value.activeTools : defaultSettings.activeTools,
+    toolbarVisible: value?.toolbarVisible !== false,
     interfaceTheme: normalizeInterfaceTheme(value?.interfaceTheme),
     toolbarSize: normalizeToolbarSize(value?.toolbarSize),
     hideElement: {
@@ -120,6 +123,7 @@ export const useSettingsStore = defineStore('settings', () => {
     toolbarColor: settings.value.toolbarColor,
     expanded: settings.value.expanded,
     isPinned: settings.value.isPinned,
+    toolbarVisible: settings.value.toolbarVisible,
     interfaceTheme: settings.value.interfaceTheme,
     toolbarSize: settings.value.toolbarSize
   }), (newSettings) => {

@@ -16,6 +16,7 @@ export interface BackgroundSettings {
   position: { x: number; y: number }
   activeTools: string[]
   isPinned: boolean
+  toolbarVisible: boolean
   interfaceTheme?: 'light' | 'dark'
   toolbarColor?: string
   toolbarSize: ToolbarSize
@@ -119,6 +120,7 @@ export function normalizeSettingsPayload(value: unknown): BackgroundSettings | n
     !Number.isFinite(value.position.y) ||
     activeTools === null ||
     typeof value.isPinned !== 'boolean' ||
+    (value.toolbarVisible !== undefined && typeof value.toolbarVisible !== 'boolean') ||
     (value.interfaceTheme !== undefined && value.interfaceTheme !== 'light' && value.interfaceTheme !== 'dark') ||
     (value.toolbarColor !== undefined &&
       (typeof value.toolbarColor !== 'string' || !/^#[0-9a-f]{6}$/i.test(value.toolbarColor))) ||
@@ -130,6 +132,7 @@ export function normalizeSettingsPayload(value: unknown): BackgroundSettings | n
     position: { x: value.position.x, y: value.position.y },
     activeTools,
     isPinned: value.isPinned,
+    toolbarVisible: value.toolbarVisible !== false,
     toolbarSize: value.toolbarSize as ToolbarSize,
   }
 

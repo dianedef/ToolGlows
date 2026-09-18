@@ -22,6 +22,7 @@ describe('settings bridge persistence', () => {
       position: { x: 10, y: 20 },
       activeTools: [],
       isPinned: false,
+      toolbarVisible: true,
       interfaceTheme: 'dark',
       toolbarSize: 'md'
     })).rejects.toThrow('Background could not persist settings')
@@ -33,6 +34,7 @@ describe('settings bridge persistence', () => {
       position: { x: 10, y: 20 },
       activeTools: ['hideElement'],
       isPinned: false,
+      toolbarVisible: true,
       interfaceTheme: 'dark',
       toolbarSize: 'md',
       hideElement: {

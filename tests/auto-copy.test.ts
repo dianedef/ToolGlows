@@ -113,13 +113,100 @@ describe('Auto Copy interaction contract', () => {
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }))
     await vi.advanceTimersByTimeAsync(200)
-    target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
-    target.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, altKey: true }))
+    target.dispatchEvent(new MouseEvent('click', { bubbles: true, altKey: true }))
     await flushCopy()
 
     expect(clipboardWrite).toHaveBeenCalledTimes(1)
     expect(toastAdd).toHaveBeenCalledTimes(1)
     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt', bubbles: true }))
+    vi.useRealTimers()
+  })
+
+  it('exits Alt selection when the window blurs and does not copy the next click', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+    const target = document.querySelector('#selection')!
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }))
+    await vi.advanceTimersByTimeAsync(200)
+    expect(document.getElementById('toolglows-auto-copy-alt-highlight')).not.toBeNull()
+
+    window.dispatchEvent(new Event('blur'))
+    expect(document.getElementById('toolglows-auto-copy-alt-highlight')).toBeNull()
+
+    target.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    await flushCopy()
+
+    expect(clipboardWrite).not.toHaveBeenCalled()
+    expect(toastAdd).not.toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+
+  it('cancels pending Alt selection if the window blurs before the delay', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+    const target = document.querySelector('#selection')!
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }))
+    window.dispatchEvent(new Event('blur'))
+    await vi.advanceTimersByTimeAsync(200)
+
+    expect(document.getElementById('toolglows-auto-copy-alt-highlight')).toBeNull()
+    target.dispatchEvent(new MouseEvent('click', { bubbles: true, altKey: true }))
+    await flushCopy()
+
+    expect(clipboardWrite).not.toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+
+  it('does not copy an Alt click once Alt is no longer held', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+    const target = document.querySelector('#selection')!
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }))
+    await vi.advanceTimersByTimeAsync(200)
+    target.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    await flushCopy()
+
+    expect(clipboardWrite).not.toHaveBeenCalled()
+    expect(document.getElementById('toolglows-auto-copy-alt-highlight')).toBeNull()
+    vi.useRealTimers()
+  })
+
+  it('exits Alt selection when the tab becomes hidden', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }))
+    await vi.advanceTimersByTimeAsync(200)
+    expect(document.getElementById('toolglows-auto-copy-alt-highlight')).not.toBeNull()
+
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true })
+    document.dispatchEvent(new Event('visibilitychange'))
+    expect(document.getElementById('toolglows-auto-copy-alt-highlight')).toBeNull()
+
+    Object.defineProperty(document, 'hidden', { configurable: true, value: false })
+    vi.useRealTimers()
+  })
+
+  it('exits Alt selection when the setting is turned off', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }))
+    await vi.advanceTimersByTimeAsync(200)
+    expect(document.getElementById('toolglows-auto-copy-alt-highlight')).not.toBeNull()
+
+    useAutoCopyStore().settings.enableAltSelection = false
+    await nextTick()
+    expect(document.getElementById('toolglows-auto-copy-alt-highlight')).toBeNull()
     vi.useRealTimers()
   })
 
