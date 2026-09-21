@@ -1298,6 +1298,10 @@ onBeforeUnmount(() => {
 }
 
 .toolglows-main-button.p-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
   cursor: grab !important;
   touch-action: none;
   overflow: hidden;

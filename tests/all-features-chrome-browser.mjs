@@ -47,6 +47,7 @@ try {
   await page.goto('https://example.com/toolglows-fixture')
   await page.locator('#toolglows-root').waitFor()
   await page.getByRole('button', { name: 'ToolGlows' }).click()
+  await page.locator('[data-tool-id]').first().waitFor({ timeout: 3_000 })
   const toolIds = await page.locator('[data-tool-id]').evaluateAll(elements =>
     elements.map(element => element.getAttribute('data-tool-id')),
   )
@@ -57,9 +58,7 @@ try {
   await page.waitForTimeout(250)
   const settingsOpened = await page.locator('[role="dialog"]').isVisible().catch(() => false)
   if (settingsOpened) {
-    await page.evaluate(() => {
-      document.querySelector('[data-toolglows-settings]')?.click()
-    })
+    await page.locator('[role="dialog"] [data-pc-section="closebutton"]').click()
     await page.locator('[role="dialog"]').waitFor({ state: 'hidden' })
   }
 
