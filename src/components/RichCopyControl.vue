@@ -56,14 +56,15 @@
         <div class="groups-header">
           <h4>🗂️ Groupes d'onglets</h4>
           <Button
-            icon="pi pi-refresh"
             text
             rounded
             size="small"
             title="Rafraîchir les groupes"
             :loading="isLoadingGroups"
             @click="loadTabGroups"
-          />
+          >
+            <ToolGlowsIcon name="refresh" />
+          </Button>
         </div>
 
         <div v-if="isLoadingGroups" class="loading-groups">
@@ -77,7 +78,13 @@
             v-for="group in tabGroups"
             :key="group.id"
             class="group-item"
+            role="button"
+            tabindex="0"
+            :aria-disabled="group.tabCount === 0"
             :style="{ borderLeftColor: getGroupColor(group.color) }"
+            @click="group.tabCount > 0 && copyGroupTabs(group.id, group.title)"
+            @keydown.enter="group.tabCount > 0 && copyGroupTabs(group.id, group.title)"
+            @keydown.space.prevent="group.tabCount > 0 && copyGroupTabs(group.id, group.title)"
           >
             <div class="group-info">
               <span class="group-badge" :style="{ backgroundColor: getGroupColor(group.color) }"></span>
@@ -85,13 +92,14 @@
               <span class="group-count">({{ group.tabCount }} onglet{{ group.tabCount > 1 ? 's' : '' }})</span>
             </div>
             <Button
-              label="Copier"
-              icon="pi pi-copy"
               size="small"
               class="p-button-sm p-button-outlined"
               :disabled="isCopying || group.tabCount === 0"
-              @click="copyGroupTabs(group.id, group.title)"
-            />
+              @click.stop="copyGroupTabs(group.id, group.title)"
+            >
+              <ToolGlowsIcon name="richCopy" />
+              <span>Copier</span>
+            </Button>
           </div>
         </div>
       </div>
@@ -472,10 +480,22 @@ const closeDialog = () => {
   align-items: center;
   justify-content: space-between;
   padding: var(--tg-space-2) var(--tg-space-3);
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
+  background: var(--tg-surface-muted);
+  border: 1px solid var(--tg-border-default);
   border-left-width: 5px;
   border-radius: var(--tg-radius-md);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.group-item:hover {
+  background: var(--tg-interaction-hover);
+  border-color: var(--tg-element-outline);
+  box-shadow: 0 0 0 2px var(--tg-interaction-focus);
+}
+
+.group-item[aria-disabled='true'] {
+  cursor: default;
 }
 
 .group-info {

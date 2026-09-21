@@ -49,6 +49,7 @@ const iconPaths: Record<string, string[]> = {
   dragOpen: ['M12 2v20', 'm8 6 4-4 4 4', 'm8 18 4 4 4-4', 'M2 12h20', 'm6 8-4 4 4 4', 'm18 8 4 4-4 4'],
   instagramSaved: ['M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z', 'M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4Z', 'M17.5 6.5h.01'],
   richCopy: ['M9 9h11v11H9z', 'M4 15H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v1'],
+  refresh: ['M20 11a8 8 0 1 0 1 4', 'M20 5v6h-6'],
   betterGmail: ['M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z', 'm22 6-10 7L2 6'],
   quickActions: ['m13 2-9 12h8l-1 8 9-12h-8l1-8Z'],
   autoCopy: ['M6 2h9l5 5v15H6z', 'M14 2v6h6', 'm9 15 2 2 4-4'],

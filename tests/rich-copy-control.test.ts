@@ -2,9 +2,14 @@
 import { mount } from '@vue/test-utils'
 import { reactive } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-const mocks = vi.hoisted(() => ({ current: vi.fn(), selected: vi.fn(), groups: vi.fn() }))
+const mocks = vi.hoisted(() => ({
+  current: vi.fn(),
+  selected: vi.fn(),
+  groups: vi.fn(),
+  tabGroups: [{ id: 1, title: 'Travail', color: 'blue', collapsed: false, tabCount: 2 }]
+}))
 vi.mock('../src/composables/useRichCopy', () => ({ useRichCopy: () => ({
-  isCopying: false, tabGroups: [], isLoadingGroups: false, loadTabGroups: mocks.groups,
+  isCopying: false, tabGroups: mocks.tabGroups, isLoadingGroups: false, loadTabGroups: mocks.groups,
   copyCurrentTab: mocks.current, copySelectedTabs: mocks.selected, copyAllTabs: vi.fn(), copyGroupTabs: vi.fn()
 }) }))
 const store = reactive({ isActive: false, options: { formats: [], customReplacements: [], defaultFormat: 'url' }, loadOptions: vi.fn() })
@@ -35,6 +40,22 @@ describe('Rich Copy toolbar dialog', () => {
     await wrapper.setProps({ [prop]: true })
     expect(wrapper.text()).toContain('Onglet courant')
     expect(mocks.groups).toHaveBeenCalledTimes(2)
+    wrapper.unmount()
+  })
+
+  it('renders tab-group actions with ToolGlows SVG icons', async () => {
+    const wrapper = mount(RichCopyControl, {
+      props: { modelValue: true },
+      global: { stubs: {
+        ToolGlowsDialog: { name: 'ToolGlowsDialog', props: ['visible'], template: '<section v-if="visible"><slot /></section>' },
+        Dropdown: true, InputText: true, Textarea: true
+      } }
+    })
+
+    expect(wrapper.find('[title="Rafraîchir les groupes"] .toolglows-icon').attributes('data-icon-name')).toBe('refresh')
+    expect(wrapper.find('[title="Rafraîchir les groupes"] i').exists()).toBe(false)
+    expect(wrapper.find('.group-item button .toolglows-icon').attributes('data-icon-name')).toBe('richCopy')
+    expect(wrapper.find('.group-item button').text()).toContain('Copier')
     wrapper.unmount()
   })
 })
