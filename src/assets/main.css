@@ -140,6 +140,19 @@
 
 .toolglows-dialog .rich-copy-format-actions {
   gap: var(--tg-space-2);
+  flex-shrink: 0;
+}
+
+.toolglows-dialog .rich-copy-format-actions .p-button {
+  white-space: nowrap;
+}
+
+.toolglows-dialog .rich-copy-format-item .format-info {
+  min-width: 0;
+}
+
+.toolglows-dialog .rich-copy-format-item .format-details {
+  min-width: 0;
 }
 
 .toolglows-dialog .rich-copy-icon-button.p-button {

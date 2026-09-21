@@ -33,7 +33,7 @@ describe('Rich Copy browser URL contract', () => {
     const { copy, wrapper } = setup()
     expect(await copy.copyCurrentTab()).toBe(true)
     expect(mocks.getTabs).toHaveBeenCalledWith('current', undefined)
-    expect(mocks.copy).toHaveBeenCalledWith('https://browser.example/path')
+    expect(mocks.copy).toHaveBeenCalledWith('https://browser.example/path', { allowModernApi: false })
     wrapper.unmount()
   })
 
@@ -42,7 +42,7 @@ describe('Rich Copy browser URL contract', () => {
     const { copy, wrapper } = setup()
     expect(await copy.copySelectedTabs()).toBe(true)
     expect(mocks.getTabs).toHaveBeenCalledWith('selected', undefined)
-    expect(mocks.copy).toHaveBeenCalledWith('https://one.example/\nhttps://two.example/')
+    expect(mocks.copy).toHaveBeenCalledWith('https://one.example/\nhttps://two.example/', { allowModernApi: false })
     wrapper.unmount()
   })
 
@@ -60,7 +60,7 @@ describe('Rich Copy browser URL contract', () => {
     mocks.getTabs.mockResolvedValue([{ title: '{url}', url: 'https://example.test/?q=$&{title}' }])
     const { copy, wrapper } = setup()
     await copy.copyCurrentTab()
-    expect(mocks.copy).toHaveBeenCalledWith('https://example.test/?q=$&{title}')
+    expect(mocks.copy).toHaveBeenCalledWith('https://example.test/?q=$&{title}', { allowModernApi: false })
     wrapper.unmount()
   })
 

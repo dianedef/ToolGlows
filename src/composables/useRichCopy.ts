@@ -77,7 +77,10 @@ export function useRichCopy() {
         }
       }
 
-      const success = await copyTextToClipboard(formattedText)
+      // Tab metadata is fetched asynchronously before writing. Do not use the
+      // page-origin Clipboard API here: Chrome may prompt the host site on every
+      // write once the original click activation has been consumed by the bridge.
+      const success = await copyTextToClipboard(formattedText, { allowModernApi: false })
       if (success) {
         const count = tabs.length
         let label = ""

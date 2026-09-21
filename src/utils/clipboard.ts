@@ -73,7 +73,11 @@ function copyWithLegacyCommand(text: string): boolean {
   }
 }
 
-export async function copyTextToClipboard(text: string): Promise<boolean> {
+export async function copyTextToClipboard(
+  text: string,
+  options: { allowModernApi?: boolean } = {},
+): Promise<boolean> {
+  const allowModernApi = options.allowModernApi !== false
   let copiedByEvent = false
   const handleCopy = (event: ClipboardEvent) => {
     if (!event.clipboardData) return
@@ -91,7 +95,7 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
     document.removeEventListener('copy', handleCopy, true)
   }
 
-  if (navigator.clipboard?.writeText) {
+  if (allowModernApi && navigator.clipboard?.writeText) {
     try {
       // Calling the API before the first await preserves the user activation.
       await navigator.clipboard.writeText(text)

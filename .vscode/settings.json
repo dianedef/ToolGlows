@@ -1,13 +1,40 @@
 {
   "json.schemas": [
     {
-      "fileMatch": ["manifest.json"],
+      "fileMatch": [
+        "manifest.json"
+      ],
       "url": "https://json.schemastore.org/chrome-manifest.json"
     }
   ],
-  "typescript.preferences.autoImportFileExcludePatterns": ["vue-router"],
+  "typescript.preferences.autoImportFileExcludePatterns": [
+    "vue-router"
+  ],
   "i18n-ally.localesPaths": [
     "src/locales"
   ],
-  "i18n-ally.keystyle": "nested"
+  "i18n-ally.keystyle": "nested",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    ".claude": true,
+    ".codex": true,
+    ".flox": true,
+    ".gemini": true,
+    ".github": true,
+    ".kilo": true,
+    ".opencode": true,
+    ".patch-work": true,
+    ".playwright-mcp": true,
+    ".pnpm-patch-darkreader": true,
+    ".shipglows": true,
+    ".vscode": true
+  },
+  "dotFolderGroup.hideInExplorer": false,
+  "[markdown]": {
+    "editor.wordWrap": "off"
+  }
 }

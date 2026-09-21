@@ -142,7 +142,7 @@
                 <ToolGlowsIcon name="edit" />
               </Button>
               <Button
-                v-if="copyStore.options.formats.length" > 1
+                v-if="copyStore.options.formats.length > 1"
                 aria-label="Supprimer le format"
                 class="p-button-text p-button-rounded p-button-danger rich-copy-icon-button"
                 @click="copyStore.removeFormat(format.id)"

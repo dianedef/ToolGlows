@@ -23,38 +23,50 @@ interface RichCopyOptions {
   showNotifications: boolean
 }
 
+const defaultFormats: CopyFormat[] = [
+  {
+    id: 'markdown',
+    name: 'Markdown',
+    template: '[{title}]({url})',
+    shortcut: 'Alt+M',
+    icon: '📝'
+  },
+  {
+    id: 'html',
+    name: 'HTML Link',
+    template: '<a href="{url}">{title}</a>',
+    shortcut: 'Alt+H',
+    icon: '🌐'
+  },
+  {
+    id: 'plain',
+    name: 'Titre - URL',
+    template: '{title} - {url}',
+    shortcut: 'Alt+T',
+    icon: '📄'
+  },
+  {
+    id: 'url',
+    name: 'URL uniquement',
+    template: '{url}',
+    shortcut: 'Alt+U',
+    icon: '🔗'
+  }
+]
+
+function isCopyFormat(value: unknown): value is CopyFormat {
+  if (!value || typeof value !== 'object') return false
+  const format = value as Partial<CopyFormat>
+  return typeof format.id === 'string'
+    && typeof format.name === 'string'
+    && typeof format.template === 'string'
+}
+
 export const useRichCopyStore = defineStore('richCopy', {
   state: () => ({
     options: {
       formats: [
-        {
-          id: 'markdown',
-          name: 'Markdown',
-          template: '[{title}]({url})',
-          shortcut: 'Alt+M',
-          icon: '📝'
-        },
-        {
-          id: 'html',
-          name: 'HTML Link',
-          template: '<a href="{url}">{title}</a>',
-          shortcut: 'Alt+H',
-          icon: '🌐'
-        },
-        {
-          id: 'plain',
-          name: 'Titre - URL',
-          template: '{title} - {url}',
-          shortcut: 'Alt+T',
-          icon: '📄'
-        },
-        {
-          id: 'url',
-          name: 'URL uniquement',
-          template: '{url}',
-          shortcut: 'Alt+U',
-          icon: '🔗'
-        }
+        ...defaultFormats
       ],
       defaultFormat: 'markdown',
       preserveFormatting: true,
@@ -72,8 +84,30 @@ export const useRichCopyStore = defineStore('richCopy', {
     async loadOptions() {
       try {
         const result = await chrome.storage.sync.get('richCopyOptions')
-        if (result.richCopyOptions) {
-          this.options = { ...this.options, ...result.richCopyOptions }
+        const stored = result.richCopyOptions
+        if (stored && typeof stored === 'object') {
+          const candidate = stored as Partial<RichCopyOptions>
+          const formats = Array.isArray(candidate.formats)
+            ? candidate.formats.filter(isCopyFormat)
+            : this.options.formats
+          const safeFormats = formats.length > 0 ? formats : defaultFormats
+          const defaultFormat = typeof candidate.defaultFormat === 'string'
+            && safeFormats.some(format => format.id === candidate.defaultFormat)
+            ? candidate.defaultFormat
+            : safeFormats[0].id
+
+          this.options = {
+            ...this.options,
+            ...candidate,
+            formats: safeFormats,
+            defaultFormat,
+            customReplacements: Array.isArray(candidate.customReplacements)
+              ? candidate.customReplacements.filter(replacement =>
+                  replacement
+                  && typeof replacement.search === 'string'
+                  && typeof replacement.replace === 'string')
+              : this.options.customReplacements
+          }
         }
       } catch (error) {
         console.error('[ERROR] Failed to load Rich Copy options:', error)
@@ -129,4 +163,4 @@ export const useRichCopyStore = defineStore('richCopy', {
       this.saveOptions()
     }
   }
-}) 
+})

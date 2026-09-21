@@ -43,6 +43,27 @@ describe('Rich Copy toolbar dialog', () => {
     wrapper.unmount()
   })
 
+  it('renders format actions as controls instead of leaking template markup', async () => {
+    store.options.formats = [
+      { id: 'markdown', name: 'Markdown', template: '[{title}]({url})', icon: '📝' },
+      { id: 'url', name: 'URL uniquement', template: '{url}', icon: '🔗' }
+    ]
+
+    const wrapper = mount(RichCopyControl, {
+      props: { modelValue: true },
+      global: { stubs: {
+        ToolGlowsDialog: { name: 'ToolGlowsDialog', props: ['visible'], template: '<section v-if="visible"><slot /></section>' },
+        Dropdown: true, InputText: true, Textarea: true, ToolGlowsIcon: true
+      } }
+    })
+
+    expect(wrapper.text()).not.toContain('aria-label=')
+    expect(wrapper.text()).not.toContain('> 1')
+    expect(wrapper.findAll('[aria-label="Supprimer le format"]')).toHaveLength(2)
+    expect(wrapper.findAll('.rich-copy-format-actions .p-button')).toHaveLength(6)
+    wrapper.unmount()
+  })
+
   it('renders tab-group actions with ToolGlows SVG icons', async () => {
     const wrapper = mount(RichCopyControl, {
       props: { modelValue: true },
