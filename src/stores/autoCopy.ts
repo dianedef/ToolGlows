@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { normalizeKeyboardShortcut } from '@/utils/keyboardShortcut'
 
 interface CopyFormat {
   id: string
@@ -15,6 +16,7 @@ interface AutoCopySettings {
   includeSource: boolean
   showNotifications: boolean
   enableAltSelection: boolean
+  multiSelectionShortcut: string
 }
 
 const defaultFormats: CopyFormat[] = [
@@ -47,7 +49,8 @@ const defaultSettings: AutoCopySettings = {
   preserveFormatting: true,
   includeSource: true,
   showNotifications: true,
-  enableAltSelection: true
+  enableAltSelection: true,
+  multiSelectionShortcut: 'Ctrl'
 }
 
 export const useAutoCopyStore = defineStore('autoCopy', {
@@ -66,11 +69,20 @@ export const useAutoCopyStore = defineStore('autoCopy', {
       this.saveSettings()
     },
 
+    setMultiSelectionShortcut(shortcut: string) {
+      const normalized = normalizeKeyboardShortcut(shortcut)
+      if (!normalized) return
+      this.settings.multiSelectionShortcut = normalized
+      this.saveSettings()
+    },
+
     updateSettings(settings: AutoCopySettings) {
       this.settings = {
         ...defaultSettings,
         ...settings,
-        formats: settings.formats || defaultFormats
+        formats: settings.formats || defaultFormats,
+        multiSelectionShortcut: normalizeKeyboardShortcut(settings.multiSelectionShortcut)
+          ?? defaultSettings.multiSelectionShortcut
       }
       this.saveSettings()
     },
@@ -109,6 +121,8 @@ export const useAutoCopyStore = defineStore('autoCopy', {
             ...defaultSettings,
             ...data.autoCopySettings,
             formats,
+            multiSelectionShortcut: normalizeKeyboardShortcut(data.autoCopySettings.multiSelectionShortcut)
+              ?? defaultSettings.multiSelectionShortcut,
             // Si le format actif n'existe pas, utiliser le format par défaut
             activeFormat: formatExists ? activeFormat : defaultSettings.activeFormat
           }
@@ -142,4 +156,4 @@ export const useAutoCopyStore = defineStore('autoCopy', {
       }
     }
   }
-}) 
+})

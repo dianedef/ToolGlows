@@ -189,6 +189,61 @@ try {
   }
   await frameToast.waitFor({ timeout: 5000 })
 
+  const multiPage = await context.newPage()
+  await multiPage.route('https://example.com/auto-copy-multi', route => route.fulfill({
+    contentType: 'text/html',
+    body: '<main><div id="multi-first">First block</div><div id="multi-second">Second block</div></main>'
+  }))
+  await multiPage.goto('https://example.com/auto-copy-multi')
+  await multiPage.locator('#toolglows-root').waitFor()
+  await multiPage.locator('[data-toolglows-main]').click()
+  const multiPageAutoCopy = multiPage.locator('[data-tool-id="autoCopy"]')
+  if (await multiPageAutoCopy.getAttribute('aria-pressed') !== 'true') {
+    await multiPageAutoCopy.click()
+  }
+  await multiPageAutoCopy.focus()
+  await multiPage.keyboard.down('Control')
+  await multiPage.waitForTimeout(650)
+  const multiModeBeforeRelease = await multiPage.locator('html').getAttribute('data-toolglows-auto-copy-multi')
+  if (multiModeBeforeRelease !== 'true') {
+    throw new Error(`Ctrl hold did not activate from focused toolbar button: ${JSON.stringify(multiModeBeforeRelease)}`)
+  }
+  await multiPage.keyboard.up('Control')
+  await multiPage.evaluate(() => {
+    document.querySelector('#multi-first')?.dispatchEvent(new MouseEvent('click', {
+      bubbles: true
+    }))
+    document.querySelector('#multi-second')?.dispatchEvent(new MouseEvent('click', {
+      bubbles: true
+    }))
+  })
+  await multiPage.waitForFunction(() => navigator.clipboard.readText() === 'First block\nSecond block')
+  const multiSelectionState = await multiPage.evaluate(() => ({
+    first: document.querySelector('#multi-first')?.dataset.toolglowsAutoCopyMultiSelected,
+    second: document.querySelector('#multi-second')?.dataset.toolglowsAutoCopyMultiSelected
+  }))
+  if (multiSelectionState.first !== 'true' || multiSelectionState.second !== 'true') {
+    throw new Error(`Multi-selection markers were not applied: ${JSON.stringify(multiSelectionState)}`)
+  }
+  const multiSelectionAfterMRelease = await multiPage.evaluate(() => ({
+    first: document.querySelector('#multi-first')?.dataset.toolglowsAutoCopyMultiSelected,
+    mode: document.documentElement.dataset.toolglowsAutoCopyMulti
+  }))
+  if (multiSelectionAfterMRelease.first !== 'true' || multiSelectionAfterMRelease.mode !== 'true') {
+    throw new Error(`Multi-selection ended on M release: ${JSON.stringify(multiSelectionAfterMRelease)}`)
+  }
+  await multiPage.evaluate(() => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  })
+  const multiSelectionCleanup = await multiPage.evaluate(() => ({
+    first: document.querySelector('#multi-first')?.dataset.toolglowsAutoCopyMultiSelected,
+    second: document.querySelector('#multi-second')?.dataset.toolglowsAutoCopyMultiSelected,
+    mode: document.documentElement.dataset.toolglowsAutoCopyMulti
+  }))
+  if (multiSelectionCleanup.first || multiSelectionCleanup.second || multiSelectionCleanup.mode) {
+    throw new Error(`Multi-selection cleanup failed: ${JSON.stringify(multiSelectionCleanup)}`)
+  }
+
   const performancePage = await context.newPage()
   await performancePage.route('https://example.com/auto-copy-performance', route => route.fulfill({
     contentType: 'text/html',

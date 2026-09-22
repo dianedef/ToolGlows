@@ -4,6 +4,7 @@ import { useToolGlowsStore } from '@/stores/toolglows'
 import { useToast } from 'primevue/usetoast'
 import { elementOutline, resolveDesignColorToken, resolveDesignToken } from '@/utils/designTokens'
 import { copyTextToClipboard } from '@/utils/clipboard'
+import { matchesKeyboardShortcut, shortcutIncludesKey } from '@/utils/keyboardShortcut'
 
 function selectionToMarkdown(root: ParentNode): string {
   const convertNode = (node: Node): string => {
@@ -36,12 +37,17 @@ export function useAutoCopy() {
   const isCopying = ref(false)
   const copyState = ref<'idle' | 'copying' | 'confirmed' | 'failed'>('idle')
   const isAltMode = ref(false)
-  const altKeyTimer = ref<number | null>(null)
+  const isMultiAltMode = ref(false)
+  const altSelectionTimer = ref<number | null>(null)
   const ALT_DELAY = 200 // Délai en millisecondes avant d'activer le mode ALT
+  const MULTI_HOLD_DELAY = 600
   const isAltCombination = ref(false) // Pour détecter si ALT est utilisé avec une autre touche
   const selectionFeedbackStyleId = 'toolglows-auto-copy-selection-style'
   const altFeedbackStyleId = 'toolglows-auto-copy-alt-style'
   const altHighlightId = 'toolglows-auto-copy-alt-highlight'
+  const multiSelectionStyleId = 'toolglows-auto-copy-multi-selection-style'
+  const multiSelectionAttribute = 'data-toolglows-auto-copy-multi-selected'
+  type AltSelectionMode = 'single' | 'multi'
   const selectableElementSelector = 'div, p, article, section, h1, h2, h3, h4, h5, h6, ul, ol, li, blockquote, pre, code, table, tr, td, th'
   const highlightHoldMs = 1200
   const highlightFadeStepMs = 150
@@ -51,6 +57,11 @@ export function useAutoCopy() {
   let highlightFadeTimer: number | null = null
   let highlightClearTimer: number | null = null
   let stateResetTimer: number | null = null
+  let lastPointerPosition: { clientX: number; clientY: number } | null = null
+  let pendingAltSelectionMode: AltSelectionMode | null = null
+  const multiSelectedTargets: HTMLElement[] = []
+  const multiSelectedTexts: string[] = []
+  let multiCopyQueue: Promise<void> = Promise.resolve()
 
   const syncSelectionFeedbackStyle = () => {
     const existingStyle = document.getElementById(selectionFeedbackStyleId)
@@ -135,6 +146,9 @@ export function useAutoCopy() {
       root: container
     }
   }
+
+  const getSelectableElementText = (target: HTMLElement): string =>
+    target.innerText ?? target.textContent ?? ''
 
   // Function to format the selection according to the chosen format
   const formatText = ({ text, html, root }: { text: string; html: string; root: ParentNode }): string => {
@@ -234,14 +248,8 @@ export function useAutoCopy() {
     return target && !isElementExcluded(target) ? target : null
   }
 
-  const updateAltHighlight = (event: PointerEvent) => {
-    if (!isAltMode.value) return
-    if (!event.altKey) {
-      disableAltMode()
-      return
-    }
+  const positionAltHighlight = (target: HTMLElement | null) => {
     const highlight = document.getElementById(altHighlightId)
-    const target = findSelectableTarget(event)
     if (!highlight || !target) {
       if (highlight) highlight.style.display = 'none'
       return
@@ -254,6 +262,45 @@ export function useAutoCopy() {
       width: `${rect.width}px`,
       height: `${rect.height}px`
     })
+  }
+
+  const updateAltHighlight = (event: PointerEvent) => {
+    lastPointerPosition = { clientX: event.clientX, clientY: event.clientY }
+    if (!isAltMode.value && !isMultiAltMode.value) return
+    if (!isMultiAltMode.value && !event.altKey) {
+      disableAltMode()
+    }
+    if (!isAltMode.value && !isMultiAltMode.value) {
+      return
+    }
+    const target = findSelectableTarget(event)
+    positionAltHighlight(target)
+  }
+
+  const createAltFeedbackLayer = () => {
+    const style = document.createElement('style')
+    const highlight = document.createElement('div')
+    style.id = altFeedbackStyleId
+    style.textContent = `
+      html[data-toolglows-auto-copy-alt='true'] body { cursor: pointer !important; }
+      #${altHighlightId} {
+        position: fixed !important;
+        inset: 0 auto auto 0 !important;
+        pointer-events: none !important;
+        box-sizing: border-box !important;
+        z-index: ${resolveDesignToken('--tg-z-overlay')} !important;
+        outline: ${elementOutline('solid')} !important;
+        background-color: ${resolveDesignColorToken('--tg-element-hover')} !important;
+        transition: ${resolveDesignToken('--tg-element-transition')} !important;
+      }
+    `
+    highlight.id = altHighlightId
+    highlight.dataset.toolglowsUi = 'true'
+    highlight.style.display = 'none'
+    document.getElementById(altFeedbackStyleId)?.remove()
+    document.getElementById(altHighlightId)?.remove()
+    document.documentElement.appendChild(style)
+    document.documentElement.appendChild(highlight)
   }
 
   // Function to copy the selected text
@@ -313,6 +360,38 @@ export function useAutoCopy() {
     } finally {
       isCopying.value = false
     }
+  }
+
+  const copyMultiSelection = (text: string) => {
+    if (!isEnabled() || !text) return
+
+    multiCopyQueue = multiCopyQueue.then(async () => {
+      isCopying.value = true
+      copyState.value = 'copying'
+
+      try {
+        const success = await copyTextToClipboard(text)
+        if (!success) throw new Error('Failed to copy text')
+
+        copyState.value = 'confirmed'
+        if (store.settings.showNotifications) {
+          sendNotification('success', 'Text copied', 'The selected text has been copied to the clipboard')
+        }
+      } catch {
+        copyState.value = 'failed'
+        if (stateResetTimer !== null) window.clearTimeout(stateResetTimer)
+        stateResetTimer = window.setTimeout(() => {
+          copyState.value = 'idle'
+          stateResetTimer = null
+        }, 2200)
+        console.error('[Auto Copy] Copy failed')
+        if (store.settings.showNotifications) {
+          sendNotification('error', 'Error', 'Failed to copy the selected text')
+        }
+      } finally {
+        isCopying.value = false
+      }
+    })
   }
 
   // Event handler for text selection
@@ -378,56 +457,71 @@ export function useAutoCopy() {
     }
   }
 
-  // Function to enable ALT mode with delay
-  const enableAltMode = () => {
+  const isEditableShortcutTarget = (target: EventTarget | null): boolean => {
+    if (!(target instanceof Element)) return false
+    return target.closest('input, textarea, select, [role="textbox"], [role="combobox"], [role="searchbox"], [role="spinbutton"], [contenteditable]:not([contenteditable="false"]), [data-toolglows-shortcut-capture]') !== null
+  }
+
+  // Shared activation path for Alt selection and the configured multi-selection shortcut.
+  const enableAltSelectionMode = (mode: AltSelectionMode, delay = ALT_DELAY) => {
     if (!isEnabled() || !store.settings.enableAltSelection) return
 
-    // Nettoyer le timer existant si présent
-    if (altKeyTimer.value !== null) {
-      clearTimeout(altKeyTimer.value)
+    if (altSelectionTimer.value !== null) {
+      clearTimeout(altSelectionTimer.value)
     }
 
-    // Définir un nouveau timer
-    altKeyTimer.value = window.setTimeout(() => {
+    pendingAltSelectionMode = mode
+    altSelectionTimer.value = window.setTimeout(() => {
       if (document.hidden) {
         disableAltMode()
+        disableMultiAltMode()
         return
       }
-      isAltMode.value = true
-      const style = document.createElement('style')
-      const highlight = document.createElement('div')
-      style.id = altFeedbackStyleId
-      style.textContent = `
-        html[data-toolglows-auto-copy-alt='true'] body { cursor: pointer !important; }
-        #${altHighlightId} {
-          position: fixed !important;
-          inset: 0 auto auto 0 !important;
-          pointer-events: none !important;
-          box-sizing: border-box !important;
-          z-index: ${resolveDesignToken('--tg-z-overlay')} !important;
-          outline: ${elementOutline('solid')} !important;
-          background-color: ${resolveDesignColorToken('--tg-element-hover')} !important;
-          transition: ${resolveDesignToken('--tg-element-transition')} !important;
-        }
-      `
-      highlight.id = altHighlightId
-      highlight.dataset.toolglowsUi = 'true'
-      highlight.style.display = 'none'
-      document.getElementById(altFeedbackStyleId)?.remove()
-      document.getElementById(altHighlightId)?.remove()
-      document.documentElement.appendChild(style)
-      document.documentElement.appendChild(highlight)
+
+      if (mode === 'single') {
+        isAltMode.value = true
+      } else {
+        isMultiAltMode.value = true
+      }
+      createAltFeedbackLayer()
       document.documentElement.dataset.toolglowsAutoCopyAlt = 'true'
-    }, ALT_DELAY)
+      if (mode === 'multi') {
+        const style = document.createElement('style')
+        style.id = multiSelectionStyleId
+        style.textContent = `
+          [${multiSelectionAttribute}='true'] {
+            outline: ${elementOutline('solid')} !important;
+            background-color: ${resolveDesignColorToken('--tg-element-hover')} !important;
+          }
+        `
+        document.getElementById(multiSelectionStyleId)?.remove()
+        document.documentElement.appendChild(style)
+        document.documentElement.dataset.toolglowsAutoCopyMulti = 'true'
+      }
+
+      if (lastPointerPosition) {
+        const hoveredElement = document.elementFromPoint?.(
+          lastPointerPosition.clientX,
+          lastPointerPosition.clientY
+        )
+        const target = hoveredElement instanceof Element
+          ? hoveredElement.closest<HTMLElement>(selectableElementSelector)
+          : null
+        positionAltHighlight(target && !isElementExcluded(target) ? target : null)
+      }
+      altSelectionTimer.value = null
+      pendingAltSelectionMode = null
+    }, delay)
   }
 
   // Function to disable ALT mode
   const disableAltMode = () => {
     // Nettoyer le timer si présent
-    if (altKeyTimer.value !== null) {
-      clearTimeout(altKeyTimer.value)
-      altKeyTimer.value = null
+    if (pendingAltSelectionMode === 'single' && altSelectionTimer.value !== null) {
+      clearTimeout(altSelectionTimer.value)
+      altSelectionTimer.value = null
     }
+    if (pendingAltSelectionMode === 'single') pendingAltSelectionMode = null
 
     isAltMode.value = false
     isAltCombination.value = false
@@ -436,12 +530,51 @@ export function useAutoCopy() {
     document.getElementById(altHighlightId)?.remove()
   }
 
+  const disableMultiAltMode = () => {
+    if (pendingAltSelectionMode === 'multi' && altSelectionTimer.value !== null) {
+      clearTimeout(altSelectionTimer.value)
+      altSelectionTimer.value = null
+    }
+    if (pendingAltSelectionMode === 'multi') pendingAltSelectionMode = null
+
+    isMultiAltMode.value = false
+    delete document.documentElement.dataset.toolglowsAutoCopyMulti
+    document.getElementById(multiSelectionStyleId)?.remove()
+    multiSelectedTargets.forEach(target => target.removeAttribute(multiSelectionAttribute))
+    multiSelectedTargets.length = 0
+    multiSelectedTexts.length = 0
+    document.getElementById(altFeedbackStyleId)?.remove()
+    document.getElementById(altHighlightId)?.remove()
+    delete document.documentElement.dataset.toolglowsAutoCopyAlt
+  }
+
   const handleFocusLoss = () => {
     disableAltMode()
+    disableMultiAltMode()
   }
 
   const handleAltClick = (event: MouseEvent) => {
-    if (!isEnabled() || !isAltMode.value || !store.settings.enableAltSelection) return
+    if (!isEnabled() || !store.settings.enableAltSelection) return
+
+    if (isMultiAltMode.value) {
+      const target = findSelectableTarget(event)
+      if (!target) return
+
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      if (multiSelectedTargets.includes(target)) return
+
+      const text = getSelectableElementText(target)
+      if (!text) return
+
+      multiSelectedTargets.push(target)
+      multiSelectedTexts.push(text)
+      target.setAttribute(multiSelectionAttribute, 'true')
+      copyMultiSelection(multiSelectedTexts.join('\n'))
+      return
+    }
+
+    if (!isAltMode.value) return
     if (!event.altKey) {
       disableAltMode()
       return
@@ -470,7 +603,7 @@ export function useAutoCopy() {
     // Si une autre touche est déjà pressée avec ALT, on considère que c'est un raccourci
     if (event.key === 'Alt' && !event.ctrlKey && !event.shiftKey && !event.metaKey) {
       if (!store.settings.enableAltSelection || isAltMode.value) return
-      enableAltMode()
+      enableAltSelectionMode('single')
     } else if (event.altKey) {
       // Si ALT est pressé avec une autre touche, on désactive le mode
       isAltCombination.value = true
@@ -492,6 +625,17 @@ export function useAutoCopy() {
   // Gestionnaire global des touches
   const handleKeyDown = (event: KeyboardEvent) => {
     if (!isEnabled()) return
+    if (
+      matchesKeyboardShortcut(event, store.settings.multiSelectionShortcut)
+      && !event.repeat
+      && !isMultiAltMode.value
+      && pendingAltSelectionMode !== 'multi'
+      && !isEditableShortcutTarget(event.target)
+    ) {
+      event.preventDefault()
+      enableAltSelectionMode('multi', MULTI_HOLD_DELAY)
+      return
+    }
     // Si une autre touche est pressée pendant que ALT est maintenu
     if (event.altKey && event.key !== 'Alt') {
       isAltCombination.value = true
@@ -501,8 +645,19 @@ export function useAutoCopy() {
 
   // Gestionnaire de touche Échap
   const handleEscapeKey = (event: KeyboardEvent) => {
-    if (event.key === 'Escape' && isAltMode.value) {
+    if (event.key === 'Escape' && (isAltMode.value || isMultiAltMode.value || pendingAltSelectionMode !== null)) {
       disableAltMode()
+      disableMultiAltMode()
+    }
+  }
+
+  const handleMultiKeyUp = (event: KeyboardEvent) => {
+    if (isEditableShortcutTarget(event.target)) return
+    if (
+      pendingAltSelectionMode === 'multi'
+      && shortcutIncludesKey(store.settings.multiSelectionShortcut, event.key)
+    ) {
+      disableMultiAltMode()
     }
   }
 
@@ -517,6 +672,7 @@ export function useAutoCopy() {
     document.addEventListener('keydown', handleSelectionKeyDown)
     document.addEventListener('keydown', handleAltKeyDown)
     document.addEventListener('keyup', handleAltKeyUp)
+    document.addEventListener('keyup', handleMultiKeyUp)
     document.addEventListener('keydown', handleKeyDown)
     document.addEventListener('keydown', handleEscapeKey)
     document.addEventListener('click', handleAltClick, true)
@@ -536,16 +692,25 @@ export function useAutoCopy() {
     document.removeEventListener('keydown', handleSelectionKeyDown)
     document.removeEventListener('keydown', handleAltKeyDown)
     document.removeEventListener('keyup', handleAltKeyUp)
+    document.removeEventListener('keyup', handleMultiKeyUp)
     document.removeEventListener('keydown', handleKeyDown)
     document.removeEventListener('keydown', handleEscapeKey)
     document.removeEventListener('click', handleAltClick, true)
     window.removeEventListener('blur', handleFocusLoss)
     document.removeEventListener('visibilitychange', handleFocusLoss)
     disableAltMode()
+    disableMultiAltMode()
   })
 
   watch(() => store.settings.enableAltSelection, enabled => {
-    if (!enabled) disableAltMode()
+    if (!enabled) {
+      disableAltMode()
+      disableMultiAltMode()
+    }
+  })
+
+  watch(() => store.settings.multiSelectionShortcut, () => {
+    disableMultiAltMode()
   })
 
   watch(() => toolglowsStore.activeTools.includes('autoCopy'), enabled => {
@@ -558,6 +723,7 @@ export function useAutoCopy() {
       keyboardSelectionAtStart = null
       copyState.value = 'idle'
       disableAltMode()
+      disableMultiAltMode()
       try {
         toast.removeGroup('auto-copy')
       } catch {
@@ -570,6 +736,7 @@ export function useAutoCopy() {
     isCopying,
     copyState,
     isAltMode,
+    isMultiAltMode,
     settings: store.settings,
     updateSettings: store.updateSettings,
     setActiveFormat: store.setActiveFormat

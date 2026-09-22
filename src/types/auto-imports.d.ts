@@ -92,11 +92,14 @@ declare global {
   const mapStores: typeof import('pinia')['mapStores']
   const mapWritableState: typeof import('pinia')['mapWritableState']
   const markRaw: typeof import('vue')['markRaw']
+  const matchesKeyboardShortcut: typeof import('../utils/keyboardShortcut')['matchesKeyboardShortcut']
   const nextTick: typeof import('vue')['nextTick']
   const normalizeDarkModeResourceUrl: typeof import('../utils/darkModeResourcePolicy')['normalizeDarkModeResourceUrl']
   const normalizeInterfaceTheme: typeof import('../composables/useInterfaceTheme')['normalizeInterfaceTheme']
+  const normalizeKeyboardShortcut: typeof import('../utils/keyboardShortcut')['normalizeKeyboardShortcut']
   const normalizeReaderModeOptions: typeof import('../composables/useReaderMode')['normalizeReaderModeOptions']
   const normalizeSavedDarkThemes: typeof import('../stores/darkModeThemes')['normalizeSavedDarkThemes']
+  const normalizeShortcutKey: typeof import('../utils/keyboardShortcut')['normalizeShortcutKey']
   const normalizeToolbarSize: typeof import('../utils/toolbarSize')['normalizeToolbarSize']
   const notivue: typeof import('../utils/notifications')['notivue']
   const onActivated: typeof import('vue')['onActivated']
@@ -155,6 +158,9 @@ declare global {
   const shallowReactive: typeof import('vue')['shallowReactive']
   const shallowReadonly: typeof import('vue')['shallowReadonly']
   const shallowRef: typeof import('vue')['shallowRef']
+  const shortcutFromKeyEvent: typeof import('../utils/keyboardShortcut')['shortcutFromKeyEvent']
+  const shortcutIncludesKey: typeof import('../utils/keyboardShortcut')['shortcutIncludesKey']
+  const standaloneModifierFromKeyUp: typeof import('../utils/keyboardShortcut')['standaloneModifierFromKeyUp']
   const storeToRefs: typeof import('pinia')['storeToRefs']
   const suggestReadableColor: typeof import('../utils/colorContrast')['suggestReadableColor']
   const switchDarkModePalette: typeof import('../stores/darkModePalette')['switchDarkModePalette']
@@ -543,11 +549,14 @@ declare module 'vue' {
     readonly mapStores: UnwrapRef<typeof import('pinia')['mapStores']>
     readonly mapWritableState: UnwrapRef<typeof import('pinia')['mapWritableState']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
+    readonly matchesKeyboardShortcut: UnwrapRef<typeof import('../utils/keyboardShortcut')['matchesKeyboardShortcut']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly normalizeDarkModeResourceUrl: UnwrapRef<typeof import('../utils/darkModeResourcePolicy')['normalizeDarkModeResourceUrl']>
     readonly normalizeInterfaceTheme: UnwrapRef<typeof import('../composables/useInterfaceTheme')['normalizeInterfaceTheme']>
+    readonly normalizeKeyboardShortcut: UnwrapRef<typeof import('../utils/keyboardShortcut')['normalizeKeyboardShortcut']>
     readonly normalizeReaderModeOptions: UnwrapRef<typeof import('../composables/useReaderMode')['normalizeReaderModeOptions']>
     readonly normalizeSavedDarkThemes: UnwrapRef<typeof import('../stores/darkModeThemes')['normalizeSavedDarkThemes']>
+    readonly normalizeShortcutKey: UnwrapRef<typeof import('../utils/keyboardShortcut')['normalizeShortcutKey']>
     readonly normalizeToolbarSize: UnwrapRef<typeof import('../utils/toolbarSize')['normalizeToolbarSize']>
     readonly notivue: UnwrapRef<typeof import('../utils/notifications')['notivue']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
@@ -606,6 +615,9 @@ declare module 'vue' {
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
+    readonly shortcutFromKeyEvent: UnwrapRef<typeof import('../utils/keyboardShortcut')['shortcutFromKeyEvent']>
+    readonly shortcutIncludesKey: UnwrapRef<typeof import('../utils/keyboardShortcut')['shortcutIncludesKey']>
+    readonly standaloneModifierFromKeyUp: UnwrapRef<typeof import('../utils/keyboardShortcut')['standaloneModifierFromKeyUp']>
     readonly storeToRefs: UnwrapRef<typeof import('pinia')['storeToRefs']>
     readonly suggestReadableColor: UnwrapRef<typeof import('../utils/colorContrast')['suggestReadableColor']>
     readonly switchDarkModePalette: UnwrapRef<typeof import('../stores/darkModePalette')['switchDarkModePalette']>

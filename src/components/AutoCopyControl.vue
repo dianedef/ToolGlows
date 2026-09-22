@@ -85,10 +85,30 @@
               :binary="true"
               @change="() => {
                 copyStore.saveSettings();
-                notifySetting('Alt Selection', copyStore.settings.enableAltSelection ? 'Alt Selection enabled' : 'Alt Selection disabled');
+                notifySetting('Element Selection', copyStore.settings.enableAltSelection ? 'Alt selection and multi-selection enabled' : 'Element selection disabled');
               }"
             />
-            <label>Enable Alt Selection</label>
+            <label>Enable Alt and multi-selection</label>
+          </div>
+
+          <div class="multi-shortcut-setting">
+            <label class="shortcut-setting-label" for="auto-copy-multi-shortcut">Multi-selection shortcut</label>
+            <Button
+              id="auto-copy-multi-shortcut"
+              type="button"
+              severity="secondary"
+              outlined
+              :label="isCapturingMultiSelectionShortcut ? 'Press a key or combination…' : copyStore.settings.multiSelectionShortcut"
+              :aria-pressed="isCapturingMultiSelectionShortcut"
+              aria-describedby="auto-copy-multi-shortcut-help"
+              data-toolglows-shortcut-capture
+              @click="isCapturingMultiSelectionShortcut = true"
+              @keydown="captureMultiSelectionShortcut"
+              @keyup="captureStandaloneModifier"
+            />
+            <small id="auto-copy-multi-shortcut-help" class="section-description">
+              Hold the shortcut for 600 ms, then click the blocks to collect. Press Escape to exit. Alt remains reserved for element selection and format shortcuts.
+            </small>
           </div>
         </div>
       </div>
@@ -97,20 +117,55 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useAutoCopyStore } from '@/stores/autoCopy'
 import { useAutoCopy } from '@/composables/useAutoCopy'
+import { normalizeKeyboardShortcut, shortcutFromKeyEvent, standaloneModifierFromKeyUp } from '@/utils/keyboardShortcut'
 import ToolGlowsDialog from './ToolGlowsDialog.vue'
 import Checkbox from 'primevue/checkbox'
+import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { useExcludeToolGlowsBar } from '@/composables/excludeToolGlowsBar'
 
 const copyStore = useAutoCopyStore()
 const toast = useToast()
+const isCapturingMultiSelectionShortcut = ref(false)
 
 const notifySetting = (summary: string, detail: string) => {
   if (!copyStore.settings.showNotifications) return
   toast.add({ severity: 'success', summary, detail, life: 3000 })
+}
+
+const saveMultiSelectionShortcut = (shortcut: string) => {
+  const normalized = normalizeKeyboardShortcut(shortcut)
+  if (!normalized) return
+  copyStore.setMultiSelectionShortcut(normalized)
+  isCapturingMultiSelectionShortcut.value = false
+  notifySetting('Shortcut updated', `Multi-selection now uses ${normalized}`)
+}
+
+const captureMultiSelectionShortcut = (event: KeyboardEvent) => {
+  if (!isCapturingMultiSelectionShortcut.value) return
+  if (event.key === 'Tab') {
+    isCapturingMultiSelectionShortcut.value = false
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+  if (event.key === 'Escape') {
+    isCapturingMultiSelectionShortcut.value = false
+    return
+  }
+
+  const shortcut = shortcutFromKeyEvent(event)
+  if (shortcut) saveMultiSelectionShortcut(shortcut)
+}
+
+const captureStandaloneModifier = (event: KeyboardEvent) => {
+  if (!isCapturingMultiSelectionShortcut.value) return
+  const shortcut = standaloneModifierFromKeyUp(event)
+  if (shortcut) saveMultiSelectionShortcut(shortcut)
 }
 
 // Initialize the composable
@@ -149,6 +204,14 @@ const closeDialog = () => {
 
 .feedback-heading {
   margin-top: var(--tg-space-5);
+}
+
+.multi-shortcut-setting {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--tg-space-2);
+  margin-top: var(--tg-space-4);
 }
 
 .formats-list {

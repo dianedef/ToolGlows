@@ -123,6 +123,134 @@ describe('Auto Copy interaction contract', () => {
     vi.useRealTimers()
   })
 
+  it('keeps multi-selection active after holding and releasing Ctrl until Escape', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    document.body.innerHTML = '<div id="first">First block</div><div id="second">Second block</div>'
+    wrapper = mount(Harness)
+    const first = document.querySelector('#first')!
+    const second = document.querySelector('#second')!
+
+    document.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'Control', ctrlKey: true, bubbles: true
+    }))
+    await vi.advanceTimersByTimeAsync(600)
+    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Control', bubbles: true }))
+    first.dispatchEvent(new PointerEvent('pointermove', {
+      bubbles: true, clientX: 10, clientY: 10
+    }))
+    const preselection = document.getElementById('toolglows-auto-copy-alt-highlight') as HTMLElement | null
+    expect(preselection).not.toBeNull()
+    expect(preselection?.style.display).toBe('block')
+
+    first.dispatchEvent(new MouseEvent('click', {
+      bubbles: true
+    }))
+    await flushCopy()
+    expect(clipboardWrite).toHaveBeenLastCalledWith('First block')
+
+    second.dispatchEvent(new MouseEvent('click', {
+      bubbles: true
+    }))
+    await flushCopy()
+    expect(clipboardWrite).toHaveBeenLastCalledWith('First block\nSecond block')
+
+    first.dispatchEvent(new MouseEvent('click', {
+      bubbles: true
+    }))
+    await flushCopy()
+    expect(clipboardWrite).toHaveBeenCalledTimes(2)
+    expect(first.dataset.toolglowsAutoCopyMultiSelected).toBe('true')
+
+    expect(first.dataset.toolglowsAutoCopyMultiSelected).toBe('true')
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    expect(first.dataset.toolglowsAutoCopyMultiSelected).toBeUndefined()
+    expect(second.dataset.toolglowsAutoCopyMultiSelected).toBeUndefined()
+    expect(document.documentElement.dataset.toolglowsAutoCopyMulti).toBeUndefined()
+    vi.useRealTimers()
+  })
+
+  it('does not activate multi-selection for a short Ctrl press', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control', ctrlKey: true, bubbles: true }))
+    await vi.advanceTimersByTimeAsync(300)
+    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Control', bubbles: true }))
+    await vi.advanceTimersByTimeAsync(300)
+
+    expect(document.documentElement.dataset.toolglowsAutoCopyMulti).toBeUndefined()
+  })
+
+  it('keeps Alt+M reserved for the existing Markdown format shortcut', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+    selectNodeContents(document.querySelector('#selection')!)
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'm', altKey: true, bubbles: true }))
+    await flushCopy()
+    await vi.advanceTimersByTimeAsync(600)
+
+    expect(clipboardWrite).toHaveBeenCalledTimes(1)
+    expect(document.documentElement.dataset.toolglowsAutoCopyMulti).toBeUndefined()
+  })
+
+  it('ignores M hold activation inside editable fields', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    document.body.innerHTML = '<input id="editable">'
+    wrapper = mount(Harness)
+    const input = document.querySelector<HTMLInputElement>('#editable')!
+
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control', ctrlKey: true, bubbles: true }))
+    await vi.advanceTimersByTimeAsync(600)
+
+    expect(document.documentElement.dataset.toolglowsAutoCopyMulti).toBeUndefined()
+  })
+
+  it('activates Ctrl hold when focus remains on a toolbar button', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    document.body.innerHTML = '<div id="toolglows-root"><button id="toolbar-button">Auto Copy</button></div>'
+    wrapper = mount(Harness)
+    const button = document.querySelector<HTMLButtonElement>('#toolbar-button')!
+    button.focus()
+
+    button.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control', ctrlKey: true, bubbles: true }))
+    await vi.advanceTimersByTimeAsync(600)
+
+    expect(document.documentElement.dataset.toolglowsAutoCopyMulti).toBe('true')
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  })
+
+  it('ignores repeated Ctrl keydown events once multi-selection is active', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control', ctrlKey: true, bubbles: true }))
+    await vi.advanceTimersByTimeAsync(600)
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control', ctrlKey: true, repeat: true, bubbles: true }))
+
+    expect(document.documentElement.dataset.toolglowsAutoCopyMulti).toBe('true')
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  })
+
+  it('cancels a pending Ctrl hold when Escape is pressed', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    wrapper = mount(Harness)
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control', ctrlKey: true, bubbles: true }))
+    await vi.advanceTimersByTimeAsync(300)
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    await vi.advanceTimersByTimeAsync(300)
+
+    expect(document.documentElement.dataset.toolglowsAutoCopyMulti).toBeUndefined()
+  })
+
   it('exits Alt selection when the window blurs and does not copy the next click', async () => {
     vi.useFakeTimers()
     useSettingsStore().settings.activeTools = ['autoCopy']
