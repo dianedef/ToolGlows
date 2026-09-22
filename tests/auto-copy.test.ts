@@ -170,6 +170,42 @@ describe('Auto Copy interaction contract', () => {
     vi.useRealTimers()
   })
 
+  it('updates one persistent notification with copied block previews until the multi-selection ends', async () => {
+    vi.useFakeTimers()
+    useSettingsStore().settings.activeTools = ['autoCopy']
+    document.body.innerHTML = '<div id="first">First block</div><div id="second">Second block</div>'
+    wrapper = mount(Harness)
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control', ctrlKey: true, bubbles: true }))
+    await vi.advanceTimersByTimeAsync(600)
+    document.querySelector('#first')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    await flushCopy()
+    expect(toastAdd).toHaveBeenLastCalledWith(expect.objectContaining({
+      group: 'auto-copy',
+      detail: expect.stringContaining('First block'),
+      life: 0
+    }))
+
+    document.querySelector('#second')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    await flushCopy()
+    expect(toastAdd).toHaveBeenLastCalledWith(expect.objectContaining({
+      group: 'auto-copy',
+      detail: expect.stringContaining('Second block'),
+      life: 0
+    }))
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    await flushCopy()
+    expect(toastAdd).toHaveBeenLastCalledWith(expect.objectContaining({
+      group: 'auto-copy',
+      summary: 'Sélection terminée',
+      detail: expect.stringContaining('First block'),
+      life: 2200
+    }))
+    expect(toastAdd).toHaveBeenCalledTimes(3)
+    vi.useRealTimers()
+  })
+
   it('does not activate multi-selection for a short Ctrl press', async () => {
     vi.useFakeTimers()
     useSettingsStore().settings.activeTools = ['autoCopy']

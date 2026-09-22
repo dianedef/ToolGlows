@@ -61,6 +61,8 @@ export function useAutoCopy() {
   let pendingAltSelectionMode: AltSelectionMode | null = null
   const multiSelectedTargets: HTMLElement[] = []
   const multiSelectedTexts: string[] = []
+  type MultiCopySession = { texts: string[]; copiedCount: number }
+  let multiSession: MultiCopySession | null = null
   let multiCopyQueue: Promise<void> = Promise.resolve()
 
   const syncSelectionFeedbackStyle = () => {
@@ -174,7 +176,8 @@ export function useAutoCopy() {
   const sendNotification = (
     severity: 'success' | 'error',
     title: string,
-    message: string
+    message: string,
+    life = 2200
   ) => {
     try {
       toast.removeGroup('auto-copy')
@@ -183,12 +186,35 @@ export function useAutoCopy() {
         severity,
         summary: title,
         detail: message,
-        life: 2200,
+        life,
         closable: false
       })
     } catch {
       console.warn('[Auto Copy] Notification unavailable')
     }
+  }
+
+  const notifyMultiCopySession = (session: MultiCopySession, finished = false, error = false) => {
+    if (!store.settings.showNotifications) return
+
+    const copiedTexts = session.texts.slice(0, session.copiedCount)
+    const visibleTexts = copiedTexts.slice(-5)
+    const preview = visibleTexts
+      .map((text, index) => `${Math.max(1, copiedTexts.length - visibleTexts.length + index + 1)}. ${text.replace(/\s+/g, ' ').trim().slice(0, 140)}`)
+      .join('\n')
+    const omittedCount = copiedTexts.length - visibleTexts.length
+    const details = [
+      error ? 'Échec de la dernière copie.' : `${session.copiedCount} bloc${session.copiedCount > 1 ? 's' : ''} copié${session.copiedCount > 1 ? 's' : ''}`,
+      omittedCount > 0 ? `… et ${omittedCount} autre${omittedCount > 1 ? 's' : ''}` : '',
+      preview
+    ].filter(Boolean).join('\n')
+
+    sendNotification(
+      error ? 'error' : 'success',
+      finished ? 'Sélection terminée' : 'Sélection multiple en cours',
+      details,
+      finished ? 2200 : 0
+    )
   }
 
   const clearHighlightTimers = () => {
@@ -362,7 +388,7 @@ export function useAutoCopy() {
     }
   }
 
-  const copyMultiSelection = (text: string) => {
+  const copyMultiSelection = (text: string, selectionCount: number, session: MultiCopySession) => {
     if (!isEnabled() || !text) return
 
     multiCopyQueue = multiCopyQueue.then(async () => {
@@ -374,9 +400,8 @@ export function useAutoCopy() {
         if (!success) throw new Error('Failed to copy text')
 
         copyState.value = 'confirmed'
-        if (store.settings.showNotifications) {
-          sendNotification('success', 'Text copied', 'The selected text has been copied to the clipboard')
-        }
+        session.copiedCount = Math.max(session.copiedCount, selectionCount)
+        notifyMultiCopySession(session)
       } catch {
         copyState.value = 'failed'
         if (stateResetTimer !== null) window.clearTimeout(stateResetTimer)
@@ -385,9 +410,7 @@ export function useAutoCopy() {
           stateResetTimer = null
         }, 2200)
         console.error('[Auto Copy] Copy failed')
-        if (store.settings.showNotifications) {
-          sendNotification('error', 'Error', 'Failed to copy the selected text')
-        }
+        notifyMultiCopySession(session, false, true)
       } finally {
         isCopying.value = false
       }
@@ -482,6 +505,7 @@ export function useAutoCopy() {
         isAltMode.value = true
       } else {
         isMultiAltMode.value = true
+        multiSession = { texts: [], copiedCount: 0 }
       }
       createAltFeedbackLayer()
       document.documentElement.dataset.toolglowsAutoCopyAlt = 'true'
@@ -531,6 +555,10 @@ export function useAutoCopy() {
   }
 
   const disableMultiAltMode = () => {
+    const hadActiveSession = isMultiAltMode.value
+    const hadSelections = multiSelectedTexts.length > 0
+    const endedSession = multiSession
+    multiSession = null
     if (pendingAltSelectionMode === 'multi' && altSelectionTimer.value !== null) {
       clearTimeout(altSelectionTimer.value)
       altSelectionTimer.value = null
@@ -546,6 +574,13 @@ export function useAutoCopy() {
     document.getElementById(altFeedbackStyleId)?.remove()
     document.getElementById(altHighlightId)?.remove()
     delete document.documentElement.dataset.toolglowsAutoCopyAlt
+    if (hadActiveSession && hadSelections) {
+      // Queue the final summary behind every cumulative clipboard write.
+      multiCopyQueue = multiCopyQueue.then(() => {
+        if (endedSession) notifyMultiCopySession(endedSession, true)
+      })
+    }
+    return hadActiveSession && hadSelections
   }
 
   const handleFocusLoss = () => {
@@ -569,8 +604,9 @@ export function useAutoCopy() {
 
       multiSelectedTargets.push(target)
       multiSelectedTexts.push(text)
+      multiSession?.texts.push(text)
       target.setAttribute(multiSelectionAttribute, 'true')
-      copyMultiSelection(multiSelectedTexts.join('\n'))
+      if (multiSession) copyMultiSelection(multiSelectedTexts.join('\n'), multiSelectedTexts.length, multiSession)
       return
     }
 
@@ -723,9 +759,9 @@ export function useAutoCopy() {
       keyboardSelectionAtStart = null
       copyState.value = 'idle'
       disableAltMode()
-      disableMultiAltMode()
+      const hadMultiSession = disableMultiAltMode()
       try {
-        toast.removeGroup('auto-copy')
+        if (!hadMultiSession) toast.removeGroup('auto-copy')
       } catch {
         // The notification host may already be gone during teardown.
       }
