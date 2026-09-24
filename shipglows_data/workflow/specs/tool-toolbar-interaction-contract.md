@@ -18,9 +18,9 @@ As a ToolGlows user, I can understand and control every configured tool from the
 
 | Class | Left click | State source | Tools |
 |---|---|---|---|
-| Toggle | Enable or disable the real page mode | Owning feature store/runtime | Dark Mode, Auto Copy, Hide Element, Cookie Acceptance |
+| Toggle | Enable or disable the real page mode | Owning feature store/runtime | Dark Mode, Reader Mode, Auto Copy, Hide Element, Cookie Acceptance |
 | Command | Execute once; no `aria-pressed` | Command execution lifecycle | Links Explorer, Social Analysis, Reload All Tabs |
-| Panel | Open or close the tool's working surface | Panel visibility | Word Count, Speed Browsing, Infinite Scroll, Feed Eradicator, Reader Mode, Search Jumper, Drag Open, Instagram Saved, Rich Copy, Better Gmail, Quick Actions |
+| Panel | Open or close the tool's working surface | Panel visibility | Word Count, Speed Browsing, Infinite Scroll, Feed Eradicator, Search Jumper, Drag Open, Instagram Saved, Rich Copy, Better Gmail, Quick Actions |
 
 `activeTools` controls whether a tool implementation is loaded in the page. It is not the canonical runtime state for toggles and is not presented as such by toolbar buttons.
 
@@ -45,4 +45,4 @@ See [onboarding contract](tool-onboarding-and-cookie-toggle.md).
 ## Validation record
 
 - 2026-08-29: Edge proof confirmed only the toolbar-membership interaction and visual treatment. This was incorrectly reported as functional activation proof; the distinction was caught during user acceptance.
-- 2026-08-30: Dark Mode was connected to `darkModeStore.setActive`, with toolbar membership synchronized secondarily. Functional adapters for the remaining tools are pending an explicit tool-by-tool implementation pass.
+- 2026-09-24: Rich Copy opens its working panel. Reader Mode directly activates/deactivates the reading surface; its options remain available from the settings gesture. Toolbar tools are grouped by primary interaction, while inactive icons remain visible and can be re-enabled.

@@ -49,6 +49,8 @@
     <div
       v-if="isExpanded"
       class="toolglows-tools-container"
+      :class="{ 'toolglows-tools-container-stacked': useStackedToolGroups }"
+      :data-layout="useStackedToolGroups ? 'stacked' : 'compact'"
     >
       <!-- Bouton paramètres -->
       <Button
@@ -63,30 +65,38 @@
         <ToolGlowsIcon name="settings" />
       </Button>
 
-      <!-- Tous les outils restent visibles ; leur apparence reflète leur activation. -->
-      <template
-        v-for="tool in toolglowsStore.tools"
-        :key="tool.id"
+      <section
+        v-for="group in TOOLBAR_INTERACTION_GROUPS"
+        :key="group.id"
+        class="toolglows-interaction-group"
+        :class="`toolglows-interaction-group-${group.id}`"
+        :aria-label="group.label"
+        :data-interaction-group="group.id"
       >
-        <Button
-          v-tooltip.top="toolTooltip(tool)"
-          class="toolglows-tool-button p-button-rounded p-button-text"
-          :class="{
-            'toolglows-tool-button-active': isToolEnabled(tool.id),
-            'toolglows-tool-button-inactive': !isToolEnabled(tool.id)
-          }"
-          :aria-label="tool.name"
-          :aria-pressed="tool.interaction === 'command' ? undefined : isToolEnabled(tool.id)"
-          :title="toolButtonTitle(tool)"
-          :data-tool-id="tool.id"
-          @click="requestToolAction(tool.id)"
-          :disabled="onboardingBusy"
-          @keydown.shift.f10.stop.prevent="isVisible[tool.id] = true"
-          @keydown.context-menu.stop.prevent="isVisible[tool.id] = true"
-        >
-          <ToolGlowsIcon :name="tool.id" />
-        </Button>
-      </template>
+        <span class="toolglows-interaction-label">{{ group.label }}</span>
+        <div class="toolglows-interaction-tools">
+          <Button
+            v-for="tool in toolsForGroup(group.ids)"
+            :key="tool.id"
+            v-tooltip.top="toolTooltip(tool)"
+            class="toolglows-tool-button p-button-rounded p-button-text"
+            :class="{
+              'toolglows-tool-button-active': isToolEnabled(tool.id),
+              'toolglows-tool-button-inactive': !isToolEnabled(tool.id)
+            }"
+            :aria-label="tool.name"
+            :aria-pressed="tool.interaction === 'command' ? undefined : isToolEnabled(tool.id)"
+            :title="toolButtonTitle(tool)"
+            :data-tool-id="tool.id"
+            @click="requestToolAction(tool.id)"
+            :disabled="onboardingBusy"
+            @keydown.shift.f10.stop.prevent="isVisible[tool.id] = true"
+            @keydown.context-menu.stop.prevent="isVisible[tool.id] = true"
+          >
+            <ToolGlowsIcon :name="tool.id" />
+          </Button>
+        </div>
+      </section>
     </div>
 
     <!-- Composants des outils actifs -->
@@ -289,7 +299,7 @@ import { ref, onMounted, inject, markRaw, onUnmounted, computed, watch, nextTick
 import type { Component } from 'vue'
 import type { Tool } from '@/types/tools'
 import { useToolOnboarding, TOOL_EXPLANATIONS, ONBOARDING_SKIP_KEY, toolSeenKey } from '@/composables/useToolOnboarding'
-import { TOOL_GROUPS, validateToolCatalog } from '@/data/toolCatalog'
+import { TOOL_GROUPS, TOOLBAR_INTERACTION_GROUPS, validateToolCatalog, validateToolbarInteractionGroups } from '@/data/toolCatalog'
 const { skipAll, seen: introductionsSeen, cookiePreferences, ready: onboardingReady, busy: onboardingBusy,
   error: onboardingError, load: loadOnboarding, save: saveOnboarding, toggleCookies } = useToolOnboarding()
 const introToolId = ref<string | null>(null)
@@ -312,7 +322,7 @@ async function runToolAction(id: string) {
   onboardingError.value = ''
   failedToolId = id
   try { await toggleToolActivation(id) }
-  catch { onboardingError.value = 'L’action a échoué. Réessayez.' }
+  catch (error) { onboardingError.value = error instanceof Error ? error.message : 'L’action a échoué. Réessayez.' }
   if (onboardingError.value) showOnboardingError.value = true
 }
 async function retryToolAction() {
@@ -433,6 +443,8 @@ const toolsForGroup = (ids: readonly string[]) =>
     return tool ? [tool] : []
   })
 
+const useStackedToolGroups = computed(() => toolglowsStore.tools.length > 6)
+
 const toolTooltip = (tool: Tool) => {
   const action = tool.interaction === 'toggle'
     ? (isToolEnabled(tool.id) ? 'Désactiver' : 'Activer')
@@ -503,7 +515,7 @@ const initialTools: Tool[] = [
     component: markRaw(ReaderModeControl),
     icon: 'pi pi-book',
     emoji: '📖',
-    category: 'reading', interaction: 'panel'
+    category: 'reading', interaction: 'toggle'
   },
   {
     id: 'searchJumper',
@@ -535,7 +547,7 @@ const initialTools: Tool[] = [
     component: markRaw(RichCopyControl),
     icon: 'pi pi-copy',
     emoji: '📋',
-    category: 'reading', interaction: 'toggle'
+    category: 'reading', interaction: 'panel'
   },
   {
     id: 'betterGmail',
@@ -605,6 +617,9 @@ const initialTools: Tool[] = [
 
 if (!validateToolCatalog(initialTools.map(tool => tool.id))) {
   throw new Error('Le catalogue doit correspondre exactement aux outils enregistrés')
+}
+if (!validateToolbarInteractionGroups(initialTools.map(tool => tool.id))) {
+  throw new Error('Les groupes d’interaction doivent couvrir exactement les outils enregistrés')
 }
 
 // Fonction pour calculer les limites de position
@@ -801,7 +816,7 @@ const toggleSettings = () => {
 const isToolEnabled = (toolId: string) => {
   if (toolId === 'cookieConsent') return cookiePreferences.value.enabled
   if (toolId === 'darkMode') return darkModeStore.isActive
-  if (toolId === 'readerMode') return readerModeStore.isActive || Boolean(isVisible.value[toolId])
+  if (toolId === 'readerMode') return readerModeStore.isActive
   if (toolId === 'autoCopy') return toolglowsStore.activeTools.includes(toolId)
   if (toolId === 'hideElement') return hideElementStore.settings.isSelectingElement
   const tool = toolglowsStore.tools.find(candidate => candidate.id === toolId)
@@ -851,6 +866,20 @@ const toggleToolActivation = async (toolId: string) => {
     if (toolId === 'socialAnalysis') {
       await socialAnalysisStore.analyzeComments()
       isVisible.value[toolId] = true
+    }
+    return
+  }
+
+  if (toolId === 'readerMode') {
+    if (readerModeStore.isActive) {
+      readerModeStore.deactivate()
+      return
+    }
+    await syncRegisteredToolState(toolId, true)
+    await nextTick()
+    await readerModeStore.loadOptions()
+    if (!await readerModeStore.activate()) {
+      throw new Error(readerModeStore.errorMessage || 'Impossible d’activer le mode lecture. Réessayez.')
     }
     return
   }
@@ -1463,7 +1492,8 @@ onBeforeUnmount(() => {
 .toolglows-tools-container {
   display: flex;
   flex-direction: row;
-  gap: var(--tg-space-4);
+  align-items: center;
+  gap: var(--tg-space-3);
   flex-wrap: wrap;
   align-content: flex-start;
   max-height: calc(100vh - 5rem);
@@ -1471,6 +1501,113 @@ onBeforeUnmount(() => {
   overscroll-behavior: contain;
   padding-right: var(--tg-space-1);
   max-width: calc(100vw - var(--tg-viewport-inline-gutter) - var(--tg-size-main-control));
+}
+
+.toolglows-interaction-group {
+  display: flex;
+  align-items: center;
+  gap: var(--tg-space-1);
+  min-width: 0;
+  padding-inline: var(--tg-space-2);
+}
+
+.toolglows-interaction-group + .toolglows-interaction-group {
+  border-inline-start: var(--tg-border-width-control) solid var(--tg-border-default);
+}
+
+.toolglows-interaction-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.toolglows-interaction-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--tg-space-1);
+  min-width: 0;
+}
+
+.toolglows-tools-container-stacked {
+  align-items: stretch;
+  flex-direction: column;
+  gap: 0;
+}
+
+.toolglows-tools-container-stacked .toolglows-interaction-group {
+  display: grid;
+  grid-template-columns: calc(var(--button-size) * 1.6) minmax(0, 1fr);
+  align-items: start;
+  padding-block: var(--tg-space-1);
+  padding-inline: 0;
+}
+
+.toolglows-tools-container-stacked .toolglows-interaction-group + .toolglows-interaction-group {
+  border-inline-start: 0;
+  border-block-start: var(--tg-border-width-control) solid var(--tg-border-default);
+}
+
+.toolglows-tools-container-stacked .toolglows-interaction-label {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  color: var(--tg-toolbar-foreground);
+  font-size: var(--font-size);
+  font-weight: 600;
+  line-height: var(--button-size);
+}
+
+.toolglows-tools-container-stacked .toolglows-interaction-tools {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .toolglows-tools-container:not(.toolglows-tools-container-stacked) {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .toolglows-tools-container:not(.toolglows-tools-container-stacked) .toolglows-interaction-group {
+    display: grid;
+    grid-template-columns: calc(var(--button-size) * 1.6) minmax(0, 1fr);
+    align-items: start;
+    padding-block: var(--tg-space-1);
+    padding-inline: 0;
+  }
+
+  .toolglows-tools-container:not(.toolglows-tools-container-stacked) .toolglows-interaction-group + .toolglows-interaction-group {
+    border-inline-start: 0;
+    border-block-start: var(--tg-border-width-control) solid var(--tg-border-default);
+  }
+
+  .toolglows-tools-container:not(.toolglows-tools-container-stacked) .toolglows-interaction-label {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    color: var(--tg-toolbar-foreground);
+    font-size: var(--font-size);
+    font-weight: 600;
+    line-height: var(--button-size);
+  }
+
+  .toolglows-tools-container:not(.toolglows-tools-container-stacked) .toolglows-interaction-tools {
+    flex-wrap: wrap;
+  }
 }
 
 .toolglows-bar {

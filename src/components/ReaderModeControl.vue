@@ -298,10 +298,23 @@ watch(
   () => void renderArticle(),
 )
 
+watch(
+  () => readerModeStore.isActive,
+  async isActive => {
+    if (!isActive) return
+    await nextTick()
+    ;(exitButton.value?.$el ?? readerSurface.value)?.focus({ preventScroll: true })
+  },
+)
+
 onMounted(async () => {
   await readerModeStore.loadOptions()
   isLoading.value = false
-  if (readerModeStore.isActive) await renderArticle()
+  if (readerModeStore.isActive) {
+    await renderArticle()
+    await nextTick()
+    ;(exitButton.value?.$el ?? readerSurface.value)?.focus({ preventScroll: true })
+  }
 })
 
 onBeforeUnmount(() => readerModeStore.deactivate())

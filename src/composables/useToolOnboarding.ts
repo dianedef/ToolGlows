@@ -10,7 +10,7 @@ export const TOOL_EXPLANATIONS: Record<string, string> = {
   speedBrowsing: 'Ouvrez les réglages de navigation rapide pour configurer le préchargement des liens. Le préchargement peut effectuer des requêtes avant votre clic.',
   infiniteScroll: 'Configurez le défilement infini pour charger la suite sur les pages compatibles. Certains sites ne proposent pas de pagination reconnue.',
   feedEradicator: 'Choisissez les flux à masquer sur les réseaux compatibles pour réduire les distractions. Les réglages permettent de les réafficher.',
-  readerMode: 'Ouvrez le mode lecture pour extraire le contenu principal et ajuster sa présentation. Les pages sans article peuvent ne pas être reconnues.',
+  readerMode: 'Activez le mode lecture pour extraire le contenu principal ; cliquez de nouveau pour le quitter. Les réglages d’apparence restent accessibles depuis le clic droit. Les pages sans article peuvent ne pas être reconnues.',
   searchJumper: 'Ouvrez les réglages de recherche rapide pour choisir comment rechercher votre sélection.',
   dragOpen: 'Configurez l’ouverture des liens par glisser-déposer. Consultez les gestes dans les paramètres avant de les utiliser.',
   instagramSaved: 'Ouvrez votre bibliothèque Instagram. Cet outil expérimental dépend de la structure du site et de votre session Instagram.',
