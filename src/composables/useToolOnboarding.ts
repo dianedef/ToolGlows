@@ -78,14 +78,14 @@ export function useToolOnboarding() {
       return false
     } finally { busy.value = false }
   }
-  async function toggleCookies() {
+  async function setCookiesEnabled(enabled: boolean) {
     if (busy.value) return false
     busy.value = true
     error.value = ''
     try {
       const values = await chrome.storage.local.get(COOKIE_CONSENT_KEY)
       const current = normalizeCookiePreferences(values[COOKIE_CONSENT_KEY])
-      const next = { ...current, enabled: !current.enabled }
+      const next = { ...current, enabled }
       await chrome.storage.local.set({ [COOKIE_CONSENT_KEY]: next })
       if (!disposed) cookiePreferences.value = next
       return true
@@ -94,7 +94,10 @@ export function useToolOnboarding() {
       return false
     } finally { busy.value = false }
   }
+  async function toggleCookies() {
+    return setCookiesEnabled(!cookiePreferences.value.enabled)
+  }
   onMounted(() => { chrome.storage.onChanged.addListener(changed); void load() })
   onUnmounted(() => { disposed = true; chrome.storage.onChanged.removeListener(changed) })
-  return { skipAll, seen, cookiePreferences, ready, busy, error, load, save, toggleCookies }
+  return { skipAll, seen, cookiePreferences, ready, busy, error, load, save, toggleCookies, setCookiesEnabled }
 }

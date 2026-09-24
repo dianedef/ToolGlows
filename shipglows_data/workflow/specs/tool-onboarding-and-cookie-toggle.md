@@ -10,8 +10,9 @@ Users can activate cookie acceptance from the toolbar and understand each tool b
 - Cookie left click toggles the existing persisted enabled preference; right click only opens settings. Preserve host exceptions. Icon reflects the real global enabled state and explains an excluded current site.
 - First use opens a short tool-specific explanation with a primary action, defer, and skip-all. Closing/defer never runs the tool. Dismissed explanations are remembered only on explicit acknowledgement; close/defer may show again.
 - Once acknowledged, clicks retain existing tool-specific behavior. Already enabled toggles can always be disabled directly.
-- Optional install welcome teaches left/right click, offers contextual explanations or skip-all, and leaves tools unchanged. Updates must render the update surface, not a fresh installation welcome.
-- A settings help directory revisits explanations and can re-enable contextual introductions. Skip-all does not activate anything, including cookies.
+- Install welcome does not ask whether to enable contextual explanations. On a true fresh install, explanations are enabled by default while every tool remains disabled. The first tool action shows its explanation before running; that inline explanation can persistently disable future explanations. Updates must render the update surface, not a fresh installation welcome.
+- On a true fresh install, every registered tool is disabled, including Dark Mode and Cookie Consent. Registering tools never mutates `activeTools`; an empty saved list is a valid deliberate preference and remains empty across reloads/updates. Existing saved `activeTools` are preserved. Cookie auto-acceptance remains independently opt-in and defaults off in its separate preference store.
+- A settings help directory revisits explanations and can re-enable contextual introductions. Inline opt-out does not activate anything, including cookies.
 - Persist independent versioned keys for skip preference and each acknowledged tool in local browser storage; no account, tracking, permission or bridge change. Synchronize storage events across pages.
 - Storage failures leave state truthful, show an error and allow retry. Prevent repeated clicks while saving. Keyboard activation and Shift+F10 open action/settings respectively. Shared dialog provides focus and Escape behavior.
 
@@ -25,7 +26,7 @@ Use src/assets/design-tokens.css and ToolGlowsDialog; responsive wrapping, no ne
 4. Unit tests for persistence/errors and rendered isolated Chromium extension proof for first use, repeat click, right click, skip-all, recovery, exclusion, keyboard and restart. Run typecheck, Vitest, both builds and manifest lint.
 
 ## Edge cases / ZOMBIES / OWASP Security Gate
-Zero preferences defaults to explanations and cookies off. Independent keys preserve concurrent acknowledgements of different tools. Many tools get bounded catalog copy. Excluded host remains excluded during global toggles. Failed reads do not silently activate cookies. Repeated action is disabled while busy. No new privileged API, external account, telemetry or sensitive logs. Existing cookie acceptance disclosure includes advertising and does not imply revocation when disabled. DOM compatibility remains bounded by the existing engine.
+Zero preferences defaults to explanations on, all tools off, and cookies off. Welcome has no discovery choice; inline opt-out persists, and settings can re-enable discovery. Independent keys preserve concurrent acknowledgements of different tools. The install page's grouped catalog lists every registered tool once, with experimental labels; demo media is optional, real, user-triggered and lazy-loaded (never fabricated or autoplayed). Excluded host remains excluded during global toggles. Failed reads do not silently activate cookies. Repeated action is disabled while busy. No new privileged API, external account, telemetry or sensitive logs. Existing cookie acceptance disclosure includes advertising and does not imply revocation when disabled. DOM compatibility remains bounded by the existing engine.
 
 ## Constraints and risks
 Preserve unrelated dirty work and existing preferences. Do not install into a personal browser profile. Chrome isolated fixture proof is not Firefox interactive or universal banner proof. No commit/push included in this approval.
@@ -43,3 +44,10 @@ Preserve unrelated dirty work and existing preferences. Do not install into a pe
 - Documentation updated in README, product description, cookie automation notes and toolbar interaction contract.
 - Current Chantier Flow: implementation complete -> local verification complete -> manual reload in user's browser. Remaining limitation: interactive Firefox proof.
 - Final Firefox manifest lint: zero errors, eleven existing bundle warnings. No interactive Firefox claim.
+
+## Verification record — 2026-09-23
+- Fresh install now keeps every tool disabled; registering tools does not mutate the activation preference. Saved non-empty preferences survive actual settings hydration and tool registration; an empty preference persists through store recreation.
+- Cookie auto-acceptance remains independently opt-in and off by default.
+- Focused Vitest passed: 3 files / 9 tests. `vue-tsc --noEmit` passed.
+- Independent review found no remaining issue in the store change, hydration coverage, or install guidance.
+- Packaged Chrome/Firefox and interactive browser verification remain outstanding for this change.

@@ -69,7 +69,7 @@
         :key="tool.id"
       >
         <Button
-          v-tooltip.top="tool.name"
+          v-tooltip.top="toolTooltip(tool)"
           class="toolglows-tool-button p-button-rounded p-button-text"
           :class="{
             'toolglows-tool-button-active': isToolEnabled(tool.id),
@@ -121,7 +121,7 @@
       <Button :label="introTool.interaction === 'toggle' ? (isToolEnabled(introTool.id) ? 'Désactiver' : 'Activer') : introTool.interaction === 'command' ? 'Exécuter' : 'Ouvrir l’outil'"
         :style="{ border: 'var(--tg-border-width-control) solid currentColor', fontWeight: '600', padding: 'var(--tg-space-3)', borderRadius: 'var(--tg-radius-control)' }" :disabled="onboardingBusy" data-intro-continue @click="acceptIntroduction" />
       <Button label="Plus tard" text :disabled="onboardingBusy" @click="introToolId = null" />
-      <Button label="Passer toutes les explications" text :disabled="onboardingBusy" @click="skipIntroductions" />
+      <Button label="Ne plus afficher les explications" text :disabled="onboardingBusy" @click="skipIntroductions" />
     </div>
   </ToolGlowsDialog>
   <ToolGlowsDialog v-model:visible="showOnboardingError" header="Action non effectuée" dismissable-mask>
@@ -142,8 +142,12 @@
   >
     <div class="toolglows-settings-content toolglows-settings-stack">
       <section class="toolglows-settings-section">
-        <h3>Découvrir les outils</h3>
-        <p>Clic gauche pour utiliser un outil, clic droit pour ses paramètres. Retrouvez ici chaque explication.</p>
+        <div class="toolglows-settings-section-header">
+          <div>
+            <h3>Par où commencer ?</h3>
+            <p>Choisissez une intention pour retrouver les outils qui vont ensemble.</p>
+          </div>
+        </div>
         <label class="toolglows-settings-row toolglows-clickable-setting">
           <span>Expliquer les outils à leur première utilisation</span>
           <Checkbox input-id="toolglows-explanations" :model-value="!skipAll" binary :disabled="onboardingBusy || !onboardingReady"
@@ -151,9 +155,24 @@
         </label>
         <p v-if="onboardingError" role="alert">{{ onboardingError }}</p>
         <Button v-if="!onboardingReady" label="Réessayer" @click="loadOnboarding" />
-        <div class="toolglows-tools-grid">
-          <Button v-for="tool in toolglowsStore.tools" :key="tool.id" :label="tool.name" text
-            @click="introToolId = tool.id; showSettings = false" />
+        <div class="toolglows-intent-groups">
+          <section v-for="group in TOOL_GROUPS" :key="group.label" class="toolglows-intent-group">
+            <div class="toolglows-intent-heading">
+              <h4>{{ group.label }}</h4>
+              <p>{{ group.description }}</p>
+            </div>
+            <div class="toolglows-discovery-grid">
+              <button v-for="tool in toolsForGroup(group.ids)" :key="tool.id" type="button"
+                class="toolglows-discovery-item" @click="introToolId = tool.id; showSettings = false">
+                <ToolGlowsIcon :name="tool.id" />
+                <span class="toolglows-discovery-copy">
+                  <strong>{{ tool.name }}</strong>
+                  <small>{{ TOOL_EXPLANATIONS[tool.id] }}</small>
+                </span>
+                <span class="toolglows-discovery-arrow" aria-hidden="true">›</span>
+              </button>
+            </div>
+          </section>
         </div>
       </section>
       <section class="toolglows-settings-section">
@@ -229,28 +248,36 @@
       <section class="toolglows-settings-section">
         <div class="toolglows-settings-section-header">
           <div>
-            <h3>Outils actifs</h3>
-            <p>Choisissez les outils affichés dans la barre.</p>
+            <h3>Votre barre d’outils</h3>
+            <p>Activez les outils que vous voulez retrouver sur chaque page.</p>
           </div>
         </div>
-        <div class="toolglows-tools-grid">
-          <label
-            v-for="tool in toolglowsStore.tools"
-            :key="tool.id"
-            class="toolglows-tool-item toolglows-clickable-setting"
-          >
-            <span class="toolglows-tool-header">
-              <span class="toolglows-tool-emoji">{{ tool.emoji }}</span>
-              <span class="toolglows-tool-name">{{ tool.name }}</span>
-            </span>
-            <Checkbox
-              :model-value="tool.id === 'cookieConsent' ? cookiePreferences.enabled : toolglowsStore.activeTools.includes(tool.id)"
-              :binary="true"
-              :input-id="'tool-' + tool.id"
-              :disabled="tool.id === 'cookieConsent' && onboardingBusy"
-              @update:model-value="() => tool.id === 'cookieConsent' ? requestToolAction(tool.id) : toolglowsStore.toggleTool(tool.id)"
-            />
-          </label>
+        <div class="toolglows-intent-groups">
+          <section v-for="group in TOOL_GROUPS" :key="group.label" class="toolglows-intent-group">
+            <div class="toolglows-intent-heading">
+              <h4>{{ group.label }}</h4>
+              <p>{{ group.description }}</p>
+            </div>
+            <div class="toolglows-tools-grid">
+              <label v-for="tool in toolsForGroup(group.ids)" :key="tool.id"
+                class="toolglows-tool-item toolglows-clickable-setting">
+                <span class="toolglows-tool-header">
+                  <ToolGlowsIcon :name="tool.id" />
+                  <span class="toolglows-tool-copy">
+                    <span class="toolglows-tool-name">{{ tool.name }}</span>
+                    <small>{{ TOOL_EXPLANATIONS[tool.id] }}</small>
+                  </span>
+                </span>
+                <Checkbox
+                  :model-value="tool.id === 'cookieConsent' ? cookiePreferences.enabled : toolglowsStore.activeTools.includes(tool.id)"
+                  :binary="true"
+                  :input-id="'tool-' + tool.id"
+                  :disabled="tool.id === 'cookieConsent' && onboardingBusy"
+                  @update:model-value="() => tool.id === 'cookieConsent' ? requestToolAction(tool.id) : toolglowsStore.toggleTool(tool.id)"
+                />
+              </label>
+            </div>
+          </section>
         </div>
       </section>
     </div>
@@ -262,6 +289,7 @@ import { ref, onMounted, inject, markRaw, onUnmounted, computed, watch, nextTick
 import type { Component } from 'vue'
 import type { Tool } from '@/types/tools'
 import { useToolOnboarding, TOOL_EXPLANATIONS, ONBOARDING_SKIP_KEY, toolSeenKey } from '@/composables/useToolOnboarding'
+import { TOOL_GROUPS, validateToolCatalog } from '@/data/toolCatalog'
 const { skipAll, seen: introductionsSeen, cookiePreferences, ready: onboardingReady, busy: onboardingBusy,
   error: onboardingError, load: loadOnboarding, save: saveOnboarding, toggleCookies } = useToolOnboarding()
 const introToolId = ref<string | null>(null)
@@ -399,6 +427,19 @@ const hideElementStore = useHideElementStore()
 const readerModeStore = useReaderModeStore()
 
 const isInterfaceDark = computed(() => settingsStore.settings.interfaceTheme === 'dark')
+const toolsForGroup = (ids: readonly string[]) =>
+  ids.flatMap(id => {
+    const tool = toolglowsStore.tools.find(candidate => candidate.id === id)
+    return tool ? [tool] : []
+  })
+
+const toolTooltip = (tool: Tool) => {
+  const action = tool.interaction === 'toggle'
+    ? (isToolEnabled(tool.id) ? 'Désactiver' : 'Activer')
+    : tool.interaction === 'command' ? 'Exécuter' : 'Ouvrir'
+  return `${tool.name} · ${action} · clic droit : réglages`
+}
+
 const hiddenElementCount = computed(() => hideElementStore.settings.hiddenElements.filter(
   element => element.domain === window.location.hostname
 ).length)
@@ -561,6 +602,10 @@ const initialTools: Tool[] = [
     category: 'appearance', interaction: 'toggle'
   }
 ]
+
+if (!validateToolCatalog(initialTools.map(tool => tool.id))) {
+  throw new Error('Le catalogue doit correspondre exactement aux outils enregistrés')
+}
 
 // Fonction pour calculer les limites de position
 const toolbarSafeMargin = 0
@@ -1253,6 +1298,90 @@ onBeforeUnmount(() => {
   grid-template-columns: repeat(auto-fill, minmax(var(--tg-size-200), 1fr));
 }
 
+.toolglows-intent-groups {
+  display: grid;
+  gap: var(--tg-space-5);
+}
+
+.toolglows-intent-group {
+  display: grid;
+  gap: var(--tg-space-2);
+}
+
+.toolglows-intent-heading h4,
+.toolglows-intent-heading p {
+  margin: 0;
+}
+
+.toolglows-intent-heading h4 {
+  color: var(--tg-text-primary);
+  font-size: var(--tg-text-base);
+  font-weight: 650;
+}
+
+.toolglows-intent-heading p {
+  margin-top: var(--tg-space-1);
+  color: var(--tg-text-secondary);
+  font-size: var(--tg-text-sm);
+}
+
+.toolglows-discovery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--tg-size-300)), 1fr));
+  gap: var(--tg-space-2);
+}
+
+.toolglows-discovery-item {
+  display: grid;
+  grid-template-columns: var(--tg-size-control) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--tg-space-3);
+  min-width: 0;
+  padding: var(--tg-space-3);
+  border: var(--tg-border-width-control) solid var(--tg-border-default);
+  border-radius: var(--tg-radius-control);
+  background: var(--tg-surface-raised);
+  color: var(--tg-text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.toolglows-discovery-item:hover,
+.toolglows-discovery-item:focus-visible {
+  border-color: var(--tg-action);
+  background: var(--tg-interaction-hover);
+}
+
+.toolglows-discovery-item > .toolglows-icon {
+  color: var(--tg-action);
+}
+
+.toolglows-discovery-copy,
+.toolglows-tool-copy {
+  display: grid;
+  min-width: 0;
+  gap: var(--tg-space-1);
+}
+
+.toolglows-discovery-copy strong,
+.toolglows-tool-name {
+  color: var(--tg-text-primary);
+  font-size: var(--tg-text-base);
+  font-weight: 600;
+}
+
+.toolglows-discovery-copy small,
+.toolglows-tool-copy small {
+  color: var(--tg-text-secondary);
+  font-size: var(--tg-text-sm);
+  line-height: var(--tg-line-height-copy);
+}
+
+.toolglows-discovery-arrow {
+  color: var(--tg-text-secondary);
+  font-size: var(--tg-text-lg);
+}
+
 .toolglows-tool-item {
   display: flex;
   align-items: center;
@@ -1270,11 +1399,11 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: var(--tg-space-2);
   flex: 1;
+  min-width: 0;
 }
 
 .toolglows-tool-name {
-  color: var(--tg-text-primary);
-  font-size: var(--tg-text-base);
+  display: block;
 }
 
 .toolglows-settings-select {

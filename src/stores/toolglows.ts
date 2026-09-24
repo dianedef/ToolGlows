@@ -55,11 +55,6 @@ export const useToolGlowsStore = defineStore('toolglows', () => {
   const addTool = async (tool: Tool) => {
     tools.value.push(tool)
     console.log('[INFO] Tool added:', tool)
-    if (!isInitialized.value) {
-      await settingsStore.updateSettings({
-        activeTools: [...settingsStore.settings.activeTools, tool.id]
-      })
-    }
   }
 
   /**
@@ -68,9 +63,8 @@ export const useToolGlowsStore = defineStore('toolglows', () => {
    * Called once at application startup to register all available tools.
    * Idempotent: safe to call multiple times (useful during HMR).
    *
-   * First-time user experience: If no tools are active (fresh install),
-   * activates all tools by default to showcase extension capabilities.
-   * Users can then disable unwanted tools.
+   * Registration never changes activation preferences. An empty list is a
+   * valid saved choice as well as the fresh-install default.
    *
    * @param initialTools - Array of tool definitions with metadata and components
    */
@@ -82,14 +76,6 @@ export const useToolGlowsStore = defineStore('toolglows', () => {
 
     console.log('[INFO] Initializing tools:', initialTools)
     tools.value = initialTools
-
-    // First-time setup: enable all tools for discoverability except autoCopy (which interferes with normal text selection)
-    if (settingsStore.settings.activeTools.length === 0) {
-      await settingsStore.updateSettings({
-        activeTools: tools.value.map(t => t.id).filter(id => id !== 'autoCopy')
-      })
-      console.log('[INFO] No active tools found, activating defaults (autoCopy excluded)')
-    }
 
     isInitialized.value = true
     console.log('[SUCCESS] Tools initialized')
