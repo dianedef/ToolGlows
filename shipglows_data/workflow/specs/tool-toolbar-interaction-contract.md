@@ -9,8 +9,9 @@ As a ToolGlows user, I can understand and control every configured tool from the
 - Every registered tool remains visible in the expanded toolbar.
 - Left click invokes the tool's real primary activation/deactivation API and never merely toggles toolbar membership.
 - Right click opens the tool's related control/settings surface and never changes its enabled state.
-- Enabled buttons expose `aria-pressed="true"` and retain their normal icon treatment.
-- Disabled buttons expose `aria-pressed="false"` and use the shared desaturated treatment while remaining legible and interactive.
+- Tool selection from the install/settings catalog controls toolbar icon brightness and synchronizes across pages through browser storage.
+- Runtime state remains separate: toggles expose their real on/off state, panels expose open/closed state, and commands omit `aria-pressed`.
+- Running modes and open panels have a separate inset indicator; selection alone never claims that a mode is already running.
 - A tool control may be mounted while its settings are visible even when the tool itself is disabled.
 - Dragging beyond the toolbar threshold moves the whole toolbar and suppresses the generated click.
 

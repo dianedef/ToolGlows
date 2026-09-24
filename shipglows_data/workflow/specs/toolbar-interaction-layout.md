@@ -63,6 +63,7 @@ The precise density threshold is an implementation detail to choose from rendere
 
 - Each tool's primary behavior is explicit metadata; visual grouping must not infer behavior from its subject category or current enabled state.
 - Existing left-click behavior remains authoritative: launch tools launch, panel tools open, and toggle tools toggle their real state.
+- Icon brightness reflects whether the tool is selected in the saved tool configuration; a separate inset indicator and `aria-pressed` reflect whether a mode is running or a panel is open. A selected tool is not presented as already running.
 - Right click and Shift+F10 continue to open the tool's settings/control surface. No long-press gesture is introduced by this change.
 - Tooltips, accessible names, pressed state, and first-use explanations describe the same action as the group in which the tool appears.
 - If a tool's left-click behavior changes, its metadata, onboarding copy, and interaction contract change together.

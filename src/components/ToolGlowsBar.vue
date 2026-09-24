@@ -81,10 +81,11 @@
             v-tooltip.top="toolTooltip(tool)"
             class="toolglows-tool-button p-button-rounded p-button-text"
             :class="{
-              'toolglows-tool-button-active': isToolEnabled(tool.id),
-              'toolglows-tool-button-inactive': !isToolEnabled(tool.id)
+              'toolglows-tool-button-active': isToolSelected(tool.id),
+              'toolglows-tool-button-inactive': !isToolSelected(tool.id),
+              'toolglows-tool-button-running': isToolRunning(tool)
             }"
-            :aria-label="tool.name"
+            :aria-label="`${tool.name}, ${isToolSelected(tool.id) ? 'choisi' : 'non choisi'}`"
             :aria-pressed="tool.interaction === 'command' ? undefined : isToolEnabled(tool.id)"
             :title="toolButtonTitle(tool)"
             :data-tool-id="tool.id"
@@ -449,7 +450,8 @@ const toolTooltip = (tool: Tool) => {
   const action = tool.interaction === 'toggle'
     ? (isToolEnabled(tool.id) ? 'Désactiver' : 'Activer')
     : tool.interaction === 'command' ? 'Exécuter' : 'Ouvrir'
-  return `${tool.name} · ${action} · clic droit : réglages`
+  const selection = isToolSelected(tool.id) ? 'choisi dans vos outils' : 'non choisi dans vos outils'
+  return `${tool.name} · ${action} · ${selection} · clic droit : réglages`
 }
 
 const hiddenElementCount = computed(() => hideElementStore.settings.hiddenElements.filter(
@@ -825,12 +827,24 @@ const isToolEnabled = (toolId: string) => {
   return toolglowsStore.activeTools.includes(toolId)
 }
 
+const isToolSelected = (toolId: string) => toolId === 'cookieConsent'
+  ? cookiePreferences.value.enabled
+  : toolglowsStore.activeTools.includes(toolId)
+
+const isToolRunning = (tool: Tool) => tool.interaction === 'panel'
+  ? Boolean(isVisible.value[tool.id])
+  : tool.interaction === 'toggle' && isToolEnabled(tool.id)
+
 const toolButtonTitle = (tool: Tool) => {
   if (tool.id === 'cookieConsent' && cookiePreferences.value.excludedHosts.includes(location.hostname)) {
-    return `${tool.name} — ${cookiePreferences.value.enabled ? 'actif' : 'inactif'} · ce site est exclu — clic droit : paramètres`
+    return `${tool.name} — ${isToolSelected(tool.id) ? 'choisi' : 'non choisi'} · ce site est exclu — clic droit : paramètres`
   }
-  if (tool.interaction === 'command') return `${tool.name} — exécuter`
-  return `${tool.name} — ${isToolEnabled(tool.id) ? 'actif' : 'inactif'}`
+  const state = tool.interaction === 'command'
+    ? 'commande ponctuelle'
+    : tool.interaction === 'panel'
+      ? (isToolRunning(tool) ? 'panneau ouvert' : 'panneau fermé')
+      : (isToolEnabled(tool.id) ? 'actif sur cette page' : 'inactif sur cette page')
+  return `${tool.name} — ${isToolSelected(tool.id) ? 'choisi' : 'non choisi'} · ${state}`
 }
 
 const syncRegisteredToolState = async (toolId: string, enabled: boolean) => {
@@ -1315,6 +1329,10 @@ onBeforeUnmount(() => {
 .toolglows-tool-button-inactive:hover,
 .toolglows-tool-button-inactive:focus-visible {
   opacity: 0.68;
+}
+
+.toolglows-tool-button-running {
+  box-shadow: inset 0 0 0 var(--tg-border-width-control) var(--tg-action);
 }
 
 .toolglows-settings-content {
